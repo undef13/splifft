@@ -80,6 +80,8 @@
               "male",
               "female",
               "violin",
+              "ride",
+              "crash",
               "dry",
               "reverb",
               "clean",
@@ -87,7 +89,14 @@
               "denoised",
               "noise",
               "vocals_dry",
-              "dereverb"
+              "dereverb",
+              "center",
+              "similarity",
+              "difference",
+              "keyboards",
+              "synthesizer",
+              "percussion",
+              "orchestral"
             ]
           },
           "title": "Values",
@@ -128,11 +137,9 @@
               "enum": [
                 "separation",
                 "denoise",
-                "de-reverb",
-                "enhancement",
-                "crowd_removal",
-                "upscaler",
-                "phase_fixer"
+                "debleed",
+                "dereverb",
+                "decrowd"
               ],
               "type": "string"
             },
@@ -215,6 +222,8 @@
               "male",
               "female",
               "violin",
+              "ride",
+              "crash",
               "dry",
               "reverb",
               "clean",
@@ -222,7 +231,14 @@
               "denoised",
               "noise",
               "vocals_dry",
-              "dereverb"
+              "dereverb",
+              "center",
+              "similarity",
+              "difference",
+              "keyboards",
+              "synthesizer",
+              "percussion",
+              "orchestral"
             ],
             "type": "string"
           },
@@ -296,10 +312,8 @@
         "kind": {
           "enum": [
             "model_ckpt",
-            "huggingface",
             "config_msst",
-            "colab",
-            "mvsep",
+            "arxiv",
             "other"
           ],
           "title": "Kind",

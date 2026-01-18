@@ -1,10 +1,6 @@
 """Utilities to collate community-contributed models and resources (jarredou's
 colab notebook, deton25's guide, huggingface hub api: https://huggingface.co/.well-known/openapi.json)
 into our `registry.json`.
-
-- https://huggingface.co/{{namespace}}/{{repo}}/{resolve|blob|tree}/{{rev}}/{{path}}
-- https://huggingface.co/{{namespace}}/{{repo}}
-- https://huggingface.co/{{namespace}}/{{repo}}/raw/{{rev}}/{{path}}
 """
 
 import io
@@ -13,6 +9,7 @@ import logging
 import re
 import subprocess
 from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
 from itertools import chain
 from pathlib import Path, PurePosixPath
 from typing import (
@@ -219,47 +216,67 @@ class HfResourceNode(NamedTuple):
         )  # type: ignore
 
 
-class HfResourceUrl(NamedTuple):
-    url: str
+class GitHubReleaseNode(NamedTuple):
+    owner: str
+    repo_name: str
+    tag: str
 
     @property
-    def repo(self) -> HfResourceNode | None:
-        return HfResourceNode.try_from_url(self.url)
+    def slug(self) -> str:
+        return f"{self.owner}__{self.repo_name}__{self.tag}".replace("/", "_")
+
+
+class ResourceUrl(NamedTuple):
+    url: str
 
     @property
     def is_ckpt_or_yaml(self) -> bool:
         path = urlparse(self.url).path.lower()
-        return path.endswith(".ckpt") or path.endswith(".yaml") or path.endswith(".yml")
+        return (
+            path.endswith(".ckpt")
+            or path.endswith(".pt")
+            or path.endswith(".yaml")
+            or path.endswith(".yml")
+        )
 
 
-def _urls_from_registry(registry: Registry) -> Generator[HfResourceUrl, None, None]:
+def _urls_from_registry(registry: Registry) -> Generator[ResourceUrl, None, None]:
     for model in registry.values():
         for resource in model.resources:
-            yield HfResourceUrl(resource.url)
+            yield ResourceUrl(resource.url)
 
 
-def _urls_from_guide(path: Path) -> Generator[HfResourceUrl, None, None]:
+def _urls_from_guide(path: Path) -> Generator[ResourceUrl, None, None]:
     text = path.read_text(encoding="utf-8")
-    matches = re.findall(r"https?://huggingface\.co/[^\s\)\]\}\"]+", text)
+    matches = re.findall(
+        r"https?://(?:huggingface\.co|github\.com)/[^\s\)\]\}\"]+",
+        text,
+    )
     for url in matches:
         clean = url.rstrip(".,;:")
-        if urlparse(clean).path.lstrip("/").startswith("spaces/"):
+        parsed = urlparse(clean)
+        if parsed.netloc == "huggingface.co" and parsed.path.lstrip("/").startswith("spaces/"):
             continue
-        yield HfResourceUrl(clean)
+        if (
+            _hf_node_and_file_from_url(clean) is None
+            and _gh_release_node_and_asset_from_url(clean) is None
+        ):
+            continue
+        yield ResourceUrl(clean)
 
 
-def _urls_from_jarredou(path: Path) -> Generator[HfResourceUrl, None, None]:
+def _urls_from_jarredou(path: Path) -> Generator[ResourceUrl, None, None]:
     data = json.loads(path.read_text(encoding="utf-8"))
     for item in data:
         m = JarredouModel(**item)
         if uc := m.config_url:
-            yield HfResourceUrl(uc)
+            yield ResourceUrl(uc)
         if ck := m.checkpoint_url:
-            yield HfResourceUrl(ck)
+            yield ResourceUrl(ck)
 
 
 def _warn_missing_in_registry(
-    other_urls: Iterable[HfResourceUrl], registry_urls: Iterable[HfResourceUrl], *, source: str
+    other_urls: Iterable[ResourceUrl], registry_urls: Iterable[ResourceUrl], *, source: str
 ) -> None:
     registry_set = {u.url for u in registry_urls if u.is_ckpt_or_yaml}
     seen = set()
@@ -300,7 +317,21 @@ class RepoTreeEntry(TypedDict):
     xetHash: NotRequired[str]
 
 
-_HF_FILE_EXTENSIONS = {".ckpt", ".yaml", ".yml"}
+class GitHubReleaseAsset(TypedDict):
+    id: int
+    name: str
+    size: int
+    created_at: str
+    updated_at: str
+    browser_download_url: str
+
+
+class GitHubRelease(TypedDict):
+    tag_name: str
+    assets: list[GitHubReleaseAsset]
+
+
+_HF_FILE_EXTENSIONS = {".ckpt", ".pt", ".yaml", ".yml"}
 
 
 def _looks_like_file(path: str) -> bool:
@@ -331,18 +362,17 @@ def _cache_hf_repo_tree(
     )
     logger.info(f"fetching {url}")
     response = client.get(url)
-    try:
-        response.raise_for_status()
-    except httpx.HTTPStatusError as e:
-        logger.error(f"Failed to fetch {url}: {e}, {locals()}")
-        return
+    response.raise_for_status()
     data = response.json()
     out_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
     logger.info(f"wrote {out_path}")
 
 
-def _load_cached_hf_repo_tree(repo: HfResourceNode, output_path: Path) -> list[RepoTreeEntry]:
-    out_path = output_path / f"{repo.slug}.json"
+def _load_cached_hf_repo_tree(
+    repo: HfResourceNode, output_path: Path
+) -> list[RepoTreeEntry] | None:
+    if not (out_path := output_path / f"{repo.slug}.json").exists():
+        return None
     return json.loads(out_path.read_text(encoding="utf-8"))  # type: ignore
 
 
@@ -365,6 +395,13 @@ def _build_entry_lookup(
 
 
 def _hf_node_and_file_from_url(url: str) -> tuple[HfResourceNode, str | None] | None:
+    """Parse a Hugging Face resource URL.
+
+    Supported URL forms:
+    - https://huggingface.co/{namespace}/{repo}/{resolve|blob|tree}/{rev}/{path}
+    - https://huggingface.co/{namespace}/{repo}
+    - https://huggingface.co/{namespace}/{repo}/raw/{rev}/{path}
+    """
     if (repo := HfResourceNode.try_from_url(url)) is None:
         return None
     parsed = urlparse(url)
@@ -410,16 +447,109 @@ def _hf_node_and_file_from_url(url: str) -> tuple[HfResourceNode, str | None] | 
     return node, file_path
 
 
+def _gh_release_node_and_asset_from_url(
+    url: str,
+) -> tuple[GitHubReleaseNode, str | None] | None:
+    """Parse a GitHub release URL.
+
+    Supported URL forms:
+    - https://github.com/{owner}/{repo}/releases/tag/{tag}
+    - https://github.com/{owner}/{repo}/releases/download/{tag}/{asset}
+    """
+    parsed = urlparse(url)
+    if parsed.netloc not in {"github.com", "www.github.com"}:
+        return None
+    parts = [unquote(part) for part in parsed.path.split("/") if part]
+    if len(parts) < 4:
+        return None
+    owner, repo = parts[0], parts[1]
+    if parts[2] != "releases":
+        return None
+    if parts[3] == "download":
+        if len(parts) < 6:
+            return None
+        tag = parts[4]
+        asset = "/".join(parts[5:]) or None
+    elif parts[3] == "tag":
+        if len(parts) < 5:
+            return None
+        tag = parts[4]
+        asset = None
+    else:
+        return None
+    asset_name = PurePosixPath(asset).name if asset else None
+    return GitHubReleaseNode(owner=owner, repo_name=repo, tag=tag), asset_name
+
+
+def _cache_github_release_assets(
+    release: GitHubReleaseNode,
+    output_path: Path,
+    *,
+    client: httpx.Client | None = None,
+) -> None:
+    output_path.mkdir(parents=True, exist_ok=True)
+    out_path = output_path / f"{release.slug}.json"
+    if out_path.exists():  # cache hit
+        return
+    assert client is not None
+    url = (
+        f"https://api.github.com/repos/{release.owner}/{release.repo_name}"
+        f"/releases/tags/{quote(release.tag, safe='')}"
+    )
+    logger.info(f"fetching {url}")
+    response = client.get(url, headers={"Accept": "application/vnd.github+json"})
+    try:
+        response.raise_for_status()
+    except httpx.HTTPStatusError as e:
+        logger.error(f"failed to fetch {url}: {e}, {locals()}")
+        return
+    data = response.json()
+    out_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    logger.info(f"wrote {out_path}")
+
+
+def _load_cached_github_release(
+    release: GitHubReleaseNode, output_path: Path
+) -> GitHubRelease | None:
+    if not (out_path := output_path / f"{release.slug}.json").exists():
+        return None
+    return json.loads(out_path.read_text(encoding="utf-8"))  # type: ignore
+
+
+def _build_github_asset_lookup(release: GitHubRelease) -> dict[str, GitHubReleaseAsset]:
+    lookup: dict[str, GitHubReleaseAsset] = {}
+    for asset in release.get("assets", []):
+        name = asset.get("name")
+        if name:
+            lookup[name] = asset
+        url = asset.get("browser_download_url")
+        if url:
+            lookup[url] = asset
+    return lookup
+
+
+def _parse_iso_datetime(value: str | None) -> datetime:
+    if not value:
+        return datetime.min.replace(tzinfo=timezone.utc)
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError:
+        return datetime.min.replace(tzinfo=timezone.utc)
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
 @app.command()
 def fix_registry(
     registry_path: Path = PATH_DATA / "registry.json",
     guide_path: Path = PATH_GUIDE_MODELS_MD,
     jarredou_path: Path = PATH_JARREDOU_MSST_JSON,
-    output_path: Path = PATH_TMP / "huggingface",
+    output_path: Path = PATH_TMP / "cache",
     warn_missing: bool = False,  # off by default since some are htdemucs / unsupported architecture
 ) -> None:
     """Checks that URLs in the guide and jarredou's colab are present in the registry,
-    caches file metadata from hugging face and ensures dates are correct."""
+    caches file metadata from Hugging Face and GitHub releases and ensures dates are correct."""
     from pydantic import TypeAdapter
 
     registry = Registry.from_file(registry_path)
@@ -432,51 +562,91 @@ def fix_registry(
         _warn_missing_in_registry(jarredou_urls, registry_urls, source="jarredou colab")
 
     all_urls = list(chain(registry_urls, guide_urls, jarredou_urls))
-    repos: set[HfResourceNode] = set()
+    hf_repos: set[HfResourceNode] = set()
+    gh_releases: set[GitHubReleaseNode] = set()
     for u in all_urls:
-        if (parsed := _hf_node_and_file_from_url(u.url)) is None:
-            continue
-        node, _ = parsed
-        repos.add(node)
-    with httpx.Client(http2=True) as client:
-        for repo in sorted(repos):
-            _cache_hf_repo_tree(repo, output_path, client=client)
+        if (hf_parsed := _hf_node_and_file_from_url(u.url)) is not None:
+            hf_node, _ = hf_parsed
+            hf_repos.add(hf_node)
+        if (gh_parsed := _gh_release_node_and_asset_from_url(u.url)) is not None:
+            gh_node, _ = gh_parsed
+            gh_releases.add(gh_node)
+
+    output_hf = output_path / "huggingface"
+    output_gh = output_path / "github"
+    with httpx.Client(http2=True, headers={"User-Agent": "splifft-community/1.0"}) as client:
+        for repo in sorted(hf_repos):
+            _cache_hf_repo_tree(repo, output_hf, client=client)
+        for release in sorted(gh_releases):
+            _cache_github_release_assets(release, output_gh, client=client)
 
     repo_trees: dict[HfResourceNode, dict[str, RepoTreeEntry]] = {}
-    for repo in repos:
-        tree_entries = _load_cached_hf_repo_tree(repo, output_path)
+    for repo in hf_repos:
+        if (tree_entries := _load_cached_hf_repo_tree(repo, output_hf)) is None:
+            continue
         repo_trees[repo] = _build_entry_lookup(tree_entries, repo.base_path)
+
+    gh_release_assets: dict[GitHubReleaseNode, dict[str, GitHubReleaseAsset]] = {}
+    for release in gh_releases:
+        if (release_data := _load_cached_github_release(release, output_gh)) is None:
+            continue
+        gh_release_assets[release] = _build_github_asset_lookup(release_data)
 
     for model in registry.values():
         created_at = None
         model_size = None
         for resource in model.resources:
             url = resource.url
-            if (parsed := _hf_node_and_file_from_url(url)) is None:
+            if (hf_parsed := _hf_node_and_file_from_url(url)) is not None:
+                repo, file_path = hf_parsed
+                if not file_path:
+                    continue
+                rel_path = (
+                    file_path[len(repo.base_path) + 1 :]
+                    if repo.base_path and file_path.startswith(repo.base_path + "/")
+                    else file_path
+                )
+                entry = (
+                    repo_trees.get(repo, {}).get(file_path)
+                    or repo_trees.get(repo, {}).get(rel_path)
+                    or repo_trees.get(repo, {}).get(PurePosixPath(file_path).name)
+                )
+                if entry is None:
+                    continue
+                if url.lower().endswith((".ckpt", ".pt")):
+                    if (lc := entry.get("lastCommit")) is not None:
+                        created_at = lc.get("date")
+                    model_size = entry.get("size")
                 continue
-            repo, file_path = parsed
-            if not file_path:
+
+            if (gh_parsed := _gh_release_node_and_asset_from_url(url)) is not None:
+                release, asset_name = gh_parsed
+                lookup = gh_release_assets.get(release, {})
+                asset = None
+                if asset_name:
+                    asset = lookup.get(asset_name)
+                if asset is None:
+                    asset = lookup.get(url)
+                if asset is None:
+                    continue
+                if url.lower().endswith((".ckpt", ".pt")):
+                    created_at = asset.get("created_at") or asset.get("updated_at")
+                    model_size = asset.get("size")
                 continue
-            rel_path = (
-                file_path[len(repo.base_path) + 1 :]
-                if repo.base_path and file_path.startswith(repo.base_path + "/")
-                else file_path
-            )
-            entry = (
-                repo_trees.get(repo, {}).get(file_path)
-                or repo_trees.get(repo, {}).get(rel_path)
-                or repo_trees.get(repo, {}).get(PurePosixPath(file_path).name)
-            )
-            if entry is None:
-                continue
-            if url.lower().endswith(".ckpt"):
-                if (lc := entry.get("lastCommit")) is not None:
-                    created_at = lc.get("date")
-                model_size = entry.get("size")
         if created_at is not None:
             model.created_at = created_at
         if model_size is not None:
             model.model_size = model_size
+
+    registry = Registry(
+        dict(
+            sorted(
+                registry.items(),
+                key=lambda item: _parse_iso_datetime(item[1].created_at),
+                reverse=True,
+            )
+        )
+    )
 
     registry_path.write_bytes(
         TypeAdapter(Registry).dump_json(registry, indent=4, exclude_defaults=True)

@@ -1,4 +1,363 @@
 {
+    "mel_roformer-gabox-flowers_v10": {
+        "authors": ["gabox"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2026-01-04T22:58:53.000Z",
+        "output": ["instrum"],
+        "metrics": [
+            {
+                "values": { "instrum": {"bleedless": 36.68, "fullness": 37.12, "sdr": 16.95} }
+            }
+        ],
+        "description": [
+            {
+                "content": [
+                    "Fine-tune of the 'deux' model with 'other' target.",
+                    "A huge improvement in stability and clarity over previous Gabox models.",
+                    "Incompatible with older UVR patches due to torch.dynamo polyfills."
+                ],
+                "author": "billieoconnell"
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/blob/main/melbandroformers/instrumental/inst_gaboxFlowersV10.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/blob/main/melbandroformers/instrumental/v10.yaml"
+            }
+        ],
+        "model_size": 489571079
+    },
+    "mel_roformer-becruily-deux": {
+        "authors": ["becruily"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2025-12-29T17:15:41.000Z",
+        "output": ["vocals", "instrum"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/becruily/mel-band-roformer-deux/resolve/main/becruily_deux.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/becruily/mel-band-roformer-deux/resolve/main/config_deux_becruily.yaml"
+            }
+        ],
+        "model_size": 435006815
+    },
+    "mel_roformer-gabox-inst_fv9": {
+        "authors": ["gabox"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2025-12-23T19:27:31.000Z",
+        "output": ["instrum"],
+        "metrics": [
+            {
+                "values": { "instrum": {"bleedless": 36.2, "fullness": 37.19, "sdr": 16.56} }
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/Inst_GaboxFv9.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gabox.yaml"
+            }
+        ],
+        "model_size": 913091027
+    },
+    "bs_roformer-unwa-hyperace_v2_vocals": {
+        "authors": ["unwa"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "created_at": "2025-12-20T10:31:44.000Z",
+        "output": ["vocals"],
+        "metrics": [
+            {
+                "values": { "vocals": {"bleedless": 34.08, "fullness": 19.1, "sdr": 11.39} }
+            }
+        ],
+        "description": [
+            {
+                "content": [
+                    "Aims to outperform Big Beta 6X overall.",
+                    "Uses a frequency-domain downsampling backbone module.",
+                    "More noisy during quiet parts compared to Big Beta 6X but scores higher across the board."
+                ],
+                "author": "rainboomdash"
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/blob/main/v2_inst/bs_roformer_inst_hyperacev2.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/blob/main/v2_inst/config.yaml"
+            }
+        ],
+        "model_size": 288725646
+    },
+    "bs_roformer-unwa-hyperace_v2_instrum": {
+        "authors": ["unwa"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "created_at": "2025-12-18T14:27:44.000Z",
+        "output": ["instrum"],
+        "metrics": [
+            {
+                "values": { "instrum": {"bleedless": 37.87, "fullness": 38.03, "sdr": 17.4} },
+                "source": "https://mvsep.com/quality_checker/entry/9475"
+            }
+        ],
+        "description": [
+            {
+                "content": [
+                    "Outperformed v1e+ on all metrics.",
+                    "Incorporates TFC-TDF modules into the FreqPixelShuffle module.",
+                    "Holds the highest aura_mrstft score on the instrumental side of the Multisong dataset."
+                ],
+                "author": "unwa"
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/blob/main/v2_voc/bs_roformer_voc_hyperacev2.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/blob/main/v2_voc/bs_roformer_voc_hyperacev2.ckpt"
+            }
+        ],
+        "model_size": 288724430
+    },
+    "mel_roformer-gabox-inst_fv7b": {
+        "authors": ["gabox"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2025-11-22T06:46:24.000Z",
+        "output": ["instrum"],
+        "metrics": [
+            {
+                "values": { "instrum": {"fullness": 27.07, "bleedless": 47.49, "sdr": 16.71} }
+            }
+        ],
+        "description": [
+            {
+                "content": [
+                    "Highest bleedless metric out of all instrumental models as of late 2025.",
+                    "Captures more instruments than v1e+ without the muddiness of Resurrection Inst.",
+                    "May add crackling noise; ensembling is recommended to reduce noise."
+                ],
+                "author": "rainboomdash"
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/inst_fv7b.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gabox.yaml"
+            }
+        ],
+        "model_size": 913030778
+    },
+    "mel_roformer-gabox-voc_fv7_beta3": {
+        "authors": ["gabox"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2025-11-22T06:45:01.000Z",
+        "output": ["vocals"],
+        "status": "beta",
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/vocfv7beta3.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_gabox.yaml"
+            }
+        ],
+        "model_size": 913030778
+    },
+    "mel_roformer-gabox-voc_fv7_beta2": {
+        "authors": ["gabox"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2025-11-13T00:50:40.000Z",
+        "output": ["vocals"],
+        "status": "beta",
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/vocfv7beta2.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_gabox.yaml"
+            }
+        ],
+        "model_size": 913030778
+    },
+    "mel_roformer-mesk-rifforge": {
+        "authors": ["mesk"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2025-10-26T15:50:53.000Z",
+        "output": ["instrum"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/meskvlla33/rifforge/resolve/main/rifforge_full_sdr_14.2436.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/meskvlla33/rifforge/resolve/main/config_rifforge_full_mesk.yaml"
+            }
+        ],
+        "model_size": 2011438773
+    },
+    "mel_roformer-gabox-voc_fv7_beta": {
+        "authors": ["gabox"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2025-10-18T01:51:23.000Z",
+        "output": ["vocals"],
+        "status": "beta",
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/vocfv7beta1.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_gabox.yaml"
+            }
+        ],
+        "model_size": 913091027
+    },
+    "bs_roformer-anvuew-karaoke": {
+        "authors": ["anvuew"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "created_at": "2025-10-17T07:36:23.000Z",
+        "output": ["lead_vocals"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/anvuew/karaoke_bs_roformer/resolve/main/karaoke_bs_roformer_anvuew.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/anvuew/karaoke_bs_roformer/resolve/main/karaoke_bs_roformer_anvuew.yaml"
+            }
+        ],
+        "model_size": 204486925
+    },
+    "mel_roformer-gabox-inst_fv4": {
+        "authors": ["gabox"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2025-10-05T18:40:31.000Z",
+        "output": ["instrum"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_Fv4.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gabox.yaml"
+            }
+        ],
+        "model_size": 913091027
+    },
+    "mel_roformer-neoculture-inst_vfx": {
+        "authors": ["neoculture"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2025-10-05T09:14:38.000Z",
+        "output": ["instrum"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/natanworkspace/melband_roformer/resolve/main/Neo_InstVFX.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/natanworkspace/melband_roformer/resolve/main/config_neo_inst.yaml"
+            }
+        ],
+        "model_size": 913090472
+    },
+    "bs_roformer-anvuew-dereverb_room_mono": {
+        "authors": ["anvuew"],
+        "purpose": "dereverb",
+        "architecture": "bs_roformer",
+        "created_at": "2025-09-10T03:15:05.000Z",
+        "output": ["dry"],
+        "metrics": [
+            {
+                "values": { "dry": {"sdr": 13.7432} }
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/anvuew/dereverb_room/resolve/main/dereverb_room_anvuew_sdr_13.7432.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/anvuew/dereverb_room/resolve/main/dereverb_room_anvuew.yaml"
+            }
+        ],
+        "model_size": 118128452
+    },
+    "bs_roformer-unwa-inst_fno": {
+        "authors": ["unwa"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "created_at": "2025-08-21T13:29:45.000Z",
+        "output": ["instrum"],
+        "metrics": [
+            {
+                "values": { "instrum": {"bleedless": 42.87, "fullness": 32.03, "sdr": 17.6} }
+            }
+        ],
+        "description": [
+            {
+                "content": [
+                    "Replaced the MLP of the BS-Roformer mask estimator with FNO1d (Fourier Neural Operator).",
+                    "Based on Resurrection Inst weights.",
+                    "Provides a very small amount of noise while keeping high fullness."
+                ],
+                "author": "unwa"
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-Inst-FNO/resolve/main/bs_roformer_fno.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-Inst-FNO/resolve/main/bsrofo_fno.yaml"
+            }
+        ],
+        "model_size": 332004435
+    },
     "mel_roformer-mesk-rifforge_beta": {
         "authors": ["mesk"],
         "purpose": "separation",
@@ -21,60 +380,55 @@
         ],
         "resources": [
             {
-                "kind": "config_msst",
-                "url": "https://huggingface.co/meskvlla33/rifforge_beta_v1/blob/main/config_rifforge_mesk.yaml"
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/meskvlla33/rifforge_beta_v1/resolve/main/rifforge_mesk_beta_v1_sdr_14.0127.ckpt"
             },
-            {"kind": "other", "url": "https://drive.proton.me/urls/5XM3PR1M7G#F3UhCU8RDGhX"},
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/meskvlla33/rifforge_beta_v1/resolve/main/config_rifforge_mesk.yaml"
+            },
             {
                 "kind": "other",
                 "url": "https://discord.com/channels/708579735583588363/708580573697933382/1405719212592464003"
             }
-        ]
+        ],
+        "model_size": 913108043
     },
-    "mel_roformer-aufr33-denoise_average": {
-        "authors": ["aufr33"],
-        "purpose": "crowd_removal",
+    "mel_roformer-gabox-voc_fv6": {
+        "authors": ["gabox"],
+        "purpose": "separation",
         "architecture": "mel_roformer",
-        "output": ["clean"],
+        "created_at": "2025-08-07T09:45:17.000Z",
+        "output": ["vocals"],
+        "metrics": [
+            {
+                "values": { "vocals": {"bleedless": 26.61, "fullness": 24.93, "sdr": 10.64} }
+            }
+        ],
         "description": [
-            { "content": ["can be also used for crowd removal"], "author": "gabox" }
+            {
+                "content": [
+                    "sounds like b5e with vocal enhancer.",
+                    "needs more training, some instruments are confused as vocals"
+                ],
+                "author": "gabox"
+            },
+            {
+                "content": ["fv6 = fv4 but with better background vocal capture"],
+                "author": "neoculture"
+            }
         ],
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://mega.nz/file/vM4mHTYQ#f_uCxxS_olfTR4iAsOc-XS6sfUecfbF-ZKXrk3IjbnY"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_fv6.ckpt"
             },
             {
                 "kind": "config_msst",
-                "url": "https://drive.google.com/file/d/1uwInhwgjOMIdOMTgj_oNR_dmaq7E-b3g/view?usp=sharing"
-            }
-        ]
-    },
-    "bs_roformer-zfturbo-mvsep_violin": {
-        "authors": ["zfturbo"],
-        "purpose": "separation",
-        "architecture": "bs_roformer",
-        "output": ["violin"],
-        "metrics": [
-            {
-                "values": { "violin": {"sdr": 7.29} },
-                "source": "internal validation by author"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_gabox.yaml"
             }
         ],
-        "description": [
-            {
-                "content": ["can even separate violin quartets from cellos"],
-                "author": "smilewasfound"
-            },
-            {
-                "content": [
-                    "does seem to pick up more than just violins imo",
-                    "for separating high strings in particular it is really cool"
-                ],
-                "author": "musicalman"
-            }
-        ],
-        "resources": [ {"kind": "mvsep", "url": "https://mvsep.com/home?sep_type=65"} ]
+        "model_size": 913031195
     },
     "bs_roformer-unwa-resurrection_instrumental": {
         "authors": ["unwa"],
@@ -135,38 +489,35 @@
         ],
         "model_size": 204483033
     },
-    "mel_roformer-gabox-voc_fv6": {
+    "mel_roformer-gabox-lead_vocal_dereverb": {
         "authors": ["gabox"],
-        "purpose": "separation",
+        "purpose": "dereverb",
         "architecture": "mel_roformer",
-        "created_at": "2025-08-07T09:45:17.000Z",
-        "output": ["vocals"],
-        "metrics": [
-            {
-                "values": { "vocals": {"bleedless": 26.61, "fullness": 24.93, "sdr": 10.64} }
-            }
-        ],
+        "created_at": "2025-07-31T06:23:28.000Z",
+        "output": ["vocals_dry"],
         "description": [
+            { "content": ["just use it on the mixture"], "author": "gabox" },
+            { "content": ["sounds great"], "author": "rage313" },
             {
                 "content": [
-                    "sounds like b5e with vocal enhancer.",
-                    "needs more training, some instruments are confused as vocals"
-                ],
-                "author": "gabox"
+                    "sometimes removes back vocals especially if they're panned to the sides."
+                ]
             },
             {
-                "content": ["fv6 = fv4 but with better background vocal capture"],
-                "author": "neoculture"
+                "content": [
+                    "also a vocal/inst seperator. dry vocals go in vocal stem, everything else goes to reverb."
+                ],
+                "author": "musicalman"
             }
         ],
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/blob/main/melbandroformers/vocals/voc_fv6.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/Lead_VocalDereverb.ckpt"
             },
             {
                 "kind": "config_msst",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_gabox.yaml"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/karaoke/karaokegabox_1750911344.yaml"
             }
         ],
         "model_size": 913031195
@@ -196,47 +547,14 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/blob/main/melbandroformers/experimental/Karaoke_GaboxV2.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/Karaoke_GaboxV2.ckpt"
             },
             {
                 "kind": "config_msst",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/blob/main/melbandroformers/karaoke/karaokegabox_1750911344.yaml"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/karaoke/karaokegabox_1750911344.yaml"
             }
         ],
         "model_size": 913090472
-    },
-    "mel_roformer-gabox-lead_vocal_de-reverb": {
-        "authors": ["gabox"],
-        "purpose": "de-reverb",
-        "architecture": "mel_roformer",
-        "created_at": "2025-07-31T06:23:28.000Z",
-        "output": ["vocals_dry"],
-        "description": [
-            { "content": ["just use it on the mixture"], "author": "gabox" },
-            { "content": ["sounds great"], "author": "rage313" },
-            {
-                "content": [
-                    "sometimes removes back vocals especially if they're panned to the sides."
-                ]
-            },
-            {
-                "content": [
-                    "also a vocal/inst seperator. dry vocals go in vocal stem, everything else goes to reverb."
-                ],
-                "author": "musicalman"
-            }
-        ],
-        "resources": [
-            {
-                "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/blob/main/melbandroformers/experimental/Lead_VocalDereverb.ckpt"
-            },
-            {
-                "kind": "config_msst",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/blob/main/melbandroformers/karaoke/karaokegabox_1750911344.yaml"
-            }
-        ],
-        "model_size": 913031195
     },
     "mel_roformer-gabox-voc_gabox2": {
         "authors": ["gabox"],
@@ -297,146 +615,23 @@
         ],
         "model_size": 204510749
     },
-    "mel_roformer-gabox-instv7_beta3": {
-        "authors": ["gabox"],
+    "mdx23c-jarredou-drumsep_5stem": {
+        "authors": ["jarredou"],
         "purpose": "separation",
-        "architecture": "mel_roformer",
-        "created_at": "2025-02-27T06:17:17.000Z",
-        "output": ["instrum"],
-        "status": "beta",
-        "description": [
-            {
-                "content": [
-                    "noisy with small vocal residuals in places where music is low and deletions of some musical instruments."
-                ]
-            }
-        ],
+        "architecture": "mdx23c",
+        "created_at": "2025-06-24T04:37:49Z",
+        "output": ["kick", "snare", "toms", "hh", "cymbals"],
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/instv7beta3.ckpt"
-            }
-        ],
-        "model_size": 913026650
-    },
-    "mel_roformer-gabox-instv7_beta2": {
-        "authors": ["gabox"],
-        "purpose": "separation",
-        "architecture": "mel_roformer",
-        "output": ["instrum"],
-        "status": "beta",
-        "metrics": [
-            {
-                "values": { "instrum": {"bleedless": 34.66, "fullness": 38.96} }
-            }
-        ],
-        "description": [
-            {
-                "content": [
-                    "noisy with small vocal residuals in places where music is low and deletions of some musical instruments."
-                ]
-            }
-        ],
-        "resources": [ {"kind": "model_ckpt", "url": "https://gofile.io/d/aiZiEl"} ]
-    },
-    "mel_roformer-gabox-instv7_beta": {
-        "authors": ["gabox"],
-        "purpose": "separation",
-        "architecture": "mel_roformer",
-        "created_at": "2025-02-26T21:06:06.000Z",
-        "output": ["instrum"],
-        "status": "beta",
-        "metrics": [
-            {
-                "values": { "instrum": {"bleedless": 35.01, "fullness": 38.39} }
-            }
-        ],
-        "description": [
-            {
-                "content": [
-                    "sound is good, but sometimes some instruments are lowered or deleted",
-                    "while the annoying buzzing/noise is still present, it seems to be more contained."
-                ]
-            }
-        ],
-        "resources": [
-            {
-                "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/instv7beta.ckpt"
+                "url": "https://github.com/jarredou/models/releases/download/DrumSep/drumsep_5stems_mdx23c_jarredou.ckpt"
             },
             {
                 "kind": "config_msst",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gabox.yaml"
+                "url": "https://github.com/jarredou/models/releases/download/DrumSep/config_mdx23c.yaml"
             }
         ],
-        "model_size": 913026650
-    },
-    "mel_roformer-gabox-inst_v10_experimental": {
-        "authors": ["gabox"],
-        "purpose": "separation",
-        "architecture": "mel_roformer",
-        "output": ["instrum"],
-        "status": "alpha",
-        "description": [
-            {
-                "content": [
-                    "less full than v7, but have less vocal residues.",
-                    "results from v8 and v10 are the same",
-                    "both remove some instruments from the music, like v7.",
-                    "as for noise, however, they are less noisy"
-                ]
-            }
-        ],
-        "resources": [
-            {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/tree/main/melbandroformers/experimental"
-            }
-        ]
-    },
-    "mel_roformer-gabox-fullness_v2": {
-        "authors": ["gabox"],
-        "purpose": "separation",
-        "architecture": "mel_roformer",
-        "output": ["instrum"],
-        "resources": [
-            {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/tree/main/melbandroformers"
-            }
-        ]
-    },
-    "mel_roformer-gabox-fullness_v1": {
-        "authors": ["gabox"],
-        "purpose": "separation",
-        "architecture": "mel_roformer",
-        "output": ["instrum"],
-        "metrics": [
-            {
-                "values": { "instrum": {"bleedless": 37.19, "fullness": 37.26} }
-            }
-        ],
-        "description": [
-            { "content": ["noisier but fuller"] }
-        ],
-        "resources": [
-            {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/tree/main/melbandroformers"
-            }
-        ]
-    },
-    "mel_roformer-gabox-voc_fv1": {
-        "authors": ["gabox"],
-        "purpose": "separation",
-        "architecture": "mel_roformer",
-        "output": ["vocals"],
-        "resources": [
-            {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/tree/main/melbandroformers/vocals"
-            }
-        ]
+        "model_size": 437648758
     },
     "mel_roformer-gabox-inst_gaboxfv7z": {
         "authors": ["gabox"],
@@ -459,7 +654,7 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/blob/main/melbandroformers/instrumental/Inst_GaboxFv7z.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/Inst_GaboxFv7z.ckpt"
             },
             {
                 "kind": "config_msst",
@@ -467,6 +662,24 @@
             }
         ],
         "model_size": 913031195
+    },
+    "mel_roformer-unwa-bleed_suppressor_v1": {
+        "authors": ["unwa", "97chris"],
+        "purpose": "debleed",
+        "architecture": "mel_roformer",
+        "created_at": "2025-06-03T17:54:14.000Z",
+        "output": ["instrum"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/jarredou/bleed_suppressor_melband_rofo_by_unwa_97chris/resolve/main/bleed_suppressor_v1.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/jarredou/bleed_suppressor_melband_rofo_by_unwa_97chris/resolve/main/config_bleed_suppressor_v1.yaml"
+            }
+        ],
+        "model_size": 913102724
     },
     "mel_roformer-gabox-inst_fv8b": {
         "authors": ["gabox"],
@@ -485,30 +698,37 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/blob/main/melbandroformers/experimental/Inst_FV8b.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/Inst_FV8b.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gabox.yaml"
             }
         ],
         "model_size": 913027055
     },
-    "mel_roformer-gabox-instv7plus": {
-        "authors": ["gabox"],
+    "htdemucs-wesleyr36-phantom_center": {
+        "authors": ["wesleyr36"],
         "purpose": "separation",
-        "architecture": "mel_roformer",
-        "created_at": "2025-05-31T06:03:10.000Z",
-        "output": ["instrum"],
-        "status": "alpha",
+        "architecture": "htdemucs",
+        "created_at": "2025-06-01T20:51:18.000Z",
+        "output": ["similarity", "difference"],
         "metrics": [
             {
-                "values": { "instrum": {"fullness": 29.83, "bleedless": 39.36, "sdr": 16.51} }
+                "values": { "center": {"sdr": 13.697} }
             }
         ],
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/instv7plus.ckpt"
+                "url": "https://huggingface.co/jarredou/HTDemucs_Similarity_Extractor_by_wesleyr36/resolve/main/model_htdemucs_ep_21_sdr_13.6970.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/jarredou/HTDemucs_Similarity_Extractor_by_wesleyr36/resolve/main/config_htdemucs_similarity.yaml"
             }
         ],
-        "model_size": 913031195
+        "model_size": 168122809
     },
     "bs_roformer-unwa-revive3e": {
         "authors": ["unwa", "aufr33"],
@@ -534,7 +754,7 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/BS-Roformer-Revive/blob/main/bs_roformer_revive3e.ckpt"
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/main/bs_roformer_revive3e.ckpt"
             },
             {
                 "kind": "config_msst",
@@ -543,80 +763,29 @@
         ],
         "model_size": 639326600
     },
-    "mel_roformer-becruily-guitar": {
-        "authors": ["becruily"],
+    "mel_roformer-gabox-instv7plus": {
+        "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "created_at": "2025-05-20T14:26:23.000Z",
-        "output": ["guitar"],
-        "description": [
+        "created_at": "2025-05-31T06:03:10.000Z",
+        "output": ["instrum"],
+        "status": "alpha",
+        "metrics": [
             {
-                "content": [
-                    "not sota, but much more efficient and comparable to existing guitar models",
-                    "for some songs it might work better because it picks up more guitars (though it can also pick some other instruments).",
-                    "for better results you might try first removing vocals."
-                ]
+                "values": { "instrum": {"fullness": 29.83, "bleedless": 39.36, "sdr": 16.51} }
             }
         ],
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/becruily/mel-band-roformer-guitar/resolve/main/becruily_guitar.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/instv7plus.ckpt"
             },
             {
                 "kind": "config_msst",
-                "url": "https://huggingface.co/becruily/mel-band-roformer-guitar/resolve/main/config_guitar_becruily.yaml"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gabox.yaml"
             }
         ],
-        "model_size": 45142183
-    },
-    "bs_roformer-unwa-revive2": {
-        "authors": ["unwa"],
-        "purpose": "separation",
-        "architecture": "bs_roformer",
-        "output": ["vocals"],
-        "metrics": [
-            {
-                "values": { "vocals": {"bleedless": 40.07, "fullness": 15.13, "sdr": 10.97} }
-            }
-        ],
-        "description": [
-            { "content": ["has a bleedless score that surpasses the ft2 bleedless"] },
-            { "content": ["can keep the string well"], "author": "daylight" },
-            { "content": ["it does capture more than viperx's"], "author": "mesk" }
-        ],
-        "resources": [
-            {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/pcunwa/BS-Roformer-Revive/tree/main"
-            }
-        ]
-    },
-    "bs_roformer-unwa-revive": {
-        "authors": ["unwa"],
-        "purpose": "separation",
-        "architecture": "bs_roformer",
-        "output": ["vocals"],
-        "metrics": [
-            {
-                "values": { "vocals": {"bleedless": 38.8, "fullness": 15.48, "sdr": 11.03} }
-            }
-        ],
-        "description": [
-            {
-                "content": [
-                    "less instrument bleed in vocal track compared to bs 1296/1297",
-                    "works great as a phase fixer reference to remove mel roformer inst models noise"
-                ],
-                "author": "dca100fb8"
-            }
-        ],
-        "resources": [
-            {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/pcunwa/BS-Roformer-Revive/tree/main"
-            }
-        ]
+        "model_size": 913031195
     },
     "mel_roformer-gabox-inst_gaboxfv8": {
         "authors": ["gabox"],
@@ -655,6 +824,93 @@
             }
         ],
         "model_size": 913026650
+    },
+    "mel_roformer-becruily-guitar": {
+        "authors": ["becruily"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2025-05-20T14:26:23.000Z",
+        "output": ["guitar"],
+        "description": [
+            {
+                "content": [
+                    "not sota, but much more efficient and comparable to existing guitar models",
+                    "for some songs it might work better because it picks up more guitars (though it can also pick some other instruments).",
+                    "for better results you might try first removing vocals."
+                ]
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/becruily/mel-band-roformer-guitar/resolve/main/becruily_guitar.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/becruily/mel-band-roformer-guitar/resolve/main/config_guitar_becruily.yaml"
+            }
+        ],
+        "model_size": 45142183
+    },
+    "bs_roformer-unwa-revive2": {
+        "authors": ["unwa"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "created_at": "2025-05-12T22:51:13.000Z",
+        "output": ["vocals"],
+        "metrics": [
+            {
+                "values": { "vocals": {"bleedless": 40.07, "fullness": 15.13, "sdr": 10.97} }
+            }
+        ],
+        "description": [
+            { "content": ["has a bleedless score that surpasses the ft2 bleedless"] },
+            { "content": ["can keep the string well"], "author": "daylight" },
+            { "content": ["it does capture more than viperx's"], "author": "mesk" }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/main/bs_roformer_revive2.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/main/config.yaml"
+            }
+        ],
+        "model_size": 639326600
+    },
+    "bs_roformer-unwa-revive": {
+        "authors": ["unwa"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "created_at": "2025-05-11T11:16:21.000Z",
+        "output": ["vocals"],
+        "metrics": [
+            {
+                "values": { "vocals": {"bleedless": 38.8, "fullness": 15.48, "sdr": 11.03} }
+            }
+        ],
+        "description": [
+            {
+                "content": [
+                    "less instrument bleed in vocal track compared to bs 1296/1297",
+                    "works great as a phase fixer reference to remove mel roformer inst models noise"
+                ],
+                "author": "dca100fb8"
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/main/bs_roformer_revive.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/main/config.yaml"
+            }
+        ],
+        "model_size": 639326600
     },
     "mel_roformer-gabox-voc_fv5": {
         "authors": ["gabox"],
@@ -695,6 +951,42 @@
             }
         ],
         "model_size": 913026650
+    },
+    "mel_roformer-becruily-karaoke": {
+        "authors": ["becruily"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2025-04-15T12:38:16.000Z",
+        "output": ["lead_vocals"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/becruily/mel-band-roformer-karaoke/resolve/main/mel_band_roformer_karaoke_becruily.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/becruily/mel-band-roformer-karaoke/resolve/main/config_karaoke_becruily.yaml"
+            }
+        ],
+        "model_size": 1719139254
+    },
+    "mel_roformer-amane-4_stems_large": {
+        "authors": ["amane"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2025-04-12T21:16:30.000Z",
+        "output": ["drums", "bass", "other", "vocals"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/Aname-Tommy/melbandroformer4stems/resolve/main/mel_band_roformer_4stems_large_ver1.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/Aname-Tommy/melbandroformer4stems/resolve/main/config_large.yaml"
+            }
+        ],
+        "model_size": 3764030874
     },
     "mel_roformer-unwa-v1e_plus": {
         "authors": ["unwa"],
@@ -745,6 +1037,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "created_at": "2025-04-03T16:08:45.000Z",
         "output": ["instrum"],
         "metrics": [
             {
@@ -775,15 +1068,21 @@
         ],
         "resources": [
             {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-Inst/tree/main"
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-Inst/resolve/main/inst_v1_plus_test.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-Inst/resolve/main/config_melbandroformer_inst.yaml"
             }
-        ]
+        ],
+        "model_size": 913090472
     },
     "mel_roformer-mesk-metal_preview": {
         "authors": ["mesk"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "created_at": "2025-04-01T10:51:46.000Z",
         "output": ["instrum"],
         "status": "beta",
         "metrics": [
@@ -804,10 +1103,15 @@
         ],
         "resources": [
             {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/meskvlla33/metal_roformer_preview/tree/main"
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/meskvlla33/metal_roformer_preview/resolve/main/metal_roformer_inst_mesk_preview.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/meskvlla33/metal_roformer_preview/resolve/main/config_inst_metal_roformer_mesk.yaml"
             }
-        ]
+        ],
+        "model_size": 944683368
     },
     "mel_roformer-unwa-big_beta6x": {
         "authors": ["unwa"],
@@ -881,7 +1185,7 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/Kim-Mel-Band-Roformer-FT/blob/main/kimmel_unwa_ft3_prev.ckpt"
+                "url": "https://huggingface.co/pcunwa/Kim-Mel-Band-Roformer-FT/resolve/main/kimmel_unwa_ft3_prev.ckpt"
             },
             {
                 "kind": "config_msst",
@@ -889,6 +1193,35 @@
             }
         ],
         "model_size": 913090472
+    },
+    "mel_roformer-gabox-instv10_experimental": {
+        "authors": ["gabox"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2025-03-05T04:24:52.000Z",
+        "output": ["instrum"],
+        "status": "alpha",
+        "description": [
+            {
+                "content": [
+                    "less full than v7, but have less vocal residues.",
+                    "results from v8 and v10 are the same",
+                    "both remove some instruments from the music, like v7.",
+                    "as for noise, however, they are less noisy"
+                ]
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/INSTV10.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gabox.yaml"
+            }
+        ],
+        "model_size": 913026650
     },
     "mel_roformer-gabox-inst_gaboxbv3": {
         "authors": ["gabox"],
@@ -907,7 +1240,47 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/blob/main/melbandroformers/instrumental/inst_gaboxBv3.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gaboxBv3.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gabox.yaml"
+            }
+        ],
+        "model_size": 913026650
+    },
+    "mel_roformer-gabox-inst_fvx": {
+        "authors": ["gabox"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2025-02-28T07:13:33.000Z",
+        "output": ["instrum"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/Inst_GaboxFVX.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gabox.yaml"
+            }
+        ],
+        "model_size": 913026650
+    },
+    "mel_roformer-gabox-inst_v7n": {
+        "authors": ["gabox"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2025-02-28T03:06:18.000Z",
+        "output": ["instrum"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/INSTV7N.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gabox.yaml"
             }
         ],
         "model_size": 913026650
@@ -925,6 +1298,10 @@
             {
                 "kind": "model_ckpt",
                 "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/Inst_GaboxV7.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gabox.yaml"
             }
         ],
         "model_size": 913026650
@@ -948,6 +1325,99 @@
             {
                 "kind": "model_ckpt",
                 "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/kar_gabox.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/karaoke/karaokegabox_1750911344.yaml"
+            }
+        ],
+        "model_size": 913026650
+    },
+    "mel_roformer-gabox-instv7_beta3": {
+        "authors": ["gabox"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2025-02-27T06:17:17.000Z",
+        "output": ["instrum"],
+        "status": "beta",
+        "description": [
+            {
+                "content": [
+                    "noisy with small vocal residuals in places where music is low and deletions of some musical instruments."
+                ]
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/instv7beta3.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gabox.yaml"
+            }
+        ],
+        "model_size": 913026650
+    },
+    "mel_roformer-gabox-instv7_beta2": {
+        "authors": ["gabox"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2025-02-27T06:17:17.000Z",
+        "output": ["instrum"],
+        "status": "beta",
+        "metrics": [
+            {
+                "values": { "instrum": {"bleedless": 34.66, "fullness": 38.96} }
+            }
+        ],
+        "description": [
+            {
+                "content": [
+                    "noisy with small vocal residuals in places where music is low and deletions of some musical instruments."
+                ]
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/instv7beta2.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gabox.yaml"
+            }
+        ],
+        "model_size": 913026650
+    },
+    "mel_roformer-gabox-instv7_beta": {
+        "authors": ["gabox"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2025-02-26T21:06:06.000Z",
+        "output": ["instrum"],
+        "status": "beta",
+        "metrics": [
+            {
+                "values": { "instrum": {"bleedless": 35.01, "fullness": 38.39} }
+            }
+        ],
+        "description": [
+            {
+                "content": [
+                    "sound is good, but sometimes some instruments are lowered or deleted",
+                    "while the annoying buzzing/noise is still present, it seems to be more contained."
+                ]
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/instv7beta.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gabox.yaml"
             }
         ],
         "model_size": 913026650
@@ -974,11 +1444,11 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/Aname-Tommy/MelBandRoformers/blob/main/FullnessVocalModel.ckpt"
+                "url": "https://huggingface.co/Aname-Tommy/MelBandRoformers/resolve/main/FullnessVocalModel.ckpt"
             },
             {
                 "kind": "config_msst",
-                "url": "https://huggingface.co/Aname-Tommy/MelBandRoformers/blob/main/config.yaml"
+                "url": "https://huggingface.co/Aname-Tommy/MelBandRoformers/resolve/main/config.yaml"
             }
         ],
         "model_size": 913090472
@@ -1003,7 +1473,7 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/blob/main/melbandroformers/vocals/voc_fv4.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_fv4.ckpt"
             },
             {
                 "kind": "config_msst",
@@ -1037,7 +1507,7 @@
             },
             {
                 "kind": "config_msst",
-                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/blob/main/big_beta6.yaml"
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/resolve/main/big_beta6.yaml"
             }
         ],
         "model_size": 1557078584
@@ -1100,18 +1570,6 @@
         ],
         "model_size": 913026650
     },
-    "mel_roformer-amane-small": {
-        "authors": ["amane"],
-        "purpose": "separation",
-        "architecture": "mel_roformer",
-        "output": ["vocals"],
-        "resources": [
-            {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/Aname-Tommy/Mel_Band_Roformer_small/tree/main"
-            }
-        ]
-    },
     "mel_roformer-gabox-instv5n": {
         "authors": ["gabox"],
         "purpose": "separation",
@@ -1130,6 +1588,24 @@
             }
         ],
         "model_size": 913026650
+    },
+    "mel_roformer-amane-small": {
+        "authors": ["amane"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2025-02-11T23:55:13.000Z",
+        "output": ["vocals"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/Aname-Tommy/Mel_Band_Roformer_small/resolve/main/mel_band_roformer_small.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/Aname-Tommy/Mel_Band_Roformer_small/resolve/main/config.yaml"
+            }
+        ],
+        "model_size": 202573672
     },
     "mel_roformer-gabox-voc_fv3": {
         "authors": ["gabox"],
@@ -1153,6 +1629,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "created_at": "2025-02-08T02:41:37.000Z",
         "output": ["instrum"],
         "description": [
             {
@@ -1164,15 +1641,38 @@
         ],
         "resources": [
             {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/tree/main/melbandroformers/instrumental"
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/INSTV6.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gabox.yaml"
             }
-        ]
+        ],
+        "model_size": 913026650
     },
-    "bs_roformer-anvuew-dereverb_mono": {
+    "mel_roformer-gabox-inst_v3": {
+        "authors": ["gabox"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2025-02-08T02:32:10.000Z",
+        "output": ["instrum"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gabox3.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gabox.yaml"
+            }
+        ],
+        "model_size": 913026650
+    },
+    "mel_roformer-anvuew-dereverb_mono": {
         "authors": ["anvuew"],
-        "purpose": "de-reverb",
-        "architecture": "bs_roformer",
+        "purpose": "dereverb",
+        "architecture": "mel_roformer",
         "created_at": "2025-02-07T11:18:22.000Z",
         "output": ["dry"],
         "metrics": [
@@ -1191,7 +1691,11 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/anvuew/dereverb_mel_band_roformer/blob/main/dereverb_mel_band_roformer_mono_anvuew_sdr_20.4029.ckpt"
+                "url": "https://huggingface.co/anvuew/dereverb_mel_band_roformer/resolve/main/dereverb_mel_band_roformer_mono_anvuew_sdr_20.4029.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/anvuew/dereverb_mel_band_roformer/resolve/main/dereverb_mel_band_roformer_anvuew.yaml"
             }
         ],
         "model_size": 913097978
@@ -1223,7 +1727,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "created_at": "2024-12-27T13:41:55.000Z",
+        "created_at": "2025-01-27T22:07:13.000Z",
         "output": ["instrum"],
         "metrics": [
             {
@@ -1241,45 +1745,33 @@
         ],
         "resources": [
             {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/tree/main/melbandroformers/instrumental"
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/INSTV5.ckpt"
             },
             {
                 "kind": "config_msst",
-                "url": "https://huggingface.co/becruily/mel-band-roformer-instrumental/resolve/main/config_instrumental_becruily.yaml"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gabox.yaml"
             }
-        ]
+        ],
+        "model_size": 913026650
     },
     "mel_roformer-syh99999-syhftb1": {
         "authors": ["SYH99999"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "created_at": "2025-01-27T06:51:46.000Z",
         "output": ["vocals"],
         "resources": [
             {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/SYH99999/MelBandRoformerSYHFTB1/tree/main"
-            }
-        ]
-    },
-    "bs_roformer-gabox-instrumental": {
-        "authors": ["gabox"],
-        "purpose": "separation",
-        "architecture": "bs_roformer",
-        "output": ["instrum"],
-        "description": [
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/SYH99999/MelBandRoformerSYHFTB1/resolve/main/model3.ckpt"
+            },
             {
-                "content": [
-                    "doesn't struggle so much with choirs like most mel-roformers, although may not help in all cases"
-                ]
+                "kind": "config_msst",
+                "url": "https://huggingface.co/SYH99999/MelBandRoformerSYHFTB1/resolve/main/config.yaml"
             }
         ],
-        "resources": [
-            {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/GaboxR67/BSRoformerVocTest/tree/main"
-            }
-        ]
+        "model_size": 913106158
     },
     "mel_roformer-gabox-inst_gaboxfv3": {
         "authors": ["gabox"],
@@ -1304,68 +1796,79 @@
             {
                 "kind": "model_ckpt",
                 "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gaboxFv3.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gabox.yaml"
             }
         ],
         "model_size": 913026650
     },
-    "bs_roformer-yukunelatyh-4_stems": {
-        "authors": ["yukunelatyh", "SYH99999"],
-        "purpose": "separation",
-        "architecture": "bs_roformer",
-        "output": ["vocals", "drums", "bass", "other"],
-        "description": [
-            {
-                "content": [
-                    "it's like demucs v4 but worse i think",
-                    "the vocals have a ton of bleed, the bass is disappointing tbh",
-                    "the other stem has a ton of bgv and adlib bleed in it"
-                ],
-                "author": "isling"
-            }
-        ],
-        "resources": [ {"kind": "other", "url": "https://uvronline.app/ai?discordtest"} ]
-    },
-    "bs_roformer-amane-4_stems": {
-        "authors": ["shintaro"],
-        "purpose": "separation",
-        "architecture": "bs_roformer",
-        "output": ["vocals", "drums", "bass", "other"],
-        "resources": [
-            {
-                "kind": "model_ckpt",
-                "url": "https://mega.nz/file/GwY1TQoB#UmeMGO2BBtgrUXkmXXQQVXqwR_hwxaAmkycDr-fitWg"
-            },
-            {
-                "kind": "config_msst",
-                "url": "https://mega.nz/file/Pwp32DrY#Kyl5sK3j6l5kXCe7Br52gN2CXn9c8N6lzOYT1g0FOS0"
-            }
-        ]
-    },
-    "mel_roformer-gabox-instrumental": {
+    "bs_roformer-gabox-instrumental": {
         "authors": ["gabox"],
         "purpose": "separation",
-        "architecture": "mel_roformer",
+        "architecture": "bs_roformer",
+        "created_at": "2025-01-23T07:19:56.000Z",
         "output": ["instrum"],
-        "metrics": [
-            {
-                "values": { "instrum": {"bleedless": 37.4, "fullness": 37.07} }
-            }
-        ],
         "description": [
             {
                 "content": [
-                    "it's like the v1 model with phase fixer, but it gets more instruments,",
-                    "like, it prevents some instruments getting into the vocals",
-                    "sometimes both models don't get choirs"
+                    "doesn't struggle so much with choirs like most mel-roformers, although may not help in all cases"
                 ]
             }
         ],
         "resources": [
             {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/tree/main/melbandroformers"
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/GaboxR67/BSRoformerVocTest/resolve/main/voc_gaboxBSR.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/BSRoformerVocTest/resolve/main/voc_gaboxBSroformer.yaml"
             }
-        ]
+        ],
+        "model_size": 639254584
+    },
+    "mel_roformer-gabox-voc_fv1": {
+        "authors": ["gabox"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2025-01-22T03:14:32.000Z",
+        "output": ["vocals"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_gaboxFv1.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_gabox.yaml"
+            }
+        ],
+        "model_size": 913026650
+    },
+    "mel_roformer-gabox-voc_fv2": {
+        "authors": ["gabox"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2025-01-22T03:14:32.000Z",
+        "output": ["vocals"],
+        "metrics": [
+            {
+                "values": { "vocals": {"bleedless": 33.4013, "fullness": 19.3064} }
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_gaboxFv2.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_gabox.yaml"
+            }
+        ],
+        "model_size": 913026650
     },
     "mel_roformer-gabox-voc_gabox": {
         "authors": ["gabox"],
@@ -1381,7 +1884,7 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/tree/main/melbandroformers/vocals/voc_gabox.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_gabox.ckpt"
             },
             {
                 "kind": "config_msst",
@@ -1390,30 +1893,18 @@
         ],
         "model_size": 913026650
     },
-    "mel_roformer-gabox-voc_fv2": {
-        "authors": ["gabox"],
-        "purpose": "separation",
-        "architecture": "mel_roformer",
-        "output": ["vocals"],
-        "metrics": [
-            {
-                "values": { "vocals": {"bleedless": 33.4013, "fullness": 19.3064} }
-            }
-        ],
-        "resources": [
-            {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/tree/main/melbandroformers/vocals"
-            }
-        ]
-    },
     "bs_roformer-aufr33-male_female_beta": {
         "authors": ["aufr33"],
         "purpose": "separation",
         "architecture": "bs_roformer",
-        "created_at": "2024-12-07T09:12:45.000Z",
+        "created_at": "2025-01-08T23:24:27.000Z",
         "output": ["male"],
         "status": "beta",
+        "metrics": [
+            {
+                "values": { "male": {"sdr": 7.2889} }
+            }
+        ],
         "description": [
             {
                 "content": [
@@ -1424,18 +1915,20 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://mega.nz/file/XZwV2QwB#5nvWpmvtoBMTJkpor-lMUZCbBZWDH-3i52ELJS_JmcU"
+                "url": "https://huggingface.co/RareSirMix/AIModelRehosting/resolve/main/bs_roformer_male_female_by_aufr33_sdr_7.2889.ckpt"
             },
             {
                 "kind": "config_msst",
-                "url": "https://huggingface.co/Sucial/Chorus_Male_Female_BS_Roformer/blob/main/config_chorus_male_female_bs_roformer.yaml"
+                "url": "https://huggingface.co/Sucial/Chorus_Male_Female_BS_Roformer/resolve/main/config_chorus_male_female_bs_roformer.yaml"
             }
-        ]
+        ],
+        "model_size": 527119779
     },
     "mel_roformer-unwa-kim_ft2": {
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "created_at": "2025-01-01T12:11:45.000Z",
         "output": ["vocals"],
         "metrics": [ {"source": "https://mvsep.com/quality_checker/entry/7714"} ],
         "description": [
@@ -1447,63 +1940,15 @@
         ],
         "resources": [
             {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/pcunwa/Kim-Mel-Band-Roformer-FT/tree/main"
-            }
-        ]
-    },
-    "bs_roformer-unwa-inst_exp_value_residual": {
-        "authors": ["unwa"],
-        "purpose": "separation",
-        "architecture": "bs_roformer",
-        "output": ["instrum"],
-        "status": "alpha",
-        "description": [
-            {
-                "content": [
-                    "it's using a new value residual learning added to roformer arch by lucidrains in the og roformer."
-                ]
-            },
-            {
-                "content": [
-                    "i think it sounds better than large rn but still not good, needs some [more] epoch[s]!"
-                ]
-            }
-        ],
-        "resources": [
-            {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/pcunwa/BS-Roformer-Inst-EXP-Value-Residual"
-            }
-        ]
-    },
-    "mel_roformer-sucial-dereverb_echo_fused": {
-        "authors": ["sucial"],
-        "purpose": "de-reverb",
-        "architecture": "mel_roformer",
-        "created_at": "2024-12-27T08:28:02.000Z",
-        "output": ["dry"],
-        "description": [
-            {
-                "content": [
-                    "trained two new models specifically targeting large reverb removal.",
-                    "after training, i combined these two models with my v2 model through a blending process, to better handle all scenarios.",
-                    "more effective in removing large reverb."
-                ],
-                "author": "sucial"
-            }
-        ],
-        "resources": [
-            {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/Sucial/Dereverb-Echo_Mel_Band_Roformer/blob/main/dereverb_echo_mbr_fused_0.5_v2_0.25_big_0.25_super.ckpt"
+                "url": "https://huggingface.co/pcunwa/Kim-Mel-Band-Roformer-FT/resolve/main/kimmel_unwa_ft2.ckpt"
             },
             {
                 "kind": "config_msst",
-                "url": "https://huggingface.co/Sucial/Dereverb-Echo_Mel_Band_Roformer/blob/main/config_dereverb_echo_mbr_v2.yaml"
+                "url": "https://huggingface.co/pcunwa/Kim-Mel-Band-Roformer-FT/resolve/main/config_kimmel_unwa_ft.yaml"
             }
         ],
-        "model_size": 455776577
+        "model_size": 913100690
     },
     "mel_roformer-becruily-instrumental": {
         "authors": ["becruily"],
@@ -1570,10 +2015,88 @@
         ],
         "model_size": 913107578
     },
+    "bs_roformer-unwa-inst_exp_value_residual": {
+        "authors": ["unwa"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "created_at": "2024-12-26T08:55:53.000Z",
+        "output": ["instrum"],
+        "status": "alpha",
+        "description": [
+            {
+                "content": [
+                    "it's using a new value residual learning added to roformer arch by lucidrains in the og roformer.",
+                    "i think it sounds better than large rn but still not good, needs some [more] epoch[s]!"
+                ]
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-Inst-EXP-Value-Residual/resolve/main/BS_Inst_EXP_VRL.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-Inst-EXP-Value-Residual/resolve/main/BS_Inst_EXP_VRL.yaml"
+            },
+            {"kind": "arxiv", "url": "https://arxiv.org/abs/2410.17897"}
+        ],
+        "model_size": 393351501
+    },
+    "scnet-zfturbo-xl_musdb18": {
+        "authors": ["zfturbo"],
+        "purpose": "separation",
+        "architecture": "scnet",
+        "created_at": "2024-12-12T22:15:59Z",
+        "output": ["drums", "bass", "other", "vocals"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://github.com/ZFTurbo/Music-Source-Separation-Training/releases/download/v1.0.13/model_scnet_ep_54_sdr_9.8051.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://github.com/ZFTurbo/Music-Source-Separation-Training/releases/download/v1.0.13/config_musdb18_scnet_xl.yaml"
+            }
+        ],
+        "model_size": 216189106
+    },
+    "bs_roformer-sucial-male_female": {
+        "authors": ["sucial"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "created_at": "2024-12-07T09:12:45.000Z",
+        "output": ["male"],
+        "description": [
+            {
+                "content": [
+                    "if they sing at intervals (one by one), they cannot be separated.",
+                    "works pretty good, bleed might occur occasionally.",
+                    "it seems to pick up various people dialogues."
+                ]
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/Sucial/Chorus_Male_Female_BS_Roformer/resolve/main/model_chorus_bs_roformer_ep_267_sdr_24.1275.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/Sucial/Chorus_Male_Female_BS_Roformer/resolve/main/config_chorus_male_female_bs_roformer.yaml"
+            },
+            {
+                "kind": "other",
+                "url": "https://github.com/ZFTurbo/Music-Source-Separation-Training/issues/1#issuecomment-2525052333"
+            }
+        ],
+        "model_size": 527121477
+    },
     "mel_roformer-unwa-kim_ft": {
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "created_at": "2024-12-06T10:09:16.000Z",
         "output": ["vocals"],
         "metrics": [
             {
@@ -1590,40 +2113,39 @@
         ],
         "resources": [
             {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/pcunwa/Kim-Mel-Band-Roformer-FT/tree/main"
-            }
-        ]
-    },
-    "bs_roformer-sucial-male_female": {
-        "authors": ["sucial"],
-        "purpose": "separation",
-        "architecture": "bs_roformer",
-        "output": ["male"],
-        "description": [
-            {
-                "content": [
-                    "if they sing at intervals (one by one), they cannot be separated.",
-                    "works pretty good, bleed might occur occasionally.",
-                    "it seems to pick up various people dialogues."
-                ]
-            }
-        ],
-        "resources": [
-            {
-                "kind": "other",
-                "url": "https://github.com/ZFTurbo/Music-Source-Separation-Training/issues/1#issuecomment-2525052333"
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/pcunwa/Kim-Mel-Band-Roformer-FT/resolve/main/kimmel_unwa_ft.ckpt"
             },
             {
                 "kind": "config_msst",
-                "url": "https://drive.google.com/file/d/15dxMvEanC8h_djEuHoQXHKMk0ERN02_y/view?usp=sharing"
+                "url": "https://huggingface.co/pcunwa/Kim-Mel-Band-Roformer-FT/resolve/main/config_kimmel_unwa_ft.yaml"
             }
-        ]
+        ],
+        "model_size": 913100690
+    },
+    "bs_roformer-zfturbo-musdb18": {
+        "authors": ["zfturbo"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "created_at": "2024-11-28T07:08:31Z",
+        "output": ["drums", "bass", "other", "vocals"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://github.com/ZFTurbo/Music-Source-Separation-Training/releases/download/v1.0.12/model_bs_roformer_ep_17_sdr_9.6568.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://github.com/ZFTurbo/Music-Source-Separation-Training/releases/download/v1.0.12/config_bs_roformer_384_8_2_485100.yaml"
+            }
+        ],
+        "model_size": 527385512
     },
     "mel_roformer-unwa-big_beta5e": {
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "created_at": "2024-11-23T14:39:27.000Z",
         "output": ["vocals"],
         "status": "beta",
         "description": [
@@ -1654,15 +2176,49 @@
         ],
         "resources": [
             {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/tree/main"
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/resolve/main/big_beta5e.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/resolve/main/big_beta5e.yaml"
             }
-        ]
+        ],
+        "model_size": 1479749810
+    },
+    "mel_roformer-sucial-dereverb_echo_fused": {
+        "authors": ["sucial"],
+        "purpose": "dereverb",
+        "architecture": "mel_roformer",
+        "created_at": "2024-11-22T10:22:21.000Z",
+        "output": ["dry"],
+        "description": [
+            {
+                "content": [
+                    "trained two new models specifically targeting large reverb removal.",
+                    "after training, i combined these two models with my v2 model through a blending process, to better handle all scenarios.",
+                    "more effective in removing large reverb."
+                ],
+                "author": "sucial"
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/Sucial/Dereverb-Echo_Mel_Band_Roformer/resolve/main/dereverb-echo_mel_band_roformer_sdr_10.0169.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/Sucial/Dereverb-Echo_Mel_Band_Roformer/resolve/main/config_dereverb-echo_mel_band_roformer.yaml"
+            }
+        ],
+        "model_size": 835997896
     },
     "mel_roformer-unwa-v1e": {
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "created_at": "2024-11-20T05:33:47.000Z",
         "output": ["instrum"],
         "description": [
             {
@@ -1675,15 +2231,21 @@
         ],
         "resources": [
             {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-Inst/tree/main"
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-Inst/resolve/main/inst_v1e.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-Inst/raw/main/config_melbandroformer_inst.yaml"
             }
-        ]
+        ],
+        "model_size": 913102724
     },
     "mel_roformer-unwa-v2": {
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "created_at": "2024-11-04T11:53:53.000Z",
         "output": ["instrum"],
         "metrics": [
             {
@@ -1707,30 +2269,42 @@
         ],
         "resources": [
             {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-Inst/tree/main"
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-Inst/resolve/main/melband_roformer_inst_v2.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-Inst/raw/main/config_melbandroformer_inst_v2.yaml"
             }
-        ]
+        ],
+        "model_size": 1574477088
     },
     "mel_roformer-unwa-duality_v2": {
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "created_at": "2024-10-30T14:55:31.000Z",
         "output": ["vocals", "other"],
         "description": [
             { "content": ["slightly a bit better sdr and fewer residues"] }
         ],
         "resources": [
             {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-InstVoc-Duality/tree/main"
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-InstVoc-Duality/resolve/main/melband_roformer_instvox_duality_v2.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-InstVoc-Duality/raw/main/config_melbandroformer_instvoc_duality.yaml"
             }
-        ]
+        ],
+        "model_size": 1719116358
     },
     "mel_roformer-unwa-duality_v1": {
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "created_at": "2024-10-29T16:46:19.000Z",
         "output": ["vocals", "other"],
         "description": [
             {
@@ -1742,15 +2316,21 @@
         ],
         "resources": [
             {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-InstVoc-Duality/tree/main"
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-InstVoc-Duality/resolve/main/melband_roformer_instvoc_duality_v1.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-InstVoc-Duality/raw/main/config_melbandroformer_instvoc_duality.yaml"
             }
-        ]
+        ],
+        "model_size": 1719116358
     },
     "mel_roformer-unwa-v1": {
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "created_at": "2024-10-22T08:21:44.000Z",
         "output": ["instrum"],
         "description": [
             {
@@ -1762,15 +2342,21 @@
         ],
         "resources": [
             {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-Inst/tree/main"
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-Inst/resolve/main/melband_roformer_inst_v1.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-Inst/raw/main/config_melbandroformer_inst.yaml"
             }
-        ]
+        ],
+        "model_size": 913100690
     },
     "mel_roformer-unwa-big_beta4": {
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "created_at": "2024-10-19T11:12:41.000Z",
         "output": ["vocals"],
         "status": "beta",
         "description": [
@@ -1790,15 +2376,21 @@
         ],
         "resources": [
             {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/tree/main"
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/resolve/main/melband_roformer_big_beta4.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/raw/main/config_melbandroformer_big_beta4.yaml"
             }
-        ]
+        ],
+        "model_size": 1574477088
     },
     "mel_roformer-unwa-big_beta3": {
         "authors": ["unwa", "bas curtiz"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "created_at": "2024-09-30T10:15:02.000Z",
         "output": ["vocals"],
         "status": "beta",
         "description": [
@@ -1811,15 +2403,39 @@
         ],
         "resources": [
             {
-                "kind": "huggingface",
-                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/tree/main"
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/resolve/main/melband_roformer_big_beta3.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/resolve/main/config_melbandroformer_big.yaml"
             }
-        ]
+        ],
+        "model_size": 1479738496
+    },
+    "scnet-starrytong-large": {
+        "authors": ["starrytong"],
+        "purpose": "separation",
+        "architecture": "scnet",
+        "created_at": "2024-09-25T21:58:29Z",
+        "output": ["drums", "bass", "other", "vocals"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://github.com/ZFTurbo/Music-Source-Separation-Training/releases/download/v1.0.9/SCNet-large_starrytong_fixed.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://github.com/ZFTurbo/Music-Source-Separation-Training/releases/download/v1.0.9/config_musdb18_scnet_large_starrytong.yaml"
+            }
+        ],
+        "model_size": 168852258
     },
     "bs_roformer-unwa-largev1": {
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "bs_roformer",
+        "created_at": "2024-09-24T14:48:59.000Z",
         "finetuned_from": "bs_roformer-viperx-1297",
         "output": ["vocals"],
         "metrics": [
@@ -1842,9 +2458,68 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://drive.google.com/file/d/1Q_M9rlEjYlBZbG2qHScvp4Sa0zfdP9TL/view"
+                "url": "https://huggingface.co/jarredou/unwa_bs_roformer/resolve/main/BS-Roformer_LargeV1.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/jarredou/unwa_bs_roformer/raw/main/config_bsrofoL.yaml"
             }
-        ]
+        ],
+        "model_size": 740263433
+    },
+    "mel_roformer-anvuew-dereverb": {
+        "authors": ["anvuew"],
+        "purpose": "dereverb",
+        "architecture": "mel_roformer",
+        "created_at": "2024-09-03T12:35:29.000Z",
+        "output": ["dry"],
+        "metrics": [
+            {
+                "values": { "dry": {"sdr": 19.1729} }
+            }
+        ],
+        "description": [
+            {
+                "content": [
+                    "anvuew's models can remove reverb effect only from vocals.",
+                    "old foxjoy's model works with full track."
+                ]
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/anvuew/dereverb_mel_band_roformer/resolve/main/dereverb_mel_band_roformer_anvuew_sdr_19.1729.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/anvuew/dereverb_mel_band_roformer/resolve/main/dereverb_mel_band_roformer_anvuew.yaml"
+            }
+        ],
+        "model_size": 913107578
+    },
+    "mdx23c-aufr33-dereverb": {
+        "authors": ["aufr33", "jarredou"],
+        "purpose": "dereverb",
+        "architecture": "mdx23c",
+        "created_at": "2024-08-27T14:31:17.000Z",
+        "output": ["dry"],
+        "metrics": [
+            {
+                "values": { "dry": {"sdr": 6.9096} }
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/jarredou/aufr33_jarredou_MDXv3_DeReverb/resolve/main/dereverb_mdx23c_sdr_6.9096.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/jarredou/aufr33_jarredou_MDXv3_DeReverb/resolve/main/config_dereverb_mdx23c.yaml"
+            }
+        ],
+        "model_size": 448098867
     },
     "mel_roformer-aufr33-karaoke": {
         "authors": ["aufr33", "viperx"],
@@ -1852,6 +2527,11 @@
         "architecture": "mel_roformer",
         "created_at": "2024-08-16T13:35:38.000Z",
         "output": ["lead_vocals"],
+        "metrics": [
+            {
+                "values": { "lead_vocals": {"sdr": 10.1956} }
+            }
+        ],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -1882,6 +2562,316 @@
         ],
         "model_size": 913106900
     },
+    "mel_roformer-aufr33-denoise": {
+        "authors": ["aufr33"],
+        "purpose": "denoise",
+        "architecture": "mel_roformer",
+        "created_at": "2024-08-02T14:47:22.000Z",
+        "output": ["denoised"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/jarredou/aufr33_MelBand_Denoise/resolve/main/denoise_mel_band_roformer_aufr33_sdr_27.9959.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/jarredou/aufr33_MelBand_Denoise/resolve/main/model_mel_band_roformer_denoise.yaml"
+            }
+        ],
+        "model_size": 913097300
+    },
+    "mel_roformer-aufr33-denoise_aggr": {
+        "authors": ["aufr33"],
+        "purpose": "denoise",
+        "architecture": "mel_roformer",
+        "created_at": "2024-08-02T14:47:22.000Z",
+        "output": ["denoised"],
+        "metrics": [
+            {
+                "values": { "denoised": {"sdr": 27.9768} }
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/jarredou/aufr33_MelBand_Denoise/resolve/main/denoise_mel_band_roformer_aufr33_aggr_sdr_27.9768.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/jarredou/aufr33_MelBand_Denoise/resolve/main/model_mel_band_roformer_denoise.yaml"
+            }
+        ],
+        "model_size": 913097300
+    },
+    "bs_roformer-anvuew-dereverb": {
+        "authors": ["anvuew"],
+        "purpose": "dereverb",
+        "architecture": "bs_roformer",
+        "created_at": "2024-07-15T19:50:31.000Z",
+        "output": ["dry"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/anvuew/deverb_bs_roformer/resolve/main/deverb_bs_roformer_8_256dim_8depth.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/anvuew/deverb_bs_roformer/resolve/main/deverb_bs_roformer_8_256dim_8depth.yaml"
+            }
+        ],
+        "model_size": 170770820
+    },
+    "scnet-starrytong-musdb18": {
+        "authors": ["starrytong"],
+        "purpose": "separation",
+        "architecture": "scnet",
+        "created_at": "2024-07-10T08:24:27Z",
+        "output": ["drums", "bass", "other", "vocals"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://github.com/ZFTurbo/Music-Source-Separation-Training/releases/download/v.1.0.6/scnet_checkpoint_musdb18.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://github.com/ZFTurbo/Music-Source-Separation-Training/releases/download/v.1.0.6/config_musdb18_scnet.yaml"
+            }
+        ],
+        "model_size": 42434986
+    },
+    "mdx23c-aufr33-drumsep_6stem": {
+        "authors": ["aufr33", "jarredou"],
+        "purpose": "separation",
+        "architecture": "mdx23c",
+        "created_at": "2024-07-03T22:02:09Z",
+        "output": ["kick", "snare", "toms", "hh", "ride", "crash"],
+        "metrics": [
+            {
+                "values": { "drums": {"sdr": 10.8059} }
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://github.com/jarredou/models/releases/download/aufr33-jarredou_MDX23C_DrumSep_model_v0.1/aufr33-jarredou_DrumSep_model_mdx23c_ep_141_sdr_10.8059.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://github.com/jarredou/models/releases/download/aufr33-jarredou_MDX23C_DrumSep_model_v0.1/aufr33-jarredou_DrumSep_model_mdx23c_ep_141_sdr_10.8059.yaml"
+            }
+        ],
+        "model_size": 437652699
+    },
+    "mel_roformer-aufr33-decrowd": {
+        "authors": ["aufr33", "viperx"],
+        "purpose": "decrowd",
+        "architecture": "mel_roformer",
+        "created_at": "2024-06-07T22:01:24Z",
+        "output": ["clean"],
+        "metrics": [
+            {
+                "values": { "clean": {"sdr": 8.7144} }
+            }
+        ],
+        "description": [
+            {
+                "content": [
+                    "the roformer model does a better job at retaining the instruments and vocals as well as some sound effects and synths better than the mdx-net decrowd, but at the cost of crowd bleed.",
+                    "sometimes [the old model] mistakes the fuzzy sounds of guitar as crowd noise",
+                    "also isolates some kicks in songs"
+                ],
+                "author": "kashi"
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://github.com/ZFTurbo/Music-Source-Separation-Training/releases/download/v.1.0.4/mel_band_roformer_crowd_aufr33_viperx_sdr_8.7144.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://github.com/ZFTurbo/Music-Source-Separation-Training/releases/download/v.1.0.4/model_mel_band_roformer_crowd.yaml"
+            }
+        ],
+        "model_size": 913096801
+    },
+    "bs_roformer-viperx-1053": {
+        "authors": ["viperx"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "created_at": "2024-03-29T10:38:08Z",
+        "output": ["other"],
+        "metrics": [
+            {
+                "values": { "other": {"sdr": 10.5309} }
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/model_bs_roformer_ep_937_sdr_10.5309.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://raw.githubusercontent.com/TRvlvr/application_data/main/mdx_model_data/mdx_c_configs/model_bs_roformer_ep_937_sdr_10.5309.yaml"
+            }
+        ],
+        "model_size": 393068365
+    },
+    "bs_roformer-viperx-1296": {
+        "authors": ["viperx"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "created_at": "2024-03-29T10:36:27Z",
+        "output": ["vocals"],
+        "metrics": [
+            {
+                "values": { "vocals": {"sdr": 12.9628} }
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/model_bs_roformer_ep_368_sdr_12.9628.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://raw.githubusercontent.com/TRvlvr/application_data/main/mdx_model_data/mdx_c_configs/model_bs_roformer_ep_368_sdr_12.9628.yaml"
+            }
+        ],
+        "model_size": 639317465
+    },
+    "bs_roformer-viperx-1297": {
+        "authors": ["viperx"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "created_at": "2024-03-29T08:37:31Z",
+        "output": ["vocals"],
+        "metrics": [
+            {
+                "values": { "vocals": {"sdr": 12.9755} }
+            }
+        ],
+        "description": [
+            { "content": ["base model with SDR of 12.9755, widely used for fine-tuning."] }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/model_bs_roformer_ep_317_sdr_12.9755.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://raw.githubusercontent.com/ZFTurbo/Music-Source-Separation-Training/main/configs/viperx/model_bs_roformer_ep_317_sdr_12.9755.yaml"
+            }
+        ],
+        "model_size": 639331213
+    },
+    "segm_models-zfturbo-vitlarge23": {
+        "authors": ["zfturbo"],
+        "purpose": "separation",
+        "architecture": "segm_models",
+        "created_at": "2023-11-06T17:55:46Z",
+        "output": ["vocals"],
+        "metrics": [
+            {
+                "values": { "vocals": {"sdr": 9.77} }
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://github.com/ZFTurbo/Music-Source-Separation-Training/releases/download/v1.0.0/model_vocals_segm_models_sdr_9.77.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://raw.githubusercontent.com/ZFTurbo/Music-Source-Separation-Training/refs/heads/main/configs/config_vocals_segm_models.yaml"
+            }
+        ],
+        "model_size": 863683537
+    },
+    "mdx23c-zfturbo-vocals_hq": {
+        "authors": ["zfturbo"],
+        "purpose": "separation",
+        "architecture": "mdx23c",
+        "created_at": "2023-11-06T17:37:25Z",
+        "output": ["vocals"],
+        "metrics": [
+            {
+                "values": { "vocals": {"sdr": 10.17} }
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://github.com/ZFTurbo/Music-Source-Separation-Training/releases/download/v1.0.0/model_vocals_mdx23c_sdr_10.17.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://raw.githubusercontent.com/ZFTurbo/Music-Source-Separation-Training/main/configs/config_vocals_mdx23c.yaml"
+            }
+        ],
+        "model_size": 448101203
+    },
+    "bs_roformer-xlance-msr": {
+        "authors": ["xlancelab"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "output": [
+            "bass",        "guitar",      "keyboards",   "synthesizer", "drums",
+            "percussion",  "orchestral",  "lead_vocals"
+        ],
+        "description": [
+            {
+                "content": [
+                    "Winner of the raw stems restoration competition.",
+                    "Released pth models along with dedicated code for chained separation (separation>dereverb>denoise).",
+                    "Trained using L1 loss combined with multi-resolution STFT loss on MoisesDB and a manually cleaned version of the RawStems dataset.",
+                    "Provides 9 stems total, including dry lead vocals."
+                ],
+                "author": "deton24"
+            }
+        ],
+        "resources": [
+            {"kind": "other", "url": "https://huggingface.co/chenxie95/xlance-msr-ckpt/tree/main"},
+            {"kind": "arxiv", "url": "https://www.arxiv.org/pdf/2601.04343"}
+        ]
+    },
+    "mel_roformer-aufr33-denoise_average": {
+        "authors": ["aufr33"],
+        "purpose": "denoise",
+        "architecture": "mel_roformer",
+        "output": ["clean"],
+        "description": [
+            { "content": ["can be also used for crowd removal"], "author": "gabox" }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://mega.nz/file/vM4mHTYQ#f_uCxxS_olfTR4iAsOc-XS6sfUecfbF-ZKXrk3IjbnY"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://drive.google.com/file/d/1uwInhwgjOMIdOMTgj_oNR_dmaq7E-b3g/view?usp=sharing"
+            }
+        ]
+    },
+    "bs_roformer-amane-4_stems": {
+        "authors": ["shintaro"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "output": ["vocals", "drums", "bass", "other"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://mega.nz/file/Pwp32DrY#Kyl5sK3j6l5kXCe7Br52gN2CXn9c8N6lzOYT1g0FOS0"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://mega.nz/file/GwY1TQoB#UmeMGO2BBtgrUXkmXXQQVXqwR_hwxaAmkycDr-fitWg"
+            }
+        ]
+    },
     "mel_roformer-yolkis-drums": {
         "authors": ["yolkis"],
         "purpose": "separation",
@@ -1901,99 +2891,12 @@
         ],
         "resources": [
             {
-                "kind": "other",
-                "url": "https://github.com/ZFTurbo/Music-Source-Separation-Training/issues/1#issuecomment-2156069553"
-            }
-        ]
-    },
-    "mel_roformer-aufr33-decrowd": {
-        "authors": ["aufr33", "viperx"],
-        "purpose": "crowd_removal",
-        "architecture": "mel_roformer",
-        "output": ["clean"],
-        "description": [
-            {
-                "content": [
-                    "the roformer model does a better job at retaining the instruments and vocals as well as some sound effects and synths better than the mdx-net decrowd, but at the cost of crowd bleed.",
-                    "sometimes [the old model] mistakes the fuzzy sounds of guitar as crowd noise",
-                    "also isolates some kicks in songs"
-                ],
-                "author": "kashi"
-            }
-        ],
-        "resources": [
-            {"kind": "model_ckpt", "url": "https://buzzheavier.com/f/GV6ppLupAAA"},
-            {"kind": "config_msst", "url": "https://buzzheavier.com/f/GV6psmJpAAA"}
-        ]
-    },
-    "mel_roformer-aufr33-denoise": {
-        "authors": ["aufr33"],
-        "purpose": "denoise",
-        "architecture": "mel_roformer",
-        "output": ["denoised"],
-        "resources": [
-            {
-                "kind": "model_ckpt",
-                "url": "https://mega.nz/file/rIRQGJ4D#9SHaPIXt8GRoi2SL29WUILW0g9dk26I5njyFPZuPJQ8"
-            },
-            {
-                "kind": "model_ckpt",
-                "url": "https://mega.nz/file/vM4mHTYQ#f_uCxxS_olfTR4iAsOc-XS6sfUecfbF-ZKXrk3IjbnY"
-            },
-            {
                 "kind": "config_msst",
-                "url": "https://drive.google.com/file/d/1uwInhwgjOMIdOMTgj_oNR_dmaq7E-b3g/view?usp=sharing"
-            }
-        ]
-    },
-    "bs_roformer-anvuew-dereverb": {
-        "authors": ["anvuew"],
-        "purpose": "de-reverb",
-        "architecture": "bs_roformer",
-        "output": ["dry"],
-        "resources": [
-            {
-                "kind": "other",
-                "url": "https://github.com/ZFTurbo/Music-Source-Separation-Training/issues/1#issuecomment-2229279531"
-            }
-        ]
-    },
-    "mel_roformer-anvuew-dereverb": {
-        "authors": ["anvuew"],
-        "purpose": "de-reverb",
-        "architecture": "mel_roformer",
-        "output": ["dry"],
-        "description": [
-            {
-                "content": [
-                    "anvuew's models can remove reverb effect only from vocals.",
-                    "old foxjoy's model works with full track."
-                ]
-            }
-        ],
-        "resources": [
-            {
-                "kind": "other",
-                "url": "https://github.com/ZFTurbo/Music-Source-Separation-Training/issues/1#issuecomment-2226805511"
-            }
-        ]
-    },
-    "bs_roformer-viperx-1297": {
-        "authors": ["viperx"],
-        "purpose": "separation",
-        "architecture": "bs_roformer",
-        "output": ["vocals"],
-        "description": [
-            { "content": ["base model with SDR of 12.9755, widely used for fine-tuning."] }
-        ],
-        "resources": [
-            {
-                "kind": "model_ckpt",
-                "url": "https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/model_bs_roformer_ep_317_sdr_12.9755.ckpt"
+                "url": "https://disk.yandex.ru/d/MxZ4k-kZ2Q5QqA/SDR%207.68/config_musdb18_mel_band_roformer.yaml"
             },
             {
-                "kind": "config_msst",
-                "url": "https://raw.githubusercontent.com/ZFTurbo/Music-Source-Separation-Training/main/configs/viperx/model_bs_roformer_ep_317_sdr_12.9755.yaml"
+                "kind": "model_ckpt",
+                "url": "https://disk.yandex.ru/d/MxZ4k-kZ2Q5QqA/SDR%207.68/model_mel_band_roformer_ep_11_sdr_7.6853.ckpt"
             }
         ]
     }

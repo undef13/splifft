@@ -315,11 +315,9 @@ class Model(BaseModel):
         Literal[
             "separation",
             "denoise",
-            "de-reverb",
-            "enhancement",
-            "crowd_removal",
-            "upscaler",
-            "phase_fixer",
+            "debleed",
+            "dereverb",
+            "decrowd",
         ]
         | str
     )
@@ -344,10 +342,8 @@ class Metrics(BaseModel):
 class Resource(BaseModel):
     kind: Literal[
         "model_ckpt",
-        "huggingface",
         "config_msst",
-        "colab",
-        "mvsep",
+        "arxiv",
         "other",
     ]
     url: str

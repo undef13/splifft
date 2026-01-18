@@ -221,10 +221,14 @@ Instrument: TypeAlias = Literal[
     "male", "female",
     # we follow mvsep's leaderboard naming conventions up til this point, the following are extra
     "violin",
+    "ride", "crash",
     "dry", "reverb",
     "clean", "crowd",
     "denoised", "noise",
-    "vocals_dry", "dereverb"
+    "vocals_dry", "dereverb",
+    "center",
+    "similarity", "difference", # see: https://github.com/ZFTurbo/Music-Source-Separation-Training/issues/1#issuecomment-2417116936
+    "keyboards", "synthesizer", "percussion", "orchestral"
 ]
 # fmt: on
 Metric: TypeAlias = Literal[

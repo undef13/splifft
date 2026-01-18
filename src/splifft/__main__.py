@@ -202,27 +202,22 @@ def ls(
         box=None,
     )
     table.add_column("id", no_wrap=True)
-    table.add_column("status", no_wrap=True)
+    table.add_column("size", no_wrap=True)
     table.add_column("created_at", no_wrap=True)
     table.add_column("purpose", no_wrap=True)
     table.add_column("outputs", overflow="fold")
 
     for identifier, model in registry.items():
-        status = ""
-        for resource in model.resources:
-            if resource.kind == "model_ckpt":
-                status += "[green]M[/green]" if "huggingface.co" in resource.url else "M"
-            elif resource.kind == "config_msst":
-                status += "[green]C[/green]" if "huggingface.co" in resource.url else "C"
+        size = f"{model.model_size / 1_000_000:.1f}M" if model.model_size else "?"
         created_at_date = (
             datetime.fromisoformat(model.created_at).strftime("%Y-%m-%d")
             if model.created_at
-            else "-"
+            else "?"
         )
         outputs = ",".join(model.output) if model.output else "-"
         table.add_row(
             identifier,
-            status or "-",
+            size,
             created_at_date,
             model.purpose,
             outputs,
