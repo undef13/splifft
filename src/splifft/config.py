@@ -324,14 +324,16 @@ class Model(BaseModel):
         | str
     )
     architecture: Literal["bs_roformer", "mel_roformer", "mdx23c", "scnet"] | str
-    release_date: str | None = None
-    """YYYY-MM-DD, date is optional"""
+    created_at: str | None = None
+    """ISO8601 date, time is optional (e.g. YYYY-MM-DD)"""
     finetuned_from: t.Identifier | None = None
-    output: list[t.Instrument] = Field(default_factory=list)
+    output: NonEmptyUnique[list[t.Instrument]] = Field(default_factory=list)
     status: Literal["alpha", "beta", "stable", "deprecated"] | None = None
     metrics: list[Metrics] = Field(default_factory=list)
     description: list[Comment] = Field(default_factory=list)
-    approx_model_size_mb: float | None = None
+    resources: list[Resource] = Field(default_factory=list)
+    model_size: int | None = None
+    """Model size in bytes, if available."""
 
 
 class Metrics(BaseModel):

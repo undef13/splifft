@@ -159,7 +159,7 @@
           ],
           "title": "Architecture"
         },
-        "release_date": {
+        "created_at": {
           "anyOf": [
             {
               "type": "string"
@@ -169,7 +169,7 @@
             }
           ],
           "default": null,
-          "title": "Release Date"
+          "title": "Created At"
         },
         "finetuned_from": {
           "anyOf": [
@@ -226,8 +226,10 @@
             ],
             "type": "string"
           },
+          "minItems": 1,
           "title": "Output",
-          "type": "array"
+          "type": "array",
+          "unique_items": true
         },
         "status": {
           "anyOf": [
@@ -261,17 +263,24 @@
           "title": "Description",
           "type": "array"
         },
-        "approx_model_size_mb": {
+        "resources": {
+          "items": {
+            "$ref": "#/$defs/Resource"
+          },
+          "title": "Resources",
+          "type": "array"
+        },
+        "model_size": {
           "anyOf": [
             {
-              "type": "number"
+              "type": "integer"
             },
             {
               "type": "null"
             }
           ],
           "default": null,
-          "title": "Approx Model Size Mb"
+          "title": "Model Size"
         }
       },
       "required": [
@@ -280,6 +289,44 @@
         "architecture"
       ],
       "title": "Model",
+      "type": "object"
+    },
+    "Resource": {
+      "properties": {
+        "kind": {
+          "enum": [
+            "model_ckpt",
+            "huggingface",
+            "config_msst",
+            "colab",
+            "mvsep",
+            "other"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
+        },
+        "digest": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Digest"
+        }
+      },
+      "required": [
+        "kind",
+        "url"
+      ],
+      "title": "Resource",
       "type": "object"
     }
   },

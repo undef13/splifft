@@ -2,6 +2,7 @@
 
 import logging
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import Annotated, Callable, Optional, ParamSpec, TypeVar
 
@@ -179,7 +180,7 @@ def separate(
 
 
 @app.command()
-def list_models(
+def ls(
     registry_path: Annotated[
         Path,
         typer.Option(
@@ -189,12 +190,45 @@ def list_models(
         ),
     ] = PATH_DATA / "registry.json",
 ) -> None:
+    from rich.console import Console
+    from rich.table import Table
+
     from .config import Registry
 
     registry = Registry.from_file(registry_path)
+    table = Table(
+        show_lines=False,
+        pad_edge=False,
+        box=None,
+    )
+    table.add_column("id", no_wrap=True)
+    table.add_column("status", no_wrap=True)
+    table.add_column("created_at", no_wrap=True)
+    table.add_column("purpose", no_wrap=True)
+    table.add_column("outputs", overflow="fold")
 
     for identifier, model in registry.items():
-        logger.info(f"{identifier}: {model}")
+        status = ""
+        for resource in model.resources:
+            if resource.kind == "model_ckpt":
+                status += "[green]M[/green]" if "huggingface.co" in resource.url else "M"
+            elif resource.kind == "config_msst":
+                status += "[green]C[/green]" if "huggingface.co" in resource.url else "C"
+        created_at_date = (
+            datetime.fromisoformat(model.created_at).strftime("%Y-%m-%d")
+            if model.created_at
+            else "-"
+        )
+        outputs = ",".join(model.output) if model.output else "-"
+        table.add_row(
+            identifier,
+            status or "-",
+            created_at_date,
+            model.purpose,
+            outputs,
+        )
+
+    Console().print(table)
 
 
 @app.command()
@@ -224,7 +258,6 @@ def debug() -> None:
     import torchaudio
 
     logger.info(f"{torchaudio.__version__=}")
-    logger.info(f"{torchaudio.list_audio_backends()=}")
 
 
 if __name__ == "__main__":
