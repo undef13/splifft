@@ -293,7 +293,7 @@ class Config(BaseModel):
         return self
 
     @classmethod
-    def from_file(cls, path: t.BytesPath) -> Config:
+    def from_file(cls, path: t.BytesPath | t.StrPath) -> Config:
         with open(path, "rb") as f:
             return Config.model_validate_json(f.read())
 
@@ -366,7 +366,7 @@ class Registry(dict[t.Identifier, Model]):
         return core_schema.no_info_after_validator_function(cls, handler(dict[t.Identifier, Model]))
 
     @classmethod
-    def from_file(cls, path: t.StrOrBytesPath) -> Registry:
+    def from_file(cls, path: t.StrPath | t.BytesPath) -> Registry:
         with open(path, "r") as f:
             data = f.read()
         ta = TypeAdapter(cls)

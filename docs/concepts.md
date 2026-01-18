@@ -15,10 +15,11 @@ Neural networks perform best when their input data has a consistent statistical 
 Models usually operates not on raw time-domain samples, but in the time-frequency domain, which reveals the signal's frequency content over time. This is achieved via the [Short-Time Fourier Transform (STFT)](https://en.wikipedia.org/wiki/Short-time_Fourier_transform), which converts the 1D audio signal into a 2D [complex spectrogram][splifft.types.ComplexSpectrogram].
 
 #### Complex Spectrogram
+
 The [STFT coefficient][splifft.types.ComplexSpectrogram] $X[m, k]$ is a complex number that can be decomposed into:
 
--   Magnitude $|X[m, k]|$: Tells us "how much" of a frequency is present (i.e., its loudness).
--   Phase $\phi(m, k)$: Tells us "how it's aligned" in time. This is notoriously difficult to model, as it chaotically wraps around from $-\pi$ to $\pi$. Human hearing is highly sensitive to phase, which is crucial for sound localization and timbre perception.
+- Magnitude $|X[m, k]|$: Tells us "how much" of a frequency is present (i.e., its loudness).
+- Phase $\phi(m, k)$: Tells us "how it's aligned" in time. This is notoriously difficult to model, as it chaotically wraps around from $-\pi$ to $\pi$. Human hearing is highly sensitive to phase, which is crucial for sound localization and timbre perception.
 
 Practically, the process involves:
 
@@ -36,6 +37,7 @@ approximate an ideal ratio mask or its complex equivalent:
 $\hat{S}_\text{source} = M_\text{complex} \odot S_\text{mixture}$.
 
 #### FFT Size
+
 The choice of [`FftSize`][splifft.types.FftSize] presents a fundamental [trade-off](https://en.wikipedia.org/wiki/Uncertainty_principle#Signal_processing) between the uncertainty in time $t$ and frequency $f$: $\sigma_t \sigma_f \ge \frac{1}{4\pi}$
 
 - a short window gives good time resolution, excellent for capturing sharp, percussive sounds (transients).
@@ -44,6 +46,7 @@ The choice of [`FftSize`][splifft.types.FftSize] presents a fundamental [trade-o
 To address this, some loss functions (e.g. `auraloss.MultiResolutionSTFTLoss`) calculate the error on spectrograms with multiple FFT sizes, forcing the model to optimize for both transient and tonal accuracy.
 
 #### Bands
+
 Instead of processing every frequency bin independently, we can group them into [`Bands`][splifft.types.Bands]. This reduces computational complexity and allows the model to learn relationships within frequency regions, which often correspond to musical harmonics. Some models use perceptually-motivated scales like the [Mel scale](https://en.wikipedia.org/wiki/Mel_scale), while others like [BS-Roformer][splifft.models.bs_roformer] use a linear frequency scale and learn their own relevant bandings.
 
 ### Chunking and Inference

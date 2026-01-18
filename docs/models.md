@@ -26,4 +26,3 @@ uv run scripts/mvsep.py --instruments vocals --id 7475 --id 7706 --id 8093 --id 
 === "Vocals"
 
     ![Vocals](./assets/mvsep/plots/correlations_vocals.svg)
-

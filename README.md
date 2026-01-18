@@ -32,12 +32,12 @@ Key principles:
 - [x] web-based docs: generated with `mkdocs` with excellent crossrefs.
 - [x] simple CLI for inferencing on a directory of audio files
 - [ ] `BS-Roformer`: ensure bit-for-bit equivalence in pytorch and strive for max perf.
-  - [x] initial fp16 support
-  - [ ] support `coremltools` and `torch.compile`
-    - [x] handroll complex multiplication implementation
-    - [x] handroll stft in forward pass
+    - [x] initial fp16 support
+    - [ ] support `coremltools` and `torch.compile`
+        - [x] handroll complex multiplication implementation
+        - [x] handroll stft in forward pass
 - [x] port additional SOTA models from MSST (e.g. Mel Roformer, SCNet)
-  - [x] directly support popular models (e.g. by [@unwa](https://huggingface.co/pcunwa), [gabox](https://huggingface.co/GaboxR67), by [@becruily](https://huggingface.co/becruily))
+    - [x] directly support popular models (e.g. by [@unwa](https://huggingface.co/pcunwa), [gabox](https://huggingface.co/GaboxR67), by [@becruily](https://huggingface.co/becruily))
 - [ ] model registry with simple file-based cache
 - [ ] evals: SDR, bleedless, fullness, etc.
 - [ ] proper benchmarking (MFU, memory...)
@@ -69,6 +69,7 @@ Documentation on the config (amongst other details) can be found [here](https://
 There are three steps. You do not need to have Python installed.
 
 1. Install [`uv`](https://docs.astral.sh/uv/getting-started/installation/) if you haven't already. It is an awesome Python package and library manager with pip comptability.
+
     ```sh
     # Linux / MacOS
     wget -qO- https://astral.sh/uv/install.sh | sh
@@ -77,16 +78,20 @@ There are three steps. You do not need to have Python installed.
     ```
 
 2. Open a new terminal and install the latest stable PyPI release as a [tool](https://docs.astral.sh/uv/concepts/tools/). It will install the Python interpreter, all necessary packages and add the `splifft` executable to your `PATH`:
+
     ```sh
     uv tool install "splifft[config,inference,cli]"
     ```
+
     <details>
       <summary>I want the latest bleeding-edge version</summary>
 
     This directly pulls from the `main` branch, which may be unstable:
+
     ```sh
     uv tool install "git+https://github.com/undef13/splifft.git[config,inference,cli]"
     ```
+
     </details>
 
 3. Go into a new directory and place the [model checkpoint](https://github.com/undef13/splifft/releases/download/v0.0.1/roformer-fp16.pt) and [configuration](https://raw.githubusercontent.com/undef13/splifft/refs/heads/main/data/config/bs_roformer.json) inside it. Assuming your current directory has this structure (doesn't have to be exactly this):
@@ -100,9 +105,10 @@ There are three steps. You do not need to have Python installed.
     wget -P data/models/ https://huggingface.co/undef13/splifft/resolve/main/roformer-fp16.pt?download=true
     wget -P data/config/ https://raw.githubusercontent.com/undef13/splifft/refs/heads/main/data/config/bs_roformer.json
     ```
+
     </details>
 
-    ```
+    ```txt
     .
     └── data
         ├── audio
@@ -116,9 +122,11 @@ There are three steps. You do not need to have Python installed.
     ```
 
     Run:
+
     ```sh
     splifft separate data/audio/input/3BFTio5296w.flac --config data/config/bs_roformer.json --checkpoint data/models/roformer-fp16.pt
     ```
+
     <details>
       <summary>Console output</summary>
 
@@ -140,6 +148,7 @@ There are three steps. You do not need to have Python installed.
     [00:00:58] INFO     wrote stem `instrumental` to data/audio/output/3BFTio5296w/instrumental.flac     __main__.py:158
                INFO     wrote stem `drums_and_bass` to data/audio/output/3BFTio5296w/drums_and_bass.flac __main__.py:158
     ```
+
     </details>
 
     To update the tool:
@@ -189,6 +198,7 @@ just docs
 ```
 
 Format your code:
+
 ```sh
 just fmt
 ```
@@ -212,7 +222,7 @@ TODO:
 - [ ] use `max.torch.CustomOpLibrary` to provide a callable from the pytorch side
 - [ ] use [`DeviceContext`](https://github.com/modular/modular/blob/main/mojo/stdlib/stdlib/gpu/host/device_context.mojo) to interact with the GPU
 - [ ] [attention](https://github.com/modular/modular/blob/main/examples/custom_ops/kernels/fused_attention.mojo)
-  - [ ] use [`LayoutTensor`](https://github.com/modular/modular/blob/main/max/kernels/src/layout/layout_tensor.mojo) for QKV
+    - [ ] use [`LayoutTensor`](https://github.com/modular/modular/blob/main/max/kernels/src/layout/layout_tensor.mojo) for QKV
 - [ ] rotary embedding
 - [ ] feedforward
 - [ ] transformer

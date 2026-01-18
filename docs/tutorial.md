@@ -12,6 +12,7 @@ In the future, we will have a high level API for convenience.
 `splifft` is designed to be easily extended without modifying its core.
 
 Make sure you have [added `splifft` as a dependency](./index.md#library). Assuming your library has [this structure](https://github.com/undef13/splifft/tree/main/docs/examples/ext_project):
+
 ``` title="tree /path/to/ext_project"
 ├── pyproject.toml
 ├── scripts
@@ -54,7 +55,6 @@ Instead, define a [stdlib `dataclass`][dataclasses.dataclass] separate from the 
 
 1. [`ModelParamsLike`][splifft.models.ModelParamsLike] is *not* a base class to inherit from, but rather a form of [structural typing][typing.Protocol] that signals that `MyModelParams` is compatible with the [`splifft` configuration system][splifft.config.LazyModelConfig]. You can remove it if you don't like it.
 
-
 ### 2. Register the model
 
 With the model and its config defined, our [configuration system][splifft.config.Config] needs to understand your model.
@@ -73,7 +73,6 @@ With the model and its config defined, our [configuration system][splifft.config
     ```
 
     To add a new model, you'd have to modify this central registry. It also forces the import of all models and unwanted dependencies at once.
-
 
 Instead, our [configuration system][splifft.config.Config] uses a simple [`ModelMetadata`][splifft.models.ModelMetadata] wrapper struct to act as a "descriptor" for your model. Create a factory function that defers the imports until its actually needed:
 
@@ -102,15 +101,17 @@ First, load in the [configuration](./models.md):
 ```py title="scripts/main.py"
 --8<-- "docs/examples/ext_project/scripts/main.py:config"
 ```
+
 This validates your JSON and returns a [pydantic.BaseModel][]. Note that at this point, [`config.model`][splifft.config.Config.model] is a [*lazy* model configuration][splifft.config.LazyModelConfig] that is not yet fully validated.
 
 Next, we need to create the PyTorch model. Concretize the lazy model configuration into the `dataclass` we defined [earlier](#1-define-a-new-model) then instantiate the model:
+
 ```py title="scripts/main.py"
 --8<-- "docs/examples/ext_project/scripts/main.py:model"
 ```
 
 Finally, load the weights, input audio and run!
+
 ```py title="scripts/main.py"
 --8<-- "docs/examples/ext_project/scripts/main.py:inference"
 ```
-
