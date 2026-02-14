@@ -160,6 +160,23 @@ class StftConfig(BaseModel):
     model_config = _PYDANTIC_STRICT_CONFIG
 
 
+class LogMelConfig(BaseModel):
+    """Configuration for Log-Mel Spectrogram."""
+
+    n_fft: t.FftSize
+    hop_length: t.HopSize
+    n_mels: t.Gt0[int]
+    sample_rate: t.SampleRate
+    f_min: float = 0.0
+    f_max: float | None = None
+    mel_scale: Literal["htk", "slaney"] = "slaney"
+    normalized: bool | Literal["frame_length"] = "frame_length"
+    power: float = 1.0
+    log_multiplier: float = 1000.0
+
+    model_config = _PYDANTIC_STRICT_CONFIG
+
+
 class AudioIOConfig(BaseModel):
     target_sample_rate: t.SampleRate = 44100
     force_channels: t.Channels | None = 2
@@ -188,10 +205,14 @@ class InferenceConfig(BaseModel):
 
 
 class ChunkingConfig(BaseModel):
+    strategy: t.ChunkingStrategy = "waveform"
     method: Literal["overlap_add_windowed"] = "overlap_add_windowed"
     overlap_ratio: t.OverlapRatio = 0.5
     window_shape: t.WindowShape = "hann"
     padding_mode: t.PaddingMode = "reflect"
+    # used when strategy="spectrogram"
+    trim_margin: t.TrimMargin | None = None
+    overlap_mode: t.OverlapMode | None = None
 
     model_config = _PYDANTIC_STRICT_CONFIG
 
@@ -247,6 +268,7 @@ class Config(BaseModel):
     model_type: t.ModelType
     model: LazyModelConfig
     stft: StftConfig | None = None
+    log_mel: LogMelConfig | None = None
     audio_io: AudioIOConfig = Field(default_factory=AudioIOConfig)
     inference: InferenceConfig = Field(default_factory=InferenceConfig)
     chunking: ChunkingConfig = Field(default_factory=ChunkingConfig)
@@ -318,10 +340,11 @@ class Model(BaseModel):
             "debleed",
             "dereverb",
             "decrowd",
+            "beat_tracking",
         ]
         | str
     )
-    architecture: Literal["bs_roformer", "mel_roformer", "mdx23c", "scnet"] | str
+    architecture: Literal["bs_roformer", "mel_roformer", "mdx23c", "scnet", "beat_this"] | str
     created_at: str | None = None
     """ISO8601 date, time is optional (e.g. YYYY-MM-DD)"""
     finetuned_from: t.Identifier | None = None

@@ -96,7 +96,9 @@
               "keyboards",
               "synthesizer",
               "percussion",
-              "orchestral"
+              "orchestral",
+              "beat",
+              "downbeat"
             ]
           },
           "title": "Values",
@@ -139,7 +141,8 @@
                 "denoise",
                 "debleed",
                 "dereverb",
-                "decrowd"
+                "decrowd",
+                "beat_tracking"
               ],
               "type": "string"
             },
@@ -156,7 +159,8 @@
                 "bs_roformer",
                 "mel_roformer",
                 "mdx23c",
-                "scnet"
+                "scnet",
+                "beat_this"
               ],
               "type": "string"
             },
@@ -238,7 +242,9 @@
               "keyboards",
               "synthesizer",
               "percussion",
-              "orchestral"
+              "orchestral",
+              "beat",
+              "downbeat"
             ],
             "type": "string"
           },

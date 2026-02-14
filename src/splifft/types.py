@@ -23,7 +23,7 @@ ModelType: TypeAlias = str
 """The type of the model, e.g. `bs_roformer`, `demucs`"""
 
 ModelInputType: TypeAlias = Literal["waveform", "spectrogram", "waveform_and_spectrogram"]
-ModelOutputType: TypeAlias = Literal["waveform", "spectrogram_mask", "spectrogram"]
+ModelOutputType: TypeAlias = Literal["waveform", "spectrogram_mask", "spectrogram", "logits"]
 
 ChunkSize: TypeAlias = Gt0[int]
 """The length of an audio segment, in samples, processed by the model at one time.
@@ -67,7 +67,7 @@ Channels: TypeAlias = Gt0[int]
 """
 
 
-FileFormat: TypeAlias = Literal["flac", "wav", "ogg"]
+FileFormat: TypeAlias = Literal["flac", "wav", "ogg", "npy"]
 BitRate: TypeAlias = Literal[8, 16, 24, 32, 64]
 """Number of bits of information in each sample.
 
@@ -100,6 +100,10 @@ Shape ([channels][splifft.types.Channels], [frequency bins][splifft.types.FftSiz
 
 See [concepts](../concepts.md#complex-spectrogram) for more details.
 """
+
+LogMelSpectrogram = NewType("LogMelSpectrogram", Tensor)
+"""A real-valued log-mel spectrogram.
+Shape (1, [mels], [time])"""
 
 HybridModelInput: TypeAlias = tuple[ComplexSpectrogram, RawAudioTensor | NormalizedAudioTensor]
 """Input for hybrid models that require both spectrogram and waveform."""
@@ -147,6 +151,13 @@ ChunkDuration: TypeAlias = Gt0[float]
 Equivalent to [chunk size][splifft.types.ChunkSize] divided by the [sample rate][splifft.types.SampleRate].
 """
 
+ChunkingStrategy: TypeAlias = Literal["waveform", "spectrogram"]
+"""The domain in which chunking is performed.
+
+- `waveform`: Chunk the raw audio signal. Standard for source separation.
+- `spectrogram`: Compute features (e.g. log-mel) on the full audio first, then chunk the spectrogram. Used by `beat_this`.
+"""
+
 OverlapRatio: TypeAlias = Annotated[float, at.Ge(0), at.Lt(1)]
 r"""The fraction of a chunk that overlaps with the next one.
 
@@ -159,6 +170,19 @@ $$
 - A ratio of `0.5` means 50% overlap (hop_size = chunk_size / 2).
 - A higher overlap ratio increases computational cost as more chunks are processed, but it can lead
   to smoother results by averaging more predictions for each time frame.
+"""
+
+TrimMargin: TypeAlias = Annotated[int, at.Ge(0)]
+"""Number of frames to trim from the edges of each chunk when aggregating logits.
+
+Useful for models that produce artifacts at the boundaries of predictions.
+"""
+
+OverlapMode: TypeAlias = Literal["keep_first", "keep_last"]
+"""How overlapping logits chunks are resolved during aggregation.
+
+- `keep_first`: earlier chunks in time win on overlap
+- `keep_last`: later chunks in time win on overlap
 """
 
 Padding: TypeAlias = Gt0[int]
@@ -195,11 +219,20 @@ RawSeparatedTensor = NewType("RawSeparatedTensor", Tensor)
 Shape ([number of stems][splifft.types.NumModelStems], [channels][splifft.types.Channels], [samples][splifft.types.Samples])"""
 
 #
+# logits
+#
+
+LogitsTensor = NewType("LogitsTensor", Tensor)
+"""A time-series tensor representing activation probabilities or logits.
+Shape ([number of stems][splifft.types.NumModelStems], [time]) or batched"""
+
+
+#
 # wave-to-wave wrapper
 #
 
 PreprocessFn: TypeAlias = Callable[[RawAudioTensor | NormalizedAudioTensor], tuple[Tensor, ...]]
-PostprocessFn: TypeAlias = Callable[..., SeparatedChunkedTensor]
+PostprocessFn: TypeAlias = Callable[..., SeparatedChunkedTensor | LogitsTensor]
 
 #
 # registry
@@ -228,7 +261,9 @@ Instrument: TypeAlias = Literal[
     "vocals_dry", "dereverb",
     "center",
     "similarity", "difference", # see: https://github.com/ZFTurbo/Music-Source-Separation-Training/issues/1#issuecomment-2417116936
-    "keyboards", "synthesizer", "percussion", "orchestral"
+    "keyboards", "synthesizer", "percussion", "orchestral",
+    # event detection
+    "beat", "downbeat"
 ]
 # fmt: on
 Metric: TypeAlias = Literal[

@@ -26,3 +26,19 @@ uv run scripts/mvsep.py --instruments vocals --id 7475 --id 7706 --id 8093 --id 
 === "Vocals"
 
     ![Vocals](./assets/mvsep/plots/correlations_vocals.svg)
+
+### Beat This
+
+This is an audio-to-signal model. The output is a continuous activation curves where peaks represent beat candidates (logits) at 50 Hz.
+
+- [`config.model`][splifft.models.beat_this.BeatThisParams]
+- [`config.model_type = "beat_this"`][splifft.config.Config.model_type]
+
+The reference package `beat_this` depends on `madmom.features.downbeats.DBNDownBeatTrackingProcessor` as a preprocessing step, which uses:
+
+- a state space to represent progression through a measure. for a 4/4 time signature, states represent grid positions (e.g. "beat 1, 25% through")
+- transition model encodes tempo (bpm) and continuity, penalising sudden tempo jumps
+- observation model takes the raw logit values (activations) as input probabilties
+- using a Viterbi-like algorithm to find the most likely path through states
+
+However [`madmom` has been abandoned as of 2024-08-25](https://github.com/CPJKU/madmom/issues/553) and so we do not depend on it.

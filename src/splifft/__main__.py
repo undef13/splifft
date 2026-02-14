@@ -25,6 +25,12 @@ app = typer.Typer(
 _DEFAULT_MODULE_NAME = "splifft.models.bs_roformer"
 _DEFAULT_CLASS_NAME = "BSRoformer"
 
+_SUPPORTED_MODELS = {
+    "bs_roformer": ("splifft.models.bs_roformer", "BSRoformer"),
+    "mel_roformer": ("splifft.models.bs_roformer", "BSRoformer"),
+    "beat_this": ("splifft.models.beat_this", "BeatThis"),
+}
+
 P = ParamSpec("P")
 T = TypeVar("T")
 
@@ -118,6 +124,7 @@ def separate(
     ] = False,
 ) -> None:
     """Separates an audio file into its constituent stems."""
+    import numpy as np
     import torch
     from torchcodec.encoders import AudioEncoder
 
@@ -132,6 +139,10 @@ def separate(
 
     logger.info(f"loading configuration from {config_path=}")
     config = Config.from_file(config_path)
+
+    if module_name == _DEFAULT_MODULE_NAME and class_name == _DEFAULT_CLASS_NAME:
+        if config.model_type in _SUPPORTED_MODELS:
+            module_name, class_name = _SUPPORTED_MODELS[config.model_type]
 
     logger.info(f"loading model metadata `{class_name}` from module `{module_name}`")
     model_metadata = ModelMetadata.from_module(
@@ -159,24 +170,27 @@ def separate(
             config.audio_io.force_channels,
             device=device,
         )
-        output_stems = timed("inference")(run_inference_on_file)(
+        output_results = timed("inference")(run_inference_on_file)(
             mixture,
             config=config,
             model=model,
             model_params_concrete=model_params_concrete,
         )
-        if not config.output:
-            return
         curr_output_dir = output_dir or Path("./data/audio/output") / mixture_path.stem
         curr_output_dir.mkdir(parents=True, exist_ok=True)
-        for stem_name, stem_data in output_stems.items():
-            if config.output.stem_names != "all" and stem_name not in config.output.stem_names:
-                continue
 
-            output_file = (curr_output_dir / stem_name).with_suffix(f".{config.output.file_format}")
-            encoder = AudioEncoder(samples=stem_data.cpu(), sample_rate=mixture.sample_rate)
-            encoder.to_file(str(output_file), bit_rate=config.output.bit_rate)
-            logger.info(f"wrote stem `{stem_name}` to {output_file}")
+        for key, data in output_results.items():
+            if model_params_concrete.output_type == "logits":
+                output_file = (curr_output_dir / key).with_suffix(".npy")
+                np.save(output_file, data.cpu().float().numpy())
+                logger.info(f"wrote logits `{key}` to {output_file}")
+            else:
+                if config.output.stem_names != "all" and key not in config.output.stem_names:
+                    continue
+                output_file = (curr_output_dir / key).with_suffix(f".{config.output.file_format}")
+                encoder = AudioEncoder(samples=data.cpu(), sample_rate=mixture.sample_rate)
+                encoder.to_file(str(output_file), bit_rate=config.output.bit_rate)
+                logger.info(f"wrote stem `{key}` to {output_file}")
 
 
 @app.command()

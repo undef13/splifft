@@ -29,6 +29,15 @@
     "ChunkingConfig": {
       "additionalProperties": false,
       "properties": {
+        "strategy": {
+          "default": "waveform",
+          "enum": [
+            "waveform",
+            "spectrogram"
+          ],
+          "title": "Strategy",
+          "type": "string"
+        },
         "method": {
           "const": "overlap_add_windowed",
           "default": "overlap_add_windowed",
@@ -61,6 +70,35 @@
           ],
           "title": "Padding Mode",
           "type": "string"
+        },
+        "trim_margin": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Trim Margin"
+        },
+        "overlap_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "keep_first",
+                "keep_last"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Overlap Mode"
         }
       },
       "title": "ChunkingConfig",
@@ -151,6 +189,89 @@
       "title": "LazyModelConfig",
       "type": "object"
     },
+    "LogMelConfig": {
+      "additionalProperties": false,
+      "description": "Configuration for Log-Mel Spectrogram.",
+      "properties": {
+        "n_fft": {
+          "exclusiveMinimum": 0,
+          "title": "N Fft",
+          "type": "integer"
+        },
+        "hop_length": {
+          "exclusiveMinimum": 0,
+          "title": "Hop Length",
+          "type": "integer"
+        },
+        "n_mels": {
+          "exclusiveMinimum": 0,
+          "title": "N Mels",
+          "type": "integer"
+        },
+        "sample_rate": {
+          "exclusiveMinimum": 0,
+          "title": "Sample Rate",
+          "type": "integer"
+        },
+        "f_min": {
+          "default": 0.0,
+          "title": "F Min",
+          "type": "number"
+        },
+        "f_max": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "F Max"
+        },
+        "mel_scale": {
+          "default": "slaney",
+          "enum": [
+            "htk",
+            "slaney"
+          ],
+          "title": "Mel Scale",
+          "type": "string"
+        },
+        "normalized": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "const": "frame_length",
+              "type": "string"
+            }
+          ],
+          "default": "frame_length",
+          "title": "Normalized"
+        },
+        "power": {
+          "default": 1.0,
+          "title": "Power",
+          "type": "number"
+        },
+        "log_multiplier": {
+          "default": 1000.0,
+          "title": "Log Multiplier",
+          "type": "number"
+        }
+      },
+      "required": [
+        "n_fft",
+        "hop_length",
+        "n_mels",
+        "sample_rate"
+      ],
+      "title": "LogMelConfig",
+      "type": "object"
+    },
     "MaskingConfig": {
       "additionalProperties": false,
       "properties": {
@@ -209,7 +330,8 @@
           "enum": [
             "flac",
             "wav",
-            "ogg"
+            "ogg",
+            "npy"
           ],
           "title": "File Format",
           "type": "string"
@@ -390,6 +512,17 @@
       "anyOf": [
         {
           "$ref": "#/$defs/StftConfig"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "log_mel": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/LogMelConfig"
         },
         {
           "type": "null"

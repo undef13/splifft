@@ -44,9 +44,23 @@ def load_weights(
     *,
     strict: bool = False,
 ) -> ModelT:
-    """Load the weights from a checkpoint into the given model."""
+    """Load the weights from a checkpoint into the given model.
+
+    Handles standard PyTorch checkpoints and PyTorch Lightning checkpoints (stripping `model.` prefix).
+    """
 
     state_dict = torch.load(checkpoint_file, map_location=device, weights_only=True)
+
+    if "state_dict" in state_dict:
+        state_dict = state_dict["state_dict"]
+
+    new_state_dict = {}
+    for key, value in state_dict.items():
+        if key.startswith("model."):
+            new_state_dict[key[6:]] = value
+        else:
+            new_state_dict[key] = value
+    state_dict = new_state_dict
 
     # TODO: DataParallel and `module.` prefix
     model.load_state_dict(state_dict, strict=strict)

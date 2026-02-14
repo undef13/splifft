@@ -49,7 +49,7 @@ class Attend(nn.Module):
                 cuda_backends = [SDPBackend.EFFICIENT_ATTENTION, SDPBackend.MATH]
                 log_once(logger, f"windows detected, using {cuda_backends=}")
             else:
-                cuda_backends = [SDPBackend.FLASH_ATTENTION]
+                cuda_backends = [SDPBackend.FLASH_ATTENTION, SDPBackend.MATH]
                 log_once(logger, f"gpu compute capability >= 8.0, using {cuda_backends=}")
         else:
             cuda_backends = [SDPBackend.EFFICIENT_ATTENTION, SDPBackend.MATH]

@@ -11,6 +11,7 @@ from typing import (
     Generic,
     Iterator,
     TypeVar,
+    assert_never,
 )
 
 import torch
@@ -187,6 +188,96 @@ def stitch_chunks(
     return t.RawSeparatedTensor(stitched[..., :target_num_samples])
 
 
+def aggregate_logits(
+    processed_chunks: Sequence[t.LogitsTensor],
+    starts: Sequence[int],
+    full_size: int,
+    chunk_size: int,
+    num_stems: int,
+    *,
+    trim_margin: int = 0,
+    overlap_mode: t.OverlapMode = "keep_first",
+) -> t.LogitsTensor:
+    """Stitches time-series logits (split/aggregate strategy).
+
+    This is a 1:1 map of beat_this's aggregation behavior:
+    - trim `trim_margin` frames from each chunk side
+    - write into a full-size buffer
+    - in `keep_first` mode, process chunks in reverse so earlier chunks
+      overwrite later ones
+    """
+    all_chunks = torch.cat(tuple(processed_chunks), dim=0)
+    total_chunks, _, chunk_len_frames = all_chunks.shape
+
+    if len(starts) != total_chunks:
+        raise ValueError(f"expected {total_chunks=} starts, got {len(starts)}")
+    if chunk_len_frames != chunk_size:
+        raise ValueError(f"expected {chunk_size=} but got chunk length {chunk_len_frames}")
+    if trim_margin * 2 >= chunk_len_frames:
+        raise ValueError(f"{trim_margin=} is too large for {chunk_len_frames=}")
+
+    buffer = torch.full(
+        (num_stems, full_size), -1000.0, device=all_chunks.device, dtype=all_chunks.dtype
+    )
+
+    if overlap_mode == "keep_first":
+        indices = range(total_chunks - 1, -1, -1)
+    elif overlap_mode == "keep_last":
+        indices = range(total_chunks)
+    else:
+        assert_never(overlap_mode)
+
+    for i in indices:
+        chunk = all_chunks[i]
+        chunk_valid = chunk[:, trim_margin : chunk_len_frames - trim_margin]
+        start = starts[i] + trim_margin
+        end = starts[i] + chunk_size - trim_margin
+
+        clipped_start = max(0, start)
+        clipped_end = min(end, full_size)
+        if clipped_start >= clipped_end:
+            continue
+
+        src_start = clipped_start - start
+        src_end = src_start + (clipped_end - clipped_start)
+        buffer[:, clipped_start:clipped_end] = chunk_valid[:, src_start:src_end]
+
+    return t.LogitsTensor(buffer)
+
+
+def split_spectrogram(
+    spect: t.LogMelSpectrogram,
+    chunk_size: int,
+    *,
+    trim_margin: int = 0,
+    avoid_short_end: bool = True,
+) -> tuple[list[t.LogMelSpectrogram], list[int]]:
+    """Splits a (time, bins) spectrogram (split_piece behaviour)."""
+    full_size = spect.shape[0]
+    if (step := chunk_size - 2 * trim_margin) <= 0:
+        raise ValueError(
+            f"expected chunk_size - 2*trim_margin > 0, got {chunk_size=}, {trim_margin=}"
+        )
+    if not (starts := list(range(-trim_margin, full_size - trim_margin, step))):
+        starts = [-trim_margin]
+    if avoid_short_end and full_size > step:
+        starts[-1] = full_size - (chunk_size - trim_margin)
+
+    chunks: list[t.LogMelSpectrogram] = []
+    for start in starts:
+        src_start = max(start, 0)
+        src_end = min(start + chunk_size, full_size)
+        left = max(0, -start)
+        right = max(0, min(trim_margin, start + chunk_size - full_size))
+
+        chunk = spect[src_start:src_end]
+        if left > 0 or right > 0:
+            chunk = F.pad(chunk, (0, 0, left, right), mode="constant", value=0)
+        chunks.append(t.LogMelSpectrogram(chunk))
+
+    return chunks, starts
+
+
 def apply_mask(
     spec_for_masking: t.ComplexSpectrogram,
     mask_batch: t.ComplexSpectrogram,
@@ -238,10 +329,10 @@ class ModelWaveformToWaveform(nn.Module):
 
     def forward(
         self, waveform_chunk: t.RawAudioTensor | t.NormalizedAudioTensor
-    ) -> t.SeparatedChunkedTensor:
+    ) -> t.SeparatedChunkedTensor | t.LogitsTensor:
         preprocessed_input = self.preprocess(waveform_chunk)
         model_output = self.model(*preprocessed_input)
-        return t.SeparatedChunkedTensor(self.postprocess(model_output, *preprocessed_input))
+        return self.postprocess(model_output, *preprocessed_input)
 
 
 def create_w2w_model(
@@ -367,6 +458,49 @@ def _create_spec_postprocessor(
         return t.SeparatedChunkedTensor(separated_wave_chunk_)
 
     return _postprocess
+
+
+class LogMelSpect(nn.Module):
+    """Computes the log-mel spectrogram of a waveform."""
+
+    def __init__(
+        self,
+        sample_rate: int,
+        n_fft: int,
+        hop_length: int,
+        n_mels: int,
+        f_min: float = 0.0,
+        f_max: float | None = None,
+        mel_scale: str = "slaney",
+        normalized: bool | str = "frame_length",
+        power: float = 1.0,
+        log_multiplier: float = 1000.0,
+    ):
+        super().__init__()
+        import torchaudio.transforms as T
+
+        self.spect_class = T.MelSpectrogram(
+            sample_rate=sample_rate,
+            n_fft=n_fft,
+            hop_length=hop_length,
+            f_min=f_min,
+            f_max=f_max,
+            n_mels=n_mels,
+            mel_scale=mel_scale,
+            normalized=normalized,  # type: ignore
+            power=power,
+        )
+        self.log_multiplier = log_multiplier
+
+    def forward(self, x: Tensor) -> t.LogMelSpectrogram:
+        """
+        :param x: Waveform tensor of shape (batch, channels, time) or (batch, time)
+        :return: Log-Mel spectrogram of shape (batch, channels, n_mels, time)
+        """
+        if x.ndim == 2:
+            x = x.unsqueeze(1)
+        mel_spec = self.spect_class(x)
+        return torch.log1p(self.log_multiplier * mel_spec)  # type: ignore
 
 
 def _get_window_fn(name: str, win_length: int, device: torch.device) -> t.WindowTensor:

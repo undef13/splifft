@@ -1,0 +1,38 @@
+{
+    "identifier": "beat_this-cpjku-small",
+    "model_type": "beat_this",
+    "audio_io": {
+        "target_sample_rate": 22050,
+        "force_channels": 1
+    },
+    "log_mel": {
+        "n_fft": 1024,
+        "hop_length": 441,
+        "n_mels": 128,
+        "sample_rate": 22050,
+        "f_min": 30.0,
+        "f_max": 11000.0
+    },
+    "model": {
+        "chunk_size": 661500,
+        "output_stem_names": [
+            "beat",
+            "downbeat"
+        ],
+        "transformer_dim": 128
+    },
+    "inference": {
+        "normalize_input_audio": false,
+        "batch_size": 1,
+        "force_weights_dtype": "float32"
+    },
+    "chunking": {
+        "strategy": "spectrogram",
+        "overlap_ratio": 0.5,
+        "padding_mode": "reflect",
+        "trim_margin": 6
+    },
+    "output": {
+        "file_format": "npy"
+    }
+}
