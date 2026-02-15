@@ -2,16 +2,11 @@
 
 from pathlib import Path
 
-# TODO: this should be in the io module and we should use `platformdirs` to store registry
-PATH_MODULE = Path(__file__).parent.parent
-PATH_BASE = PATH_MODULE.parent
-PATH_DATA = PATH_BASE / "data"
-PATH_CONFIG = PATH_DATA / "config"
-PATH_MODELS = PATH_DATA / "models"
+# TODO verify default registry and config data are included by hatchling.
+DIR_MODULE = Path(__file__).parent
+DIR_DATA = DIR_MODULE / "data"
+DIR_CONFIG_DEFAULT = DIR_DATA / "config"
+PATH_REGISTRY_DEFAULT = DIR_DATA / "registry.json"
 
-# for dev work
-PATH_SCRIPTS = PATH_BASE / "scripts"
-PATH_DOCS = PATH_BASE / "docs"
-PATH_DOCS_ASSETS = PATH_DOCS / "assets"
-
-# NOTE: not re-exporting because our structure is simple enough.
+# NOTE: not re-exporting anything because 1) our structure is simple enough and
+# 2) we have feature flags that otherwise might not be enabled by default

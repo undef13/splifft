@@ -1,8 +1,18 @@
 {
     "editor.formatOnSave": true,
     "json.schemas": [
-        { "fileMatch": ["data/config/*.json"], "url": "./data/config.schema.json" },
-        { "fileMatch": ["data/registry.json"], "url": "./data/registry.schema.json" }
+        {
+            "fileMatch": [
+                "src/splifft/data/config/*.json"
+            ],
+            "url": "./src/splifft/data/config.schema.json"
+        },
+        {
+            "fileMatch": [
+                "src/splifft/data/registry.json"
+            ],
+            "url": "./src/splifft/data/registry.schema.json"
+        }
     ],
     "[javascript]": {
         "editor.indentSize": 2

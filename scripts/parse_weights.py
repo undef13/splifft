@@ -5,11 +5,11 @@ from pathlib import Path
 
 import torch
 
-from splifft import PATH_MODELS
 from splifft.models.bs_roformer import BSRoformer, BSRoformerParams
 from splifft.utils.mil import BlobFile, parse_mil_program, resolve_path
 
-PATH_RAW = PATH_MODELS / "roformer.mlmodelc"
+PATH_BASE = Path(__file__).parent.parent
+PATH_RAW = PATH_BASE / "models" / "roformer.mlmodelc"
 FP_MIL = PATH_RAW / "model.mil"
 FP_WEIGHTS = PATH_RAW / "weights" / "weights.bin"
 
@@ -31,7 +31,7 @@ model_cfg = BSRoformerParams(
     time_transformer_depth=1,
     freq_transformer_depth=1,
     chunk_size=588800,
-    stft_hop_length=512
+    stft_hop_length=512,
 )
 model = BSRoformer(model_cfg)
 

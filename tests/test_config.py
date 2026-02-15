@@ -171,9 +171,9 @@ def test_config_stem(derived_stems: dict[str, Any], expected_success: bool) -> N
 
 @pytest.fixture
 def config_roformer() -> Config:
-    from splifft import PATH_CONFIG
+    from splifft import DIR_CONFIG_DEFAULT
 
-    config = Config.from_file(PATH_CONFIG / "bs_roformer.json")
+    config = Config.from_file(DIR_CONFIG_DEFAULT / "bs_roformer.json")
     assert isinstance(config.model, LazyModelConfig)
     return config
 

@@ -32,10 +32,11 @@ import httpx
 import typer
 from rich.logging import RichHandler
 
-from splifft import PATH_BASE, PATH_DATA, PATH_SCRIPTS
+from splifft import PATH_REGISTRY_DEFAULT
 from splifft.config import Registry
 
-PATH_TMP = PATH_SCRIPTS / "tmp"
+PATH_BASE = Path(__file__).parent.parent
+PATH_TMP = PATH_BASE / "scripts" / "tmp"
 URL_JARREDOU_MSST_COLAB = "https://raw.githubusercontent.com/jarredou/Music-Source-Separation-Training-Colab-Inference/refs/heads/main/Music_Source_Separation_Training_(Colab_Inference).ipynb"
 PATH_JARREDOU_MSST_COLAB = PATH_TMP / "jarredou_msst_colab.ipynb"
 PATH_JARREDOU_MSST_JSON = PATH_TMP / "jarredou_msst_colab.json"
@@ -296,7 +297,7 @@ class lastCommitInfo(TypedDict):
 
 
 class LfsInfo(TypedDict):
-    oid: str
+    oid: str  # sha256
     size: int
     pointerSize: int
 
@@ -307,7 +308,7 @@ class RepoTreeEntry(TypedDict):
     """
 
     type: EntryType
-    oid: str
+    oid: str  # sha1 (git blob)?
     size: int
     """Actual file size (LFS resolved if applicable)"""
     path: NotRequired[str]  # included in paths-info, sometimes omitted in shallow tree
@@ -317,10 +318,11 @@ class RepoTreeEntry(TypedDict):
     xetHash: NotRequired[str]
 
 
-class GitHubReleaseAsset(TypedDict):
+class GitHubReleaseAsset(TypedDict, total=False):
     id: int
     name: str
     size: int
+    digest: str | None  # e.g. "sha256:...", often null for files older than 2025
     created_at: str
     updated_at: str
     browser_download_url: str
@@ -542,11 +544,12 @@ def _parse_iso_datetime(value: str | None) -> datetime:
 
 @app.command()
 def fix_registry(
-    registry_path: Path = PATH_DATA / "registry.json",
+    registry_path: Path = PATH_REGISTRY_DEFAULT,
     guide_path: Path = PATH_GUIDE_MODELS_MD,
     jarredou_path: Path = PATH_JARREDOU_MSST_JSON,
     output_path: Path = PATH_TMP / "cache",
     warn_missing: bool = False,  # off by default since some are htdemucs / unsupported architecture
+    skip_overwrite_created_at: tuple[str] = ("bs_roformer-fruit-sw",),
 ) -> None:
     """Checks that URLs in the guide and jarredou's colab are present in the registry,
     caches file metadata from Hugging Face and GitHub releases and ensures dates are correct."""
@@ -592,9 +595,10 @@ def fix_registry(
             continue
         gh_release_assets[release] = _build_github_asset_lookup(release_data)
 
-    for model in registry.values():
+    for model_id, model in registry.items():
         created_at = None
         model_size = None
+        digest = None
         for resource in model.resources:
             url = resource.url
             if (hf_parsed := _hf_node_and_file_from_url(url)) is not None:
@@ -617,6 +621,8 @@ def fix_registry(
                     if (lc := entry.get("lastCommit")) is not None:
                         created_at = lc.get("date")
                     model_size = entry.get("size")
+                    if (lfs := entry.get("lfs")) is not None:  # TODO what about Xet?
+                        digest = f"sha256:{lfs['oid']}"
                 continue
 
             if (gh_parsed := _gh_release_node_and_asset_from_url(url)) is not None:
@@ -632,11 +638,17 @@ def fix_registry(
                 if url.lower().endswith((".ckpt", ".pt")):
                     created_at = asset.get("created_at") or asset.get("updated_at")
                     model_size = asset.get("size")
+                    if (d := asset.get("digest")) is not None and d.startswith("sha256:"):
+                        digest = d
                 continue
-        if created_at is not None:
+        if created_at is not None and model_id not in skip_overwrite_created_at:
             model.created_at = created_at
         if model_size is not None:
             model.model_size = model_size
+        if digest is not None:
+            # TODO handle digests for multiple resources, we assign to the first for now
+            if ckpt := next((r for r in model.resources if r.kind == "model_ckpt"), None):
+                ckpt.digest = digest
 
     registry = Registry(
         dict(
@@ -652,7 +664,7 @@ def fix_registry(
         TypeAdapter(Registry).dump_json(registry, indent=4, exclude_defaults=True)
     )
     subprocess.run(
-        ["pnpm", "run", "fmt:json", "data/registry.json"],
+        ["pnpm", "run", "fmt:json", str(PATH_REGISTRY_DEFAULT)],
         cwd=PATH_BASE,
         check=True,
     )

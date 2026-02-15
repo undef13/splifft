@@ -373,7 +373,7 @@ class Config(BaseModel):
         return archetype
 
     @classmethod
-    def from_file(cls, path: t.BytesPath | t.StrPath) -> Config:
+    def from_file(cls, path: t.StrPath | t.BytesPath) -> Config:
         with open(path, "rb") as f:
             return Config.model_validate_json(f.read())
 
@@ -403,9 +403,14 @@ class Model(BaseModel):
         | str
     )
     architecture: Literal["bs_roformer", "mel_roformer", "mdx23c", "scnet", "beat_this"] | str
+    config_id: str | None = None
+    """The default configuration identifier (filename stem) to use if one is not provided.
+    Files are expected to be in `data/config`.
+
+    If None, the model is not officially supported.
+    """
     created_at: str | None = None
     """ISO8601 date, time is optional (e.g. YYYY-MM-DD)"""
-    finetuned_from: t.Identifier | None = None
     output: NonEmptyUnique[list[t.Instrument]] = Field(default_factory=list)
     status: Literal["alpha", "beta", "stable", "deprecated"] | None = None
     metrics: list[Metrics] = Field(default_factory=list)

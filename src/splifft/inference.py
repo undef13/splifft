@@ -11,10 +11,12 @@ from typing import TYPE_CHECKING, Generator, Literal, TypeAlias, cast
 import torch
 from torch import nn
 
-from . import core
+from . import PATH_REGISTRY_DEFAULT, core
 from . import types as t
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from .config import Config, StemName
     from .models import ModelParamsLike
 
@@ -156,6 +158,31 @@ class InferenceEngine:
             model = cast(nn.Module, compiled_model)
 
         return cls(config=config, model=model, model_params_concrete=model_params)
+
+    @classmethod
+    def from_registry(
+        cls,
+        model_id: str,
+        *,
+        device: torch.device | str | None = None,
+        fetch_if_missing: bool = True,
+        force_overwrite: bool = False,
+        registry_path: Path = PATH_REGISTRY_DEFAULT,
+    ) -> InferenceEngine:
+        from .config import Registry
+        from .io import get_model_paths
+
+        model_paths = get_model_paths(
+            model_id,
+            fetch_if_missing=fetch_if_missing,
+            force_overwrite=force_overwrite,
+            registry=Registry.from_file(registry_path),
+        )
+        return cls.from_pretrained(
+            config_path=model_paths.path_config,
+            checkpoint_path=model_paths.path_checkpoint,
+            device=device,
+        )
 
     def _autocast_context(self, device: torch.device) -> contextlib.AbstractContextManager[object]:
         if (is_autocast_available := getattr(torch.amp, "is_autocast_available", None)) is None:

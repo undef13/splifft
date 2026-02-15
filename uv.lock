@@ -2856,6 +2856,7 @@ cli = [
     { name = "typer" },
 ]
 config = [
+    { name = "platformdirs" },
     { name = "pydantic" },
 ]
 inference = [
@@ -2869,6 +2870,8 @@ networking = [
     { name = "orjson" },
 ]
 recommended = [
+    { name = "httpx", extra = ["http2"] },
+    { name = "platformdirs" },
     { name = "pydantic" },
     { name = "rich" },
     { name = "soundfile", marker = "sys_platform == 'Windows'" },
@@ -2877,6 +2880,9 @@ recommended = [
 ]
 sageattention = [
     { name = "sageattention" },
+]
+web = [
+    { name = "httpx", extra = ["http2"] },
 ]
 
 [package.dev-dependencies]
@@ -2904,22 +2910,24 @@ requires-dist = [
     { name = "aiolimiter", marker = "extra == 'networking'", specifier = ">=1.2.1" },
     { name = "annotated-types", specifier = ">=0.7.0" },
     { name = "einops", specifier = ">=0.8.1" },
+    { name = "httpx", extras = ["http2"], marker = "extra == 'web'", specifier = ">=0.28.1" },
     { name = "httpx", extras = ["http2", "zstd", "socks"], marker = "extra == 'networking'", specifier = ">=0.28.1" },
     { name = "matplotlib", marker = "extra == 'analysis'", specifier = ">=3.10.3" },
     { name = "numpy", specifier = ">=2" },
     { name = "orjson", marker = "extra == 'networking'", specifier = ">=3.10.18" },
+    { name = "platformdirs", marker = "extra == 'config'", specifier = ">=4.3.6" },
     { name = "polars", marker = "extra == 'analysis'", specifier = ">=1.30.0" },
     { name = "pydantic", marker = "extra == 'config'", specifier = ">=2.11.5" },
     { name = "rich", marker = "extra == 'inference'", specifier = ">=14.1.0" },
     { name = "sageattention", marker = "extra == 'sageattention'", specifier = ">=1.0.6" },
     { name = "soundfile", marker = "sys_platform == 'Windows' and extra == 'inference'", specifier = ">=0.13.1" },
-    { name = "splifft", extras = ["config", "inference", "cli"], marker = "extra == 'recommended'" },
+    { name = "splifft", extras = ["config", "inference", "cli", "web"], marker = "extra == 'recommended'" },
     { name = "torch", specifier = ">=2.7.0" },
     { name = "torchaudio", specifier = ">=2.7.0" },
     { name = "torchcodec", marker = "extra == 'inference'", specifier = ">=0.5" },
     { name = "typer", marker = "extra == 'cli'", specifier = ">=0.16.0" },
 ]
-provides-extras = ["config", "inference", "cli", "recommended", "sageattention", "networking", "analysis"]
+provides-extras = ["config", "inference", "cli", "web", "recommended", "sageattention", "networking", "analysis"]
 
 [package.metadata.requires-dev]
 dev = [

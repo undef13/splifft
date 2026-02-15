@@ -38,7 +38,7 @@ Key principles:
         - [x] handroll stft in forward pass
 - [x] port additional SOTA models from MSST (e.g. Mel Roformer, SCNet)
     - [x] directly support popular models (e.g. by [@unwa](https://huggingface.co/pcunwa), [gabox](https://huggingface.co/GaboxR67), by [@becruily](https://huggingface.co/becruily))
-- [ ] model registry with simple file-based cache
+- [x] model registry with simple file-based cache
 - [ ] evals: SDR, bleedless, fullness, etc.
 - [ ] proper benchmarking (MFU, memory...)
 - [ ] datasets: MUSDB18-HQ, moises
@@ -80,8 +80,19 @@ There are three steps. You do not need to have Python installed.
 2. Open a new terminal and install the latest stable PyPI release as a [tool](https://docs.astral.sh/uv/concepts/tools/). It will install the Python interpreter, all necessary packages and add the `splifft` executable to your `PATH`:
 
     ```sh
-    uv tool install "splifft[config,inference,cli]"
+    uv tool install "splifft[config,inference,cli,web]"
     ```
+
+    <details>
+      <summary>Explanation of feature flags</summary>
+
+      The core is kept as minimal as possible. Pick which ones you need:
+
+      - The `config` extra is used to parse the model configuration from JSON and discover the registry's default cache dir.
+      - The `inference` extra is used to decode audio formats.
+      - The `cli` extra provides you with the `splifft` command line tool
+      - The `web` extra is used to download models.
+    </details>
 
     <details>
       <summary>I want the latest bleeding-edge version</summary>
@@ -89,12 +100,30 @@ There are three steps. You do not need to have Python installed.
     This directly pulls from the `main` branch, which may be unstable:
 
     ```sh
-    uv tool install "git+https://github.com/undef13/splifft.git[config,inference,cli]"
+    uv tool install "git+https://github.com/undef13/splifft.git[config,inference,cli,web]"
     ```
 
     </details>
 
-3. Go into a new directory and place the [model checkpoint](https://github.com/undef13/splifft/releases/download/v0.0.1/roformer-fp16.pt) and [configuration](https://raw.githubusercontent.com/undef13/splifft/refs/heads/main/data/config/bs_roformer.json) inside it. Assuming your current directory has this structure (doesn't have to be exactly this):
+3. We recommend using our built-in registry-based workflow to manage model config and weights:
+
+    ```sh
+    # list all available models, including those not yet available locally
+    splifft ls -a
+
+    # download model files and config to your user cache directory
+    # ~/.cache/splifft on linux
+    splifft pull bs_roformer-fruit-sw
+
+    # view information about the configuration
+    # modify the configuration, such as batch size according to your hardware
+    splifft info bs_roformer-fruit-sw
+
+    # run inference
+    splifft run data/audio/input/3BFTio5296w.flac --model bs_roformer-fruit-sw
+    ```
+
+    Alternatively, you can still manage files manually. Go into a new directory and place the [model checkpoint](https://github.com/undef13/splifft/releases/download/v0.0.1/roformer-fp16.pt) and [configuration](https://raw.githubusercontent.com/undef13/splifft/refs/heads/main/data/config/bs_roformer.json) inside it. Assuming your current directory has this structure (doesn't have to be exactly this):
 
     <details>
       <summary>Minimal reproduction: with example audio from YouTube</summary>
@@ -124,7 +153,7 @@ There are three steps. You do not need to have Python installed.
     Run:
 
     ```sh
-    splifft separate data/audio/input/3BFTio5296w.flac --config data/config/bs_roformer.json --checkpoint data/models/roformer-fp16.pt
+    splifft run data/audio/input/3BFTio5296w.flac --config data/config/bs_roformer.json --checkpoint data/models/roformer-fp16.pt
     ```
 
     <details>

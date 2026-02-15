@@ -46,14 +46,15 @@ Repository = "https://github.com/undef13/splifft"
 Releases = "https://github.com/undef13/splifft/releases"
 
 [project.optional-dependencies]
-config = ["pydantic>=2.11.5"]
+config = ["pydantic>=2.11.5", "platformdirs>=4.3.6"]
 inference = [
     "torchcodec>=0.5",                               # AudioEncoder is only available for >=0.5
     "soundfile>=0.13.1 ; sys_platform == 'Windows'",
     "rich>=14.1.0",                                  # replacement for tqdm, though cli should already provide it
 ]
 cli = ["typer>=0.16.0"]
-recommended = ["splifft[config,inference,cli]"] # experimental!
+web = ["httpx[http2]>=0.28.1"]
+recommended = ["splifft[config,inference,cli,web]"] # experimental!
 sageattention = ["sageattention>=1.0.6"]
 # the following are experimental, used only in scripts
 networking = [

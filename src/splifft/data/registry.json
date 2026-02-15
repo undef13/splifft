@@ -23,7 +23,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/blob/main/melbandroformers/instrumental/inst_gaboxFlowersV10.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/blob/main/melbandroformers/instrumental/inst_gaboxFlowersV10.ckpt",
+                "digest": "sha256:fe3aa51927beb60ff345b8b672c11760fb8bdaa6039d8c61631416a5b4f7a047"
             },
             {
                 "kind": "config_msst",
@@ -41,7 +42,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/becruily/mel-band-roformer-deux/resolve/main/becruily_deux.ckpt"
+                "url": "https://huggingface.co/becruily/mel-band-roformer-deux/resolve/main/becruily_deux.ckpt",
+                "digest": "sha256:10255c02295bf3e3865d4ee50ff752d7b19b124ed5fd93b147babc4333eda3aa"
             },
             {
                 "kind": "config_msst",
@@ -64,7 +66,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/Inst_GaboxFv9.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/Inst_GaboxFv9.ckpt",
+                "digest": "sha256:068d29a54e71f69ed871ca410e09b9877e153ad1439e825bd093573ea4de5762"
             },
             {
                 "kind": "config_msst",
@@ -97,7 +100,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/blob/main/v2_inst/bs_roformer_inst_hyperacev2.ckpt"
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/blob/main/v2_inst/bs_roformer_inst_hyperacev2.ckpt",
+                "digest": "sha256:4d61178ef966d2b4e9ad456ffbbc6fd5b2828df07a7af32931142c1a5ff1fe6f"
             },
             {
                 "kind": "config_msst",
@@ -131,7 +135,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/blob/main/v2_voc/bs_roformer_voc_hyperacev2.ckpt"
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/blob/main/v2_voc/bs_roformer_voc_hyperacev2.ckpt",
+                "digest": "sha256:54cf516f621f2f460bf660ed137e244b8931bf7a2ce85ddceecff816dbc4d668"
             },
             {
                 "kind": "config_msst",
@@ -164,7 +169,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/inst_fv7b.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/inst_fv7b.ckpt",
+                "digest": "sha256:3cf9538616c835575eb07bef1fe4550b2406c852919a5644d22e9ae84a2ec6ba"
             },
             {
                 "kind": "config_msst",
@@ -183,7 +189,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/vocfv7beta3.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/vocfv7beta3.ckpt",
+                "digest": "sha256:45463b0051651b7ed15677cc41f21bd384d66796938f46955617bf6f1d661988"
             },
             {
                 "kind": "config_msst",
@@ -202,7 +209,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/vocfv7beta2.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/vocfv7beta2.ckpt",
+                "digest": "sha256:85bcaa03568f96e56b245302c177658e8cb83aa6e2f4ae260e67202db9d56123"
             },
             {
                 "kind": "config_msst",
@@ -220,7 +228,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/meskvlla33/rifforge/resolve/main/rifforge_full_sdr_14.2436.ckpt"
+                "url": "https://huggingface.co/meskvlla33/rifforge/resolve/main/rifforge_full_sdr_14.2436.ckpt",
+                "digest": "sha256:22f4eb72181d43336a1437b5d85079fa678d7b39d293283db56b3cb48908d5d5"
             },
             {
                 "kind": "config_msst",
@@ -239,7 +248,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/vocfv7beta1.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/vocfv7beta1.ckpt",
+                "digest": "sha256:6bb98488b80e7797e6f447c0dd8f89f2b7040eebc5e839b5a59871b7a3a19265"
             },
             {
                 "kind": "config_msst",
@@ -257,7 +267,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/anvuew/karaoke_bs_roformer/resolve/main/karaoke_bs_roformer_anvuew.ckpt"
+                "url": "https://huggingface.co/anvuew/karaoke_bs_roformer/resolve/main/karaoke_bs_roformer_anvuew.ckpt",
+                "digest": "sha256:206d04757cb5f75ca3b55f8a0a48f5c26aa2351d4ff3c7adbfc9affa30ea3ae4"
             },
             {
                 "kind": "config_msst",
@@ -275,7 +286,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_Fv4.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_Fv4.ckpt",
+                "digest": "sha256:b03d9bf0fc643dabf006dee38fd798140b4884c1b65c573b4488c1a2a876ad84"
             },
             {
                 "kind": "config_msst",
@@ -293,7 +305,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/natanworkspace/melband_roformer/resolve/main/Neo_InstVFX.ckpt"
+                "url": "https://huggingface.co/natanworkspace/melband_roformer/resolve/main/Neo_InstVFX.ckpt",
+                "digest": "sha256:10d95b882c81c2b462d54f35c4c5b81ac6eee04f6e3746af95a79066010b012a"
             },
             {
                 "kind": "config_msst",
@@ -316,7 +329,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/anvuew/dereverb_room/resolve/main/dereverb_room_anvuew_sdr_13.7432.ckpt"
+                "url": "https://huggingface.co/anvuew/dereverb_room/resolve/main/dereverb_room_anvuew_sdr_13.7432.ckpt",
+                "digest": "sha256:2edec521f09e26341c1923dc82c8c52dbc86478b42b9999f679535743c970cb3"
             },
             {
                 "kind": "config_msst",
@@ -349,7 +363,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/BS-Roformer-Inst-FNO/resolve/main/bs_roformer_fno.ckpt"
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-Inst-FNO/resolve/main/bs_roformer_fno.ckpt",
+                "digest": "sha256:f35bf6d87b2863372388e85c2d9679e5b7651e5c2ddd23aab1480f7af10b90ca"
             },
             {
                 "kind": "config_msst",
@@ -381,7 +396,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/meskvlla33/rifforge_beta_v1/resolve/main/rifforge_mesk_beta_v1_sdr_14.0127.ckpt"
+                "url": "https://huggingface.co/meskvlla33/rifforge_beta_v1/resolve/main/rifforge_mesk_beta_v1_sdr_14.0127.ckpt",
+                "digest": "sha256:9ee1111a1beb812250a700e3d65936d5b9db3934fb41b3fa1db1bc1b09aafdbf"
             },
             {
                 "kind": "config_msst",
@@ -421,7 +437,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_fv6.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_fv6.ckpt",
+                "digest": "sha256:25033d944288cb032fc51faab044bbd7f90bb81e82cada637ecdec699c2ff773"
             },
             {
                 "kind": "config_msst",
@@ -480,7 +497,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/BS-Roformer-Resurrection/resolve/main/BS-Roformer-Resurrection-Inst.ckpt"
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-Resurrection/resolve/main/BS-Roformer-Resurrection-Inst.ckpt",
+                "digest": "sha256:16311025a5133ae6411760ccfe9e3e66b31a01d9d8bec0a03fa7ec4bedac7a15"
             },
             {
                 "kind": "config_msst",
@@ -513,7 +531,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/Lead_VocalDereverb.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/Lead_VocalDereverb.ckpt",
+                "digest": "sha256:097c13b298414905651867ef315d881bbf2604a5c04be28820ed5946338b3eb4"
             },
             {
                 "kind": "config_msst",
@@ -547,7 +566,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/Karaoke_GaboxV2.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/Karaoke_GaboxV2.ckpt",
+                "digest": "sha256:ec34be50327aeaf1a996c27977f5c30d1ac80c0076d69683d3e5184c31ea29d3"
             },
             {
                 "kind": "config_msst",
@@ -570,7 +590,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_gabox2.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_gabox2.ckpt",
+                "digest": "sha256:fac81dbebc0992503df55110d64d86c4fb74a1529527a819a253f3d20ef72bc1"
             },
             {
                 "kind": "config_msst",
@@ -606,7 +627,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/BS-Roformer-Resurrection/resolve/main/BS-Roformer-Resurrection.ckpt"
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-Resurrection/resolve/main/BS-Roformer-Resurrection.ckpt",
+                "digest": "sha256:9dbfe5cb572e4ed32a15ec727d7bd06c8d7aba97509e6fda5bc008bb1e0b2dd5"
             },
             {
                 "kind": "config_msst",
@@ -619,8 +641,18 @@
         "authors": ["CPJKU"],
         "purpose": "beat_tracking",
         "architecture": "beat_this",
+        "config_id": "beat_this-cpjku-small",
         "created_at": "2025-07-18T15:23:12Z",
         "output": ["beat", "downbeat"],
+        "description": [
+            {
+                "content": [
+                    "Main model, trained on the single split described in Section 4.1 of the paper, with three different seeds.",
+                    "Note that this model is trained on the GTZAN dataset."
+                ],
+                "author": "CPJKU"
+            }
+        ],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -646,7 +678,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://github.com/jarredou/models/releases/download/DrumSep/drumsep_5stems_mdx23c_jarredou.ckpt"
+                "url": "https://github.com/jarredou/models/releases/download/DrumSep/drumsep_5stems_mdx23c_jarredou.ckpt",
+                "digest": "sha256:1f8e636fb674b88a52c8399fde9a4ebe2b72b065ca07eed4e03ab1c9f0bfb2e0"
             },
             {
                 "kind": "config_msst",
@@ -676,7 +709,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/Inst_GaboxFv7z.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/Inst_GaboxFv7z.ckpt",
+                "digest": "sha256:ef229f0dcd370c1767e4292981c59e5248814da45f32bfacebcc0f28adaa30a1"
             },
             {
                 "kind": "config_msst",
@@ -694,7 +728,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/jarredou/bleed_suppressor_melband_rofo_by_unwa_97chris/resolve/main/bleed_suppressor_v1.ckpt"
+                "url": "https://huggingface.co/jarredou/bleed_suppressor_melband_rofo_by_unwa_97chris/resolve/main/bleed_suppressor_v1.ckpt",
+                "digest": "sha256:a9a9d10faa7f8997676a78e66d741d7acb9cc449334763f3c8f626d68ec6e575"
             },
             {
                 "kind": "config_msst",
@@ -720,7 +755,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/Inst_FV8b.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/Inst_FV8b.ckpt",
+                "digest": "sha256:5a28f79ae38b92caaeb37c5ccdf3912316b135414353ec0d5553d507e3de8ef7"
             },
             {
                 "kind": "config_msst",
@@ -743,7 +779,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/jarredou/HTDemucs_Similarity_Extractor_by_wesleyr36/resolve/main/model_htdemucs_ep_21_sdr_13.6970.ckpt"
+                "url": "https://huggingface.co/jarredou/HTDemucs_Similarity_Extractor_by_wesleyr36/resolve/main/model_htdemucs_ep_21_sdr_13.6970.ckpt",
+                "digest": "sha256:b9970dca36a15c0d0cf3338d24592aa35469697dc3be4b07e9056f5d54b82185"
             },
             {
                 "kind": "config_msst",
@@ -776,7 +813,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/main/bs_roformer_revive3e.ckpt"
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/main/bs_roformer_revive3e.ckpt",
+                "digest": "sha256:1b0751b9a15c591407c3b77f08eb4ad3005e42e96051f3f2b39760f1130c467b"
             },
             {
                 "kind": "config_msst",
@@ -800,7 +838,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/instv7plus.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/instv7plus.ckpt",
+                "digest": "sha256:7baf1aab873e534a186e2dcf6e64bebad2dbf3e2c49337729487294539118232"
             },
             {
                 "kind": "config_msst",
@@ -808,6 +847,23 @@
             }
         ],
         "model_size": 913031195
+    },
+    "bs_roformer-fruit-sw": {
+        "authors": ["fruit"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "config_id": "bs_roformer-fruit-sw",
+        "created_at": "2025-05-28T15:00:00.000Z",
+        "output": ["bass", "drums", "other", "vocals", "guitar", "piano"],
+        "status": "stable",
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/undef13/splifft/resolve/main/roformer-fp16.pt",
+                "digest": "sha256:06fd1dbadac852fca293f306b1791aac4f8e01cb37ea682485a644ee692aa58b"
+            }
+        ],
+        "model_size": 350420195
     },
     "mel_roformer-gabox-inst_gaboxfv8": {
         "authors": ["gabox"],
@@ -838,7 +894,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/Inst_GaboxFv8.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/Inst_GaboxFv8.ckpt",
+                "digest": "sha256:50bfa127d21f419e0da89730867d28c7ac4484c9473e6f313d036bc8b429df80"
             },
             {
                 "kind": "config_msst",
@@ -865,7 +922,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/becruily/mel-band-roformer-guitar/resolve/main/becruily_guitar.ckpt"
+                "url": "https://huggingface.co/becruily/mel-band-roformer-guitar/resolve/main/becruily_guitar.ckpt",
+                "digest": "sha256:83472bbf125774af5282d2e0b86df89eaf2dd45e8a4ec8d68e820ebf3e42a83c"
             },
             {
                 "kind": "config_msst",
@@ -893,7 +951,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/main/bs_roformer_revive2.ckpt"
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/main/bs_roformer_revive2.ckpt",
+                "digest": "sha256:58098850c882a7472dad39f99fb8040ce6eaafe671cfe9881d89aea276bbb5f5"
             },
             {
                 "kind": "config_msst",
@@ -925,7 +984,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/main/bs_roformer_revive.ckpt"
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/main/bs_roformer_revive.ckpt",
+                "digest": "sha256:f1d7e4bfdfef07c6b2bc1d65283a7d03c3c38f8c7dbc8d729b785f93c8b8699a"
             },
             {
                 "kind": "config_msst",
@@ -965,7 +1025,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_fv5.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_fv5.ckpt",
+                "digest": "sha256:6ede0504ddc55cb44b966a8212dac75a364f8157974cc40c8e92b9f5d4f17ce2"
             },
             {
                 "kind": "config_msst",
@@ -983,7 +1044,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/becruily/mel-band-roformer-karaoke/resolve/main/mel_band_roformer_karaoke_becruily.ckpt"
+                "url": "https://huggingface.co/becruily/mel-band-roformer-karaoke/resolve/main/mel_band_roformer_karaoke_becruily.ckpt",
+                "digest": "sha256:d3aa262ac01df870b9fc033e9c7b6cad33fe04fc9c148b6c40841326a515a0e0"
             },
             {
                 "kind": "config_msst",
@@ -1001,7 +1063,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/Aname-Tommy/melbandroformer4stems/resolve/main/mel_band_roformer_4stems_large_ver1.ckpt"
+                "url": "https://huggingface.co/Aname-Tommy/melbandroformer4stems/resolve/main/mel_band_roformer_4stems_large_ver1.ckpt",
+                "digest": "sha256:a2ca1ac95e203d2630994c3d4a0cebabd7160e70bb010adab794843340fb704f"
             },
             {
                 "kind": "config_msst",
@@ -1046,7 +1109,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-Inst/resolve/main/inst_v1e_plus.ckpt"
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-Inst/resolve/main/inst_v1e_plus.ckpt",
+                "digest": "sha256:6a4ddba739f0352407fb6e18b29206b82318ec427fe37fcedb0f83241e4e15fb"
             },
             {
                 "kind": "config_msst",
@@ -1091,7 +1155,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-Inst/resolve/main/inst_v1_plus_test.ckpt"
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-Inst/resolve/main/inst_v1_plus_test.ckpt",
+                "digest": "sha256:25fe6ab4db95a6c20468f6c082f9bfc30904b8727ed8d069110bd0960da4879a"
             },
             {
                 "kind": "config_msst",
@@ -1126,7 +1191,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/meskvlla33/metal_roformer_preview/resolve/main/metal_roformer_inst_mesk_preview.ckpt"
+                "url": "https://huggingface.co/meskvlla33/metal_roformer_preview/resolve/main/metal_roformer_inst_mesk_preview.ckpt",
+                "digest": "sha256:46f3f92abdd76ebe192f7c9e6167bf4d75fcffd21628f7844e7e48da42bcd7eb"
             },
             {
                 "kind": "config_msst",
@@ -1158,7 +1224,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/resolve/main/big_beta6x.ckpt"
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/resolve/main/big_beta6x.ckpt",
+                "digest": "sha256:e16d702f4e20f13d60b293541c1dea75cb4414a5846b36780e28ef70352a4e5c"
             },
             {
                 "kind": "config_msst",
@@ -1180,7 +1247,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/INSTV8N.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/INSTV8N.ckpt",
+                "digest": "sha256:25920c876e601d4ccbf1684b19ecdac4b9fcfcc7f48d2c095d81040ec3fecbea"
             },
             {
                 "kind": "config_msst",
@@ -1207,7 +1275,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/Kim-Mel-Band-Roformer-FT/resolve/main/kimmel_unwa_ft3_prev.ckpt"
+                "url": "https://huggingface.co/pcunwa/Kim-Mel-Band-Roformer-FT/resolve/main/kimmel_unwa_ft3_prev.ckpt",
+                "digest": "sha256:1b10db0095c42576a32aeb3a1c8054af9dea0333e1c38477091d78316a007e52"
             },
             {
                 "kind": "config_msst",
@@ -1236,7 +1305,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/INSTV10.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/INSTV10.ckpt",
+                "digest": "sha256:6eb987c3fd93c66adfea2e4284d1da668e80a98f75b6436b4be454780a728182"
             },
             {
                 "kind": "config_msst",
@@ -1262,7 +1332,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gaboxBv3.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gaboxBv3.ckpt",
+                "digest": "sha256:5578545e094e584835b3184310ed1b12072f15d4b6ed8f4359ecc17358a66676"
             },
             {
                 "kind": "config_msst",
@@ -1280,7 +1351,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/Inst_GaboxFVX.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/Inst_GaboxFVX.ckpt",
+                "digest": "sha256:545ef13b0cdbac505818a38db98e09c54e7c03ea17b4e0c895a531bfa352fa59"
             },
             {
                 "kind": "config_msst",
@@ -1298,7 +1370,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/INSTV7N.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/INSTV7N.ckpt",
+                "digest": "sha256:b0ca36af5d1314be46b56c8a53b6be02f98511fa5d7e3e196fd895755e65be3c"
             },
             {
                 "kind": "config_msst",
@@ -1319,7 +1392,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/Inst_GaboxV7.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/Inst_GaboxV7.ckpt",
+                "digest": "sha256:e725a860176acb475d983a1ddd9c1a99a619c69cc9ceda808dd294d10db746a5"
             },
             {
                 "kind": "config_msst",
@@ -1346,7 +1420,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/kar_gabox.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/kar_gabox.ckpt",
+                "digest": "sha256:303fc631e7aa587e9dc1e6ac4bb3667c6ba53aacb6b6a90abcfcf57935b92bd8"
             },
             {
                 "kind": "config_msst",
@@ -1372,7 +1447,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/instv7beta3.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/instv7beta3.ckpt",
+                "digest": "sha256:bc33cc26ab805b057e47a753241bc17102564af4bc1c0e76364f3bb6a31c09d2"
             },
             {
                 "kind": "config_msst",
@@ -1403,7 +1479,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/instv7beta2.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/instv7beta2.ckpt",
+                "digest": "sha256:11dcd18b2bca5ff189924145a52c9e1a145632c7659aac59b239221dca4f1703"
             },
             {
                 "kind": "config_msst",
@@ -1435,7 +1512,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/instv7beta.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/experimental/instv7beta.ckpt",
+                "digest": "sha256:1b4f12d81fd7fb02f38609216d59f0e42b3dca655fd90ca275ab5321b3e4d9aa"
             },
             {
                 "kind": "config_msst",
@@ -1466,7 +1544,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/Aname-Tommy/MelBandRoformers/resolve/main/FullnessVocalModel.ckpt"
+                "url": "https://huggingface.co/Aname-Tommy/MelBandRoformers/resolve/main/FullnessVocalModel.ckpt",
+                "digest": "sha256:a64a27a672b457de23d9decd1fc7b58b0664a9f4f24bb43af154708e2ef07d2f"
             },
             {
                 "kind": "config_msst",
@@ -1495,7 +1574,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_fv4.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_fv4.ckpt",
+                "digest": "sha256:1a9657de5fd3ed87ad4fd1a9d2069743ecb33424836973ad0f3288e2a64e90bc"
             },
             {
                 "kind": "config_msst",
@@ -1525,7 +1605,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/resolve/main/big_beta6.ckpt"
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/resolve/main/big_beta6.ckpt",
+                "digest": "sha256:f51cbb94b4ed5c36cb36fd2024236a8af3ed6886567981702ad6f094b2c6c820"
             },
             {
                 "kind": "config_msst",
@@ -1558,7 +1639,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/INSTV6N.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/INSTV6N.ckpt",
+                "digest": "sha256:802f3e5d183d7c4b50dea147c320e61634f5be6ff55fa899fdebeaf0f3cf7f42"
             },
             {
                 "kind": "config_msst",
@@ -1583,7 +1665,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/denoisedebleed.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/denoisedebleed.ckpt",
+                "digest": "sha256:91aa7a546ed2e93482e4629c982d35b0d258bb3de6eeab497fd91658cc86c7fd"
             },
             {
                 "kind": "config_msst",
@@ -1602,7 +1685,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/INSTV5N.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/INSTV5N.ckpt",
+                "digest": "sha256:175203923fac3e52ae00e7e37d41e8a7fef5020b6ee4e4144f4786daabc54b34"
             },
             {
                 "kind": "config_msst",
@@ -1620,7 +1704,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/Aname-Tommy/Mel_Band_Roformer_small/resolve/main/mel_band_roformer_small.ckpt"
+                "url": "https://huggingface.co/Aname-Tommy/Mel_Band_Roformer_small/resolve/main/mel_band_roformer_small.ckpt",
+                "digest": "sha256:20cc592a9dff7dc34a3fb0bf399cd68c950b03ff5f334725e74feb3d0186272f"
             },
             {
                 "kind": "config_msst",
@@ -1638,7 +1723,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_Fv3.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_Fv3.ckpt",
+                "digest": "sha256:49d81446b34a7848446efde7898b25bdc32fe872c2393617acb5356649f7ea93"
             },
             {
                 "kind": "config_msst",
@@ -1664,7 +1750,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/INSTV6.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/INSTV6.ckpt",
+                "digest": "sha256:677951b8556a27abe32e39705640638826e78101fa901a51ad73d20522be6d25"
             },
             {
                 "kind": "config_msst",
@@ -1682,7 +1769,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gabox3.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gabox3.ckpt",
+                "digest": "sha256:f9ec9f299cf617bf6afe1c382f4b0761cd9bee78323da94889951812328e10fb"
             },
             {
                 "kind": "config_msst",
@@ -1713,7 +1801,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/anvuew/dereverb_mel_band_roformer/resolve/main/dereverb_mel_band_roformer_mono_anvuew_sdr_20.4029.ckpt"
+                "url": "https://huggingface.co/anvuew/dereverb_mel_band_roformer/resolve/main/dereverb_mel_band_roformer_mono_anvuew_sdr_20.4029.ckpt",
+                "digest": "sha256:f099ee717eb57fb0ad5eb0e7c9ad6787c36168140b61ce2b158b90c2c4ecee79"
             },
             {
                 "kind": "config_msst",
@@ -1736,7 +1825,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/Kim-Mel-Band-Roformer-FT/resolve/main/kimmel_unwa_ft2_bleedless.ckpt"
+                "url": "https://huggingface.co/pcunwa/Kim-Mel-Band-Roformer-FT/resolve/main/kimmel_unwa_ft2_bleedless.ckpt",
+                "digest": "sha256:3c450bd66a98b49dd03231fc5ebb84121eef8418236b179423c2b171d62b04d9"
             },
             {
                 "kind": "config_msst",
@@ -1768,7 +1858,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/INSTV5.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/INSTV5.ckpt",
+                "digest": "sha256:38e935cf1e97afcc1de84d0bdb87dd8090bad530fa0df28e707d16448e1d38e2"
             },
             {
                 "kind": "config_msst",
@@ -1786,7 +1877,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/SYH99999/MelBandRoformerSYHFTB1/resolve/main/model3.ckpt"
+                "url": "https://huggingface.co/SYH99999/MelBandRoformerSYHFTB1/resolve/main/model3.ckpt",
+                "digest": "sha256:b889c8efdf19e3332e5f29834545aaa2c0287d3125c08dfa00273170702ad2cb"
             },
             {
                 "kind": "config_msst",
@@ -1817,7 +1909,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gaboxFv3.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gaboxFv3.ckpt",
+                "digest": "sha256:fbb229209a8942d34664e19d2f4862e357ea3108a4e8c04b69aa0aba523a4481"
             },
             {
                 "kind": "config_msst",
@@ -1842,7 +1935,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/BSRoformerVocTest/resolve/main/voc_gaboxBSR.ckpt"
+                "url": "https://huggingface.co/GaboxR67/BSRoformerVocTest/resolve/main/voc_gaboxBSR.ckpt",
+                "digest": "sha256:18d58efe5e949e70fab11b875329af6d06ef11ccc29574bfe943fb57cc827f38"
             },
             {
                 "kind": "config_msst",
@@ -1860,7 +1954,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_gaboxFv1.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_gaboxFv1.ckpt",
+                "digest": "sha256:c4dff354d81152d1b4321f6491f242c060919148239fbfe22a1015513de4a7fe"
             },
             {
                 "kind": "config_msst",
@@ -1883,7 +1978,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_gaboxFv2.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_gaboxFv2.ckpt",
+                "digest": "sha256:2888813aa5b519941fa8548efc5a4331d63c61909007eb17fe95c367be230196"
             },
             {
                 "kind": "config_msst",
@@ -1906,7 +2002,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_gabox.ckpt"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_gabox.ckpt",
+                "digest": "sha256:ff802a67501fac70587c3ff4e8dbc89c2558e7d8911c92222dfea2aaac208517"
             },
             {
                 "kind": "config_msst",
@@ -1937,7 +2034,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/RareSirMix/AIModelRehosting/resolve/main/bs_roformer_male_female_by_aufr33_sdr_7.2889.ckpt"
+                "url": "https://huggingface.co/RareSirMix/AIModelRehosting/resolve/main/bs_roformer_male_female_by_aufr33_sdr_7.2889.ckpt",
+                "digest": "sha256:3cf11736d1b42a11ae55d8299316585921477dd2a671b24b663660846ca9861b"
             },
             {
                 "kind": "config_msst",
@@ -1963,7 +2061,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/Kim-Mel-Band-Roformer-FT/resolve/main/kimmel_unwa_ft2.ckpt"
+                "url": "https://huggingface.co/pcunwa/Kim-Mel-Band-Roformer-FT/resolve/main/kimmel_unwa_ft2.ckpt",
+                "digest": "sha256:5ed7b9e4c2eebbec7a7e5e8113058f7b68ba5e6048db8eaccfbbeb884c7884c0"
             },
             {
                 "kind": "config_msst",
@@ -1997,7 +2096,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/becruily/mel-band-roformer-instrumental/resolve/main/mel_band_roformer_instrumental_becruily.ckpt"
+                "url": "https://huggingface.co/becruily/mel-band-roformer-instrumental/resolve/main/mel_band_roformer_instrumental_becruily.ckpt",
+                "digest": "sha256:a8da6632a1c25efb1c9be783ce9ea367d226d4b918cd6c3717c8b1d7a396041d"
             },
             {
                 "kind": "config_msst",
@@ -2028,7 +2128,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/becruily/mel-band-roformer-vocals/resolve/main/mel_band_roformer_vocals_becruily.ckpt"
+                "url": "https://huggingface.co/becruily/mel-band-roformer-vocals/resolve/main/mel_band_roformer_vocals_becruily.ckpt",
+                "digest": "sha256:a05961310cc55fbb901290c2e8be02682942f73522b6ac76bf2ec11e347ed95a"
             },
             {
                 "kind": "config_msst",
@@ -2055,7 +2156,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/BS-Roformer-Inst-EXP-Value-Residual/resolve/main/BS_Inst_EXP_VRL.ckpt"
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-Inst-EXP-Value-Residual/resolve/main/BS_Inst_EXP_VRL.ckpt",
+                "digest": "sha256:c035e2a102243405e45bf33faa175f62fd7118f63b62771fafdf81062b804131"
             },
             {
                 "kind": "config_msst",
@@ -2101,7 +2203,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/Sucial/Chorus_Male_Female_BS_Roformer/resolve/main/model_chorus_bs_roformer_ep_267_sdr_24.1275.ckpt"
+                "url": "https://huggingface.co/Sucial/Chorus_Male_Female_BS_Roformer/resolve/main/model_chorus_bs_roformer_ep_267_sdr_24.1275.ckpt",
+                "digest": "sha256:123c00786bdbc6bd462dddb35cd21fd6ae99ab8319f93f63a8abc1012e593d94"
             },
             {
                 "kind": "config_msst",
@@ -2136,7 +2239,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/Kim-Mel-Band-Roformer-FT/resolve/main/kimmel_unwa_ft.ckpt"
+                "url": "https://huggingface.co/pcunwa/Kim-Mel-Band-Roformer-FT/resolve/main/kimmel_unwa_ft.ckpt",
+                "digest": "sha256:e6bd8d333880191254a6ef6be3cb0ffa4dda9d3282e36b0cce2e88a660e00d39"
             },
             {
                 "kind": "config_msst",
@@ -2199,7 +2303,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/resolve/main/big_beta5e.ckpt"
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/resolve/main/big_beta5e.ckpt",
+                "digest": "sha256:32b876e1163716a9a007438b5a5107069586aa9b9ca653a5f63013b1edf6920c"
             },
             {
                 "kind": "config_msst",
@@ -2227,7 +2332,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/Sucial/Dereverb-Echo_Mel_Band_Roformer/resolve/main/dereverb-echo_mel_band_roformer_sdr_10.0169.ckpt"
+                "url": "https://huggingface.co/Sucial/Dereverb-Echo_Mel_Band_Roformer/resolve/main/dereverb-echo_mel_band_roformer_sdr_10.0169.ckpt",
+                "digest": "sha256:cd2b737a394cfb80cd48cc9fcbaf89f5f4062f6b93066c2911617a06d8b7860a"
             },
             {
                 "kind": "config_msst",
@@ -2254,7 +2360,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-Inst/resolve/main/inst_v1e.ckpt"
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-Inst/resolve/main/inst_v1e.ckpt",
+                "digest": "sha256:df2bcdb8838b88264f5381dbb0ccd84a9926c9775cf548c34d8846f5cd20fe96"
             },
             {
                 "kind": "config_msst",
@@ -2292,7 +2399,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-Inst/resolve/main/melband_roformer_inst_v2.ckpt"
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-Inst/resolve/main/melband_roformer_inst_v2.ckpt",
+                "digest": "sha256:bd19766620f7d6f58fdf7aaada7e89907fe41bc64490ce3faa9a6dab15d6e1f2"
             },
             {
                 "kind": "config_msst",
@@ -2313,7 +2421,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-InstVoc-Duality/resolve/main/melband_roformer_instvox_duality_v2.ckpt"
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-InstVoc-Duality/resolve/main/melband_roformer_instvox_duality_v2.ckpt",
+                "digest": "sha256:b4a69558708f2857e36ac86a0e03ed95c4e3d8b9c5b8113963987d0d7df7e20f"
             },
             {
                 "kind": "config_msst",
@@ -2339,7 +2448,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-InstVoc-Duality/resolve/main/melband_roformer_instvoc_duality_v1.ckpt"
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-InstVoc-Duality/resolve/main/melband_roformer_instvoc_duality_v1.ckpt",
+                "digest": "sha256:4640a59d454bf9f69d67460592ab71e7cdce3afa0c0a6f0cf4500bb4ac0b8381"
             },
             {
                 "kind": "config_msst",
@@ -2365,7 +2475,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-Inst/resolve/main/melband_roformer_inst_v1.ckpt"
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-Inst/resolve/main/melband_roformer_inst_v1.ckpt",
+                "digest": "sha256:6f88d96958b2b7dec32286b0ced00bbcbd37e28741cad9038758b1eaf9b5c057"
             },
             {
                 "kind": "config_msst",
@@ -2399,7 +2510,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/resolve/main/melband_roformer_big_beta4.ckpt"
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/resolve/main/melband_roformer_big_beta4.ckpt",
+                "digest": "sha256:700a9bd3831d4f7f44cc0019b238774e31045bcbc361fbb69235535c40fc1454"
             },
             {
                 "kind": "config_msst",
@@ -2426,7 +2538,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/resolve/main/melband_roformer_big_beta3.ckpt"
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/resolve/main/melband_roformer_big_beta3.ckpt",
+                "digest": "sha256:e67ca768e2fe3ef61a83702dcafa861df8a70b17a30262c4c00195e632afcd6b"
             },
             {
                 "kind": "config_msst",
@@ -2458,7 +2571,6 @@
         "purpose": "separation",
         "architecture": "bs_roformer",
         "created_at": "2024-09-24T14:48:59.000Z",
-        "finetuned_from": "bs_roformer-viperx-1297",
         "output": ["vocals"],
         "metrics": [
             {
@@ -2480,7 +2592,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/jarredou/unwa_bs_roformer/resolve/main/BS-Roformer_LargeV1.ckpt"
+                "url": "https://huggingface.co/jarredou/unwa_bs_roformer/resolve/main/BS-Roformer_LargeV1.ckpt",
+                "digest": "sha256:3d1334565bb9e4c08f4b3891d5ac39e269b511baf66024a3fd8a10112d52b945"
             },
             {
                 "kind": "config_msst",
@@ -2511,7 +2624,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/anvuew/dereverb_mel_band_roformer/resolve/main/dereverb_mel_band_roformer_anvuew_sdr_19.1729.ckpt"
+                "url": "https://huggingface.co/anvuew/dereverb_mel_band_roformer/resolve/main/dereverb_mel_band_roformer_anvuew_sdr_19.1729.ckpt",
+                "digest": "sha256:9262877b87e9ebb0fb808a456b0a411fa677f5df31c8383c1254af531c078970"
             },
             {
                 "kind": "config_msst",
@@ -2534,7 +2648,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/jarredou/aufr33_jarredou_MDXv3_DeReverb/resolve/main/dereverb_mdx23c_sdr_6.9096.ckpt"
+                "url": "https://huggingface.co/jarredou/aufr33_jarredou_MDXv3_DeReverb/resolve/main/dereverb_mdx23c_sdr_6.9096.ckpt",
+                "digest": "sha256:eae2471b707758d74db38ac1b1d5800e12f57c4e9d1ebbb2faf004b8e086e914"
             },
             {
                 "kind": "config_msst",
@@ -2557,7 +2672,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/jarredou/aufr33-viperx-karaoke-melroformer-model/resolve/main/mel_band_roformer_karaoke_aufr33_viperx_sdr_10.1956.ckpt"
+                "url": "https://huggingface.co/jarredou/aufr33-viperx-karaoke-melroformer-model/resolve/main/mel_band_roformer_karaoke_aufr33_viperx_sdr_10.1956.ckpt",
+                "digest": "sha256:1de20d459332fe8869aeb01327a31df0032262706e1365114e852dc271779813"
             },
             {
                 "kind": "config_msst",
@@ -2575,7 +2691,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/KimberleyJSN/melbandroformer/resolve/main/MelBandRoformer.ckpt"
+                "url": "https://huggingface.co/KimberleyJSN/melbandroformer/resolve/main/MelBandRoformer.ckpt",
+                "digest": "sha256:87201f4d31afb5bc79993230fc49446918425574db48c01c405e44f365c7559e"
             },
             {
                 "kind": "config_msst",
@@ -2593,7 +2710,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/jarredou/aufr33_MelBand_Denoise/resolve/main/denoise_mel_band_roformer_aufr33_sdr_27.9959.ckpt"
+                "url": "https://huggingface.co/jarredou/aufr33_MelBand_Denoise/resolve/main/denoise_mel_band_roformer_aufr33_sdr_27.9959.ckpt",
+                "digest": "sha256:7c1c39191edc34e942ca7f2346ce6b6c0e1208a5f76349ffce6f696bd12910de"
             },
             {
                 "kind": "config_msst",
@@ -2616,7 +2734,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/jarredou/aufr33_MelBand_Denoise/resolve/main/denoise_mel_band_roformer_aufr33_aggr_sdr_27.9768.ckpt"
+                "url": "https://huggingface.co/jarredou/aufr33_MelBand_Denoise/resolve/main/denoise_mel_band_roformer_aufr33_aggr_sdr_27.9768.ckpt",
+                "digest": "sha256:a25e3b233722cd81e2de7b8e798a3fef29d4b9799ccacda60b0dc958a1e2a5bb"
             },
             {
                 "kind": "config_msst",
@@ -2629,8 +2748,18 @@
         "authors": ["CPJKU"],
         "purpose": "beat_tracking",
         "architecture": "beat_this",
+        "config_id": "beat_this-cpjku",
         "created_at": "2024-07-25T09:42:57Z",
         "output": ["beat", "downbeat"],
+        "description": [
+            {
+                "content": [
+                    "Trained on all the data used by the 'Modeling Beats and Downbeats with a Time-Frequency Transformer' system by Hung et al. (except GTZAN dataset), with three different seeds.",
+                    "This corresponds to 'limited to data of [10] in Table 2 of the paper."
+                ],
+                "author": "CPJKU"
+            }
+        ],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -2651,8 +2780,19 @@
         "authors": ["CPJKU"],
         "purpose": "beat_tracking",
         "architecture": "beat_this",
+        "config_id": "beat_this-cpjku",
         "created_at": "2024-07-25T09:41:27Z",
         "output": ["beat", "downbeat"],
+        "description": [
+            {
+                "content": [
+                    "Main model, trained on the single split described in Section 4.1 of the paper, with three different seeds.",
+                    "This corresponds to 'Our system' in Table 3 of the paper.",
+                    "Note that this model is trained on the GTZAN dataset."
+                ],
+                "author": "CPJKU"
+            }
+        ],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -2678,7 +2818,8 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/anvuew/deverb_bs_roformer/resolve/main/deverb_bs_roformer_8_256dim_8depth.ckpt"
+                "url": "https://huggingface.co/anvuew/deverb_bs_roformer/resolve/main/deverb_bs_roformer_8_256dim_8depth.ckpt",
+                "digest": "sha256:ee204fc59fa4111674536d47bd1ef3759acb9f7cf5a759ec4b867a828bb76c64"
             },
             {
                 "kind": "config_msst",
@@ -2691,6 +2832,7 @@
         "authors": ["CPJKU"],
         "purpose": "beat_tracking",
         "architecture": "beat_this",
+        "config_id": "beat_this-cpjku-small",
         "created_at": "2024-07-11T10:30:32Z",
         "output": ["beat", "downbeat"],
         "resources": [
@@ -2754,8 +2896,18 @@
         "authors": ["CPJKU"],
         "purpose": "beat_tracking",
         "architecture": "beat_this",
+        "config_id": "beat_this-cpjku",
         "created_at": "2024-07-02T16:03:16Z",
         "output": ["beat", "downbeat"],
+        "description": [
+            {
+                "content": [
+                    "Main model, trained on all data except the GTZAN dataset, with three different seeds.",
+                    "This corresponds to 'Our system' in Table 2 of the paper."
+                ],
+                "author": "CPJKU"
+            }
+        ],
         "resources": [
             {
                 "kind": "model_ckpt",

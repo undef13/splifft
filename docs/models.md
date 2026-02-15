@@ -2,34 +2,51 @@ More information on the expected JSON schema for the configuration can be found 
 
 ## Supported models
 
-To view the list of models in the default registry:
+To view the list of all models in the default registry (including those that are not locally available):
 
 ```command
-$ splifft ls
-id                                          size     created_at  purpose        outputs                  
-mel_roformer-gabox-flowers_v10              489.6M   2026-01-04  separation     instrum                  
-mel_roformer-becruily-deux                  435.0M   2025-12-29  separation     vocals,instrum           
-mel_roformer-gabox-inst_fv9                 913.1M   2025-12-23  separation     instrum                  
-bs_roformer-unwa-hyperace_v2_vocals         288.7M   2025-12-20  separation     vocals                   
-bs_roformer-unwa-hyperace_v2_instrum        288.7M   2025-12-18  separation     instrum                  
-mel_roformer-gabox-inst_fv7b                913.0M   2025-11-22  separation     instrum                  
-mel_roformer-gabox-voc_fv7_beta3            913.0M   2025-11-22  separation     vocals                   
-mel_roformer-gabox-voc_fv7_beta2            913.0M   2025-11-13  separation     vocals
+$ splifft ls -a
+id                                               size  created_at  purpose        outputs       
+mel_roformer-gabox-flowers_v10              ⤓  489.6M  2026-01-04  separation     instrum       
+mel_roformer-becruily-deux                  ⤓  435.0M  2025-12-29  separation     vocals,instrum
+mel_roformer-gabox-inst_fv9                 ⤓  913.1M  2025-12-23  separation     instrum       
+bs_roformer-unwa-hyperace_v2_vocals         ⤓  288.7M  2025-12-20  separation     vocals        
+bs_roformer-unwa-hyperace_v2_instrum        ⤓  288.7M  2025-12-18  separation     instrum       
+mel_roformer-gabox-inst_fv7b                ⤓  913.0M  2025-11-22  separation     instrum       
 ...
 ```
+
+To pull a model (optionally pass `-f` to force overwrite):
+
+```command
+$ splifft pull bs_roformer-fruit-sw
+[00:00:42] INFO     wrote config for 'bs_roformer-fruit-sw' at         io.py:186
+                    /home/undef13/.cache/splifft/bs_roformer-fruit-sw
+                    /config.json                                                      
+           INFO     pulling weights for 'bs_roformer-fruit-sw'         io.py:195
+[00:00:48] INFO     verified digest                                    io.py:276
+                    'sha256:06fd1dbadac852fca293f306b1791aac4f8e01cb37          
+                    ea682485a644ee692aa58b'                                     
+           INFO     checkpoint @                                 __main__.py:220
+                    /home/undef13/.cache/splifft/bs_roformer-fruit-sw                
+                    /model.ckpt (350.4 M)                                       
+           INFO     config @                                     __main__.py:224
+                    /home/undef13/.cache/splifft/bs_roformer-fruit-sw                
+                    /config.json
+```
+
+To view details about a model, use `splifft info bs_roformer-fruit-sw` (optionally pass in `-a` to view model architecture details)
 
 ### BS Roformer
 
 This is an audio-to-audio spectrogram-masking model.
 
-- Checkpoint: [`roformer-fp16.pt`](https://github.com/undef13/splifft/releases/download/v0.0.1/roformer-fp16.pt)
-- Configuration: [`bs_roformer.json`](https://github.com/undef13/splifft/blob/main/data/config/bs_roformer.json)
 - [`config.model`][splifft.models.bs_roformer.BSRoformerParams]
 - [`config.model_type = "bs_roformer" or "mel_roformer"`][splifft.config.Config.model_type]
 
 In `splifft`, Mel Roformers are BS Roformers with the [`splifft.models.bs_roformer.MelBandsConfig`][] set.
 
-## Visualizations
+#### Visualizations
 
 The following are quick comparisons for the quality of different models, as evaluated on MVSep. Support for running these models are not yet implemented but may come in a future release.
 

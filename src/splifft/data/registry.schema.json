@@ -170,6 +170,18 @@
           ],
           "title": "Architecture"
         },
+        "config_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Config Id"
+        },
         "created_at": {
           "anyOf": [
             {
@@ -181,18 +193,6 @@
           ],
           "default": null,
           "title": "Created At"
-        },
-        "finetuned_from": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Finetuned From"
         },
         "output": {
           "items": {

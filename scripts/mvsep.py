@@ -20,7 +20,6 @@ from rich.logging import RichHandler
 from rich.progress import Progress, TaskID
 
 import splifft.types as t
-from splifft import PATH_DOCS_ASSETS
 
 logging.basicConfig(level="INFO", format="%(message)s", datefmt="[%X]", handlers=[RichHandler()])
 logger = logging.getLogger(__name__)
@@ -30,9 +29,10 @@ app = typer.Typer(
     no_args_is_help=True,
 )
 
+PATH_BASE = Path(__file__).parent.parent
 USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.3"
 BASE_URL_API = "https://mvsep.com/api"
-PATH_MVSEP = PATH_DOCS_ASSETS / "mvsep"
+PATH_MVSEP = PATH_BASE / "docs" / "assets" / "mvsep"
 PATH_MVSEP_QUALITY = PATH_MVSEP / "quality"
 
 
