@@ -75,6 +75,10 @@ def test_model_config_to_concrete_extra_fields() -> None:
         def output_type(self) -> t.ModelOutputType:
             return "waveform"
 
+        @property
+        def inference_archetype(self) -> t.InferenceArchetype:
+            return "standard_end_to_end"
+
     lazy_model_config = LazyModelConfig.model_validate(MODEL_CONFIG_EXTRA)
     model_config = lazy_model_config.to_concrete(MyModelParam)
     assert isinstance(model_config, MyModelParam)
@@ -193,5 +197,6 @@ def test_lazy_model_config_protocol() -> None:
     class _ModelParam(LazyModelConfig):
         input_type: t.ModelInputType
         output_type: t.ModelOutputType
+        inference_archetype: t.InferenceArchetype
 
     assert set(_ModelParam.__pydantic_fields__) == ModelParamsLike.__protocol_attrs__  # type: ignore

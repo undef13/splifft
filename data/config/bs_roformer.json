@@ -28,9 +28,17 @@
         "transformer_residual_dtype": "float32"
     },
     "inference": {
-        "normalize_input_audio": true,
         "batch_size": 4,
         "force_weights_dtype": "float16"
+    },
+    "normalization": {
+        "enabled": true
+    },
+    "waveform_chunking": {
+        "method": "overlap_add_windowed",
+        "overlap_ratio": 0.5,
+        "window_shape": "hann",
+        "padding_mode": "reflect"
     },
     "masking": {
         "add_sub_dtype": "float32",

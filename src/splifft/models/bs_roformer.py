@@ -123,6 +123,10 @@ depth by 1.
     def output_type(self) -> t.ModelOutputType:
         return "spectrogram_mask"
 
+    @property
+    def inference_archetype(self) -> t.InferenceArchetype:
+        return "frequency_masking"
+
 
 def l2norm(t: Tensor) -> Tensor:
     return F.normalize(t, dim=-1, p=2)

@@ -1,10 +1,86 @@
 ## Basic inference
 
-This example demonstrates the lower level API for inference usecases.
-In the future, we will have a high level API for convenience.
+Use the [`splifft.inference.InferenceEngine.from_pretrained`][] for a convenient high level API.
 
-```py title="inference.py"
---8<-- "docs/examples/inference.py"
+=== "inference.py"
+
+    ```py
+    --8<-- "docs/examples/inference.py:2"
+    ```
+
+=== "Output"
+
+    ```txt
+    [00:00:36] Stage.Started(stage='normalize', total_batches=None)
+    [00:00:36] Stage.Completed(stage='normalize')
+    [00:00:38] ChunkProcessed(batch_index=1, total_batches=9)
+    [00:00:39] ChunkProcessed(batch_index=2, total_batches=9)
+    [00:00:41] ChunkProcessed(batch_index=3, total_batches=9)
+    [00:00:42] ChunkProcessed(batch_index=4, total_batches=9)
+    [00:00:43] ChunkProcessed(batch_index=5, total_batches=9)
+    [00:00:44] ChunkProcessed(batch_index=6, total_batches=9)
+    [00:00:46] ChunkProcessed(batch_index=7, total_batches=9)
+    [00:00:47] ChunkProcessed(batch_index=8, total_batches=9)
+    [00:00:47] ChunkProcessed(batch_index=9, total_batches=9)
+    [00:00:47] Stage.Started(stage='stitch', total_batches=None)
+    [00:00:47] Stage.Completed(stage='stitch')
+    [00:00:47] Stage.Started(stage='collect_outputs', total_batches=None)
+    [00:00:47] Stage.Completed(stage='collect_outputs')
+    [00:00:47] Stage.Started(stage='derive_stems', total_batches=None)
+    [00:00:47] Stage.Completed(stage='derive_stems')
+    InferenceOutput(
+        outputs={
+            'bass': tensor([[-1.3643e-05, -1.3736e-05, -1.3643e-05,  ..., 
+    -1.3958e-05,
+            -1.3730e-05, -1.3960e-05],
+            [-1.3811e-05, -1.3586e-05, -1.3811e-05,  ..., -1.3738e-05,
+            -1.3953e-05, -1.3736e-05]], device='cuda:0'),
+            'drums': tensor([[-1.3493e-05, -1.4200e-05, -1.3493e-05,  ..., 
+    -1.2080e-05,
+            -1.2848e-05, -1.2020e-05],
+            [-1.3936e-05, -1.3758e-05, -1.3936e-05,  ..., -1.1843e-05,
+            -1.2818e-05, -1.1989e-05]], device='cuda:0'),
+            'other': tensor([[-7.5168e-07, -6.3413e-07, -7.5222e-07,  ...,  
+    1.9690e-05,
+            -3.3400e-05,  2.5086e-05],
+            [-7.4173e-07, -6.7063e-07, -7.4244e-07,  ...,  3.2220e-05,
+            -3.7293e-05,  2.0826e-05]], device='cuda:0'),
+            'vocals': tensor([[-1.3789e-05, -1.3904e-05, -1.3789e-05,  ..., 
+    -1.3930e-05,
+            -1.3755e-05, -1.4037e-05],
+            [-1.3860e-05, -1.3833e-05, -1.3860e-05,  ..., -1.3848e-05,
+            -1.3747e-05, -1.3913e-05]], device='cuda:0'),
+            'guitar': tensor([[-1.3846e-05, -1.3846e-05, -1.3846e-05,  ..., 
+    -1.3928e-05,
+            -1.3760e-05, -1.3928e-05],
+            [-1.3910e-05, -1.3782e-05, -1.3910e-05,  ..., -1.3871e-05,
+            -1.3818e-05, -1.3871e-05]], device='cuda:0'),
+            'piano': tensor([[-1.3789e-05, -1.3902e-05, -1.3789e-05,  ..., 
+    -1.3933e-05,
+            -1.3759e-05, -1.3933e-05],
+            [-1.3881e-05, -1.3810e-05, -1.3881e-05,  ..., -1.3849e-05,
+            -1.3843e-05, -1.3849e-05]], device='cuda:0'),
+            'instrumental': tensor([[ 1.3789e-05,  1.3904e-05,  1.3789e-05,  ...,  
+    4.7834e-05,
+            -2.5873e-05,  5.2345e-05],
+            [ 1.3860e-05,  1.3833e-05,  1.3860e-05,  ...,  6.8972e-05,
+            -3.0868e-05,  4.3241e-05]], device='cuda:0')
+        },
+        sample_rate=44100
+    )
+    ```
+
+This outputs [`splifft.inference.InferenceOutput`][], containing:
+
+- the dictionary of stem names to tensor (which can be audio or logits)
+- the [sample rate][splifft.types.SampleRate] of the input tensor (so you can save the audio)
+
+## Low level inference
+
+This gives you more control:
+
+```py title="inference_low_level.py"
+--8<-- "docs/examples/inference_low_level.py"
 ```
 
 ## Extending `splifft`

@@ -1,13 +1,33 @@
-More information on the expected JSON schema for the configuration can be found in [splifft.config.Config][].
+More information on the expected JSON schema for the configuration can be found in [`splifft.config.Config`][].
 
 ## Supported models
 
+To view the list of models in the default registry:
+
+```command
+$ splifft ls
+id                                          size     created_at  purpose        outputs                  
+mel_roformer-gabox-flowers_v10              489.6M   2026-01-04  separation     instrum                  
+mel_roformer-becruily-deux                  435.0M   2025-12-29  separation     vocals,instrum           
+mel_roformer-gabox-inst_fv9                 913.1M   2025-12-23  separation     instrum                  
+bs_roformer-unwa-hyperace_v2_vocals         288.7M   2025-12-20  separation     vocals                   
+bs_roformer-unwa-hyperace_v2_instrum        288.7M   2025-12-18  separation     instrum                  
+mel_roformer-gabox-inst_fv7b                913.0M   2025-11-22  separation     instrum                  
+mel_roformer-gabox-voc_fv7_beta3            913.0M   2025-11-22  separation     vocals                   
+mel_roformer-gabox-voc_fv7_beta2            913.0M   2025-11-13  separation     vocals
+...
+```
+
 ### BS Roformer
 
-- checkpoint: [`roformer-fp16.pt`](https://github.com/undef13/splifft/releases/download/v0.0.1/roformer-fp16.pt)
-- configuration: [`bs_roformer.json`](https://github.com/undef13/splifft/blob/main/data/config/bs_roformer.json)
+This is an audio-to-audio spectrogram-masking model.
+
+- Checkpoint: [`roformer-fp16.pt`](https://github.com/undef13/splifft/releases/download/v0.0.1/roformer-fp16.pt)
+- Configuration: [`bs_roformer.json`](https://github.com/undef13/splifft/blob/main/data/config/bs_roformer.json)
 - [`config.model`][splifft.models.bs_roformer.BSRoformerParams]
-- [`config.model_type = "bs_roformer"`][splifft.config.Config.model_type]
+- [`config.model_type = "bs_roformer" or "mel_roformer"`][splifft.config.Config.model_type]
+
+In `splifft`, Mel Roformers are BS Roformers with the [`splifft.models.bs_roformer.MelBandsConfig`][] set.
 
 ## Visualizations
 

@@ -22,15 +22,16 @@
         "transformer_dim": 128
     },
     "inference": {
-        "normalize_input_audio": false,
         "batch_size": 1,
         "force_weights_dtype": "float32"
     },
-    "chunking": {
-        "strategy": "spectrogram",
-        "overlap_ratio": 0.5,
-        "padding_mode": "reflect",
-        "trim_margin": 6
+    "normalization": {
+        "enabled": false
+    },
+    "logmel_chunking": {
+        "trim_margin": 6,
+        "overlap_mode": "keep_first",
+        "avoid_short_end": true
     },
     "output": {
         "file_format": "npy"

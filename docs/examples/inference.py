@@ -1,37 +1,28 @@
 # ruff: noqa: E402
-from pathlib import Path
+PATH_MIXTURE = "data/audio/input/3BFTio5296w.flac"
 
-PATH_CONFIG = Path("data/config/bs_roformer.json")
-PATH_CKPT = Path("data/models/roformer-fp16.pt")
-PATH_MIXTURE = Path("data/audio/input/3BFTio5296w.flac")
+from splifft.inference import InferenceEngine
 
-# 1. parse + validate a JSON *without* having to import a particular pytorch model.
-from splifft.config import Config
-
-config = Config.from_file(PATH_CONFIG)
-
-# 2. we now want to *lock in* the configuration to a specific model.
-from splifft.models import ModelMetadata
-from splifft.models.bs_roformer import BSRoformer, BSRoformerParams
-
-metadata = ModelMetadata(model_type="bs_roformer", params=BSRoformerParams, model=BSRoformer)
-model_params = config.model.to_concrete(metadata.params)
-
-# 3. `metadata` acts as a model builder
-from splifft.io import load_weights
-
-model = metadata.model(model_params)
-model = load_weights(model, PATH_CKPT, device="cpu")
-
-# 4. load audio and run inference by passing dependencies explicitly.
-from splifft.inference import run_inference_on_file
-from splifft.io import read_audio
-
-mixture = read_audio(
-    PATH_MIXTURE,
-    config.audio_io.target_sample_rate,
-    config.audio_io.force_channels,
+engine = InferenceEngine.from_pretrained(
+    config_path="data/config/bs_roformer.json",
+    checkpoint_path="data/models/roformer-fp16.pt",
 )
-stems = run_inference_on_file(mixture, config, model, model_params)
+result = engine.run(PATH_MIXTURE)
+print(result)
 
-print(list(stems.keys()))
+#
+# alternatively, to track progress for long files or on slow hardware:
+#
+
+import logging
+
+from splifft.inference import InferenceOutput
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s", datefmt="[%X]")
+logger = logging.getLogger(__name__)
+
+for event in engine.stream(PATH_MIXTURE):
+    if isinstance(event, InferenceOutput):
+        print(event)
+        break
+    logger.info(event)

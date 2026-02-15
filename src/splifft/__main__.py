@@ -1,10 +1,9 @@
 """Command line interface for `splifft`."""
 
 import logging
-import time
 from datetime import datetime
 from pathlib import Path
-from typing import Annotated, Callable, Optional, ParamSpec, TypeVar
+from typing import Annotated, Optional
 
 import typer
 from rich.logging import RichHandler
@@ -19,34 +18,6 @@ app = typer.Typer(
     help="A CLI for source separation.",
     no_args_is_help=True,
 )
-
-
-# TODO: migrate away from hardcoding.
-_DEFAULT_MODULE_NAME = "splifft.models.bs_roformer"
-_DEFAULT_CLASS_NAME = "BSRoformer"
-
-_SUPPORTED_MODELS = {
-    "bs_roformer": ("splifft.models.bs_roformer", "BSRoformer"),
-    "mel_roformer": ("splifft.models.bs_roformer", "BSRoformer"),
-    "beat_this": ("splifft.models.beat_this", "BeatThis"),
-}
-
-P = ParamSpec("P")
-T = TypeVar("T")
-
-
-def timed(func_name: str | None = None) -> Callable[[Callable[P, T]], Callable[P, T]]:
-    def decorator(func: Callable[P, T]) -> Callable[P, T]:
-        def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
-            start_time = time.perf_counter()
-            result = func(*args, **kwargs)
-            elapsed_time = time.perf_counter() - start_time
-            logger.info(f"{func_name or func.__qualname__} took {elapsed_time:.4f} seconds")
-            return result
-
-        return wrapper
-
-    return decorator
 
 
 @app.command()
@@ -85,19 +56,19 @@ def separate(
         ),
     ],
     module_name: Annotated[
-        str,
+        Optional[str],
         typer.Option(
             "--module",
             help="Python module containing the model and configuration class.",
         ),
-    ] = _DEFAULT_MODULE_NAME,
+    ] = None,
     class_name: Annotated[
-        str,
+        Optional[str],
         typer.Option(
             "--class",
             help="Name of the model class to load from the module.",
         ),
-    ] = _DEFAULT_CLASS_NAME,
+    ] = None,
     package_name: Annotated[
         Optional[str],
         typer.Option(
@@ -126,70 +97,72 @@ def separate(
     """Separates an audio file into its constituent stems."""
     import numpy as np
     import torch
+    from rich.progress import BarColumn, Progress, TaskProgressColumn, TextColumn, TimeElapsedColumn
     from torchcodec.encoders import AudioEncoder
 
-    from .config import Config
-    from .inference import run_inference_on_file
-    from .io import load_weights, read_audio
-    from .models import ModelMetadata
+    from .inference import ChunkProcessed, InferenceEngine, InferenceOutput
 
     use_cuda = not cpu and torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
-    logger.info(f"using {device=}")
+    logger.info(f"using {device}")
 
-    logger.info(f"loading configuration from {config_path=}")
-    config = Config.from_file(config_path)
-
-    if module_name == _DEFAULT_MODULE_NAME and class_name == _DEFAULT_CLASS_NAME:
-        if config.model_type in _SUPPORTED_MODELS:
-            module_name, class_name = _SUPPORTED_MODELS[config.model_type]
-
-    logger.info(f"loading model metadata `{class_name}` from module `{module_name}`")
-    model_metadata = ModelMetadata.from_module(
+    logger.info(f"loading inference engine from {config_path=} and {checkpoint_path=}")
+    engine = InferenceEngine.from_pretrained(
+        config_path=config_path,
+        checkpoint_path=checkpoint_path,
+        device=device,
         module_name=module_name,
-        model_cls_name=class_name,
-        model_type=config.model_type,
-        package=package_name,
+        class_name=class_name,
+        package_name=package_name,
     )
-    model_params_concrete = config.model.to_concrete(model_metadata.params)
-    model = model_metadata.model(model_params_concrete)
-    if config.inference.force_weights_dtype:
-        model = model.to(config.inference.force_weights_dtype)
-    logger.info(f"loading weights from {checkpoint_path=}")
-    model = load_weights(model, checkpoint_path, device).eval()
-    if (c := config.inference.compile_model) is not None:
-        logger.info("enabled torch compilation")
-        model = torch.compile(model, fullgraph=c.fullgraph, dynamic=c.dynamic, mode=c.mode)  # type: ignore
-
     mixture_paths = mixture_path.glob("*") if mixture_path.is_dir() else [mixture_path]
     for mixture_path in mixture_paths:
         logger.info(f"processing audio file: {mixture_path=}")
-        mixture = read_audio(
-            mixture_path,
-            config.audio_io.target_sample_rate,
-            config.audio_io.force_channels,
-            device=device,
-        )
-        output_results = timed("inference")(run_inference_on_file)(
-            mixture,
-            config=config,
-            model=model,
-            model_params_concrete=model_params_concrete,
-        )
+        output_results = None
+        sample_rate = None
+        with Progress(
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            TaskProgressColumn(),
+            TimeElapsedColumn(),
+            transient=True,
+        ) as progress:
+            task_id = progress.add_task("inference", total=None)
+            for event in engine.stream(mixture_path):
+                if isinstance(event, ChunkProcessed):
+                    progress.update(
+                        task_id,
+                        description="inference",
+                        total=event.total_batches,
+                        completed=event.batch_index,
+                    )
+                elif isinstance(event, InferenceOutput):
+                    output_results = event.outputs
+                    sample_rate = event.sample_rate
+                else:
+                    progress.update(task_id, description=event.stage)
+        if output_results is None:
+            raise RuntimeError("inference finished without outputs")
         curr_output_dir = output_dir or Path("./data/audio/output") / mixture_path.stem
         curr_output_dir.mkdir(parents=True, exist_ok=True)
 
         for key, data in output_results.items():
-            if model_params_concrete.output_type == "logits":
+            if engine.model_params_concrete.output_type == "logits":
                 output_file = (curr_output_dir / key).with_suffix(".npy")
                 np.save(output_file, data.cpu().float().numpy())
                 logger.info(f"wrote logits `{key}` to {output_file}")
             else:
-                if config.output.stem_names != "all" and key not in config.output.stem_names:
+                if (
+                    engine.config.output.stem_names != "all"
+                    and key not in engine.config.output.stem_names
+                ):
                     continue
-                output_file = (curr_output_dir / key).with_suffix(f".{config.output.file_format}")
-                encoder = AudioEncoder(samples=data.cpu(), sample_rate=mixture.sample_rate)
-                encoder.to_file(str(output_file), bit_rate=config.output.bit_rate)
+                output_file = (curr_output_dir / key).with_suffix(
+                    f".{engine.config.output.file_format}"
+                )
+                assert sample_rate is not None
+                encoder = AudioEncoder(samples=data.cpu(), sample_rate=sample_rate)
+                encoder.to_file(str(output_file), bit_rate=engine.config.output.bit_rate)
                 logger.info(f"wrote stem `{key}` to {output_file}")
 
 

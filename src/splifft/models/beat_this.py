@@ -63,6 +63,10 @@ class BeatThisParams(ModelParamsLike):
     def output_type(self) -> t.ModelOutputType:
         return "logits"
 
+    @property
+    def inference_archetype(self) -> t.InferenceArchetype:
+        return "event_detection"
+
 
 class PartialFTTransformer(nn.Module):
     """Takes a (batch, channels, freqs, time) input, applies self-attention and

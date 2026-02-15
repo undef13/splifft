@@ -26,7 +26,12 @@ from .models.utils.stft import IStft, Stft
 if TYPE_CHECKING:
     from typing import Mapping, Sequence
 
-    from .config import DerivedStemsConfig, MaskingConfig, StemName, StftConfig
+    from .config import (
+        DerivedStemsConfig,
+        MaskingConfig,
+        StemName,
+        StftConfig,
+    )
 
 
 _AudioTensorLike = TypeVar("_AudioTensorLike")
@@ -362,12 +367,16 @@ def create_w2w_model(
 
     if needs_stft:
         assert stft_cfg is not None
+        conv_dtype = stft_cfg.conv_dtype
+        if device.type == "cpu" and conv_dtype == torch.float16:
+            conv_dtype = torch.float32
+
         stft_module = Stft(
             n_fft=stft_cfg.n_fft,
             hop_length=stft_cfg.hop_length,
             win_length=stft_cfg.win_length,
             window_fn=lambda win_len: _get_window_fn(stft_cfg.window_shape, win_len, device),
-            conv_dtype=stft_cfg.conv_dtype,
+            conv_dtype=conv_dtype,
         ).to(device)
         if model_input_type == "spectrogram":
             preprocess = _create_stft_preprocessor(stft_module)
@@ -384,12 +393,21 @@ def create_w2w_model(
             win_length=stft_cfg.win_length,
             window_fn=lambda win_len: _get_window_fn(stft_cfg.window_shape, win_len, device),
         ).to(device)
+
+        add_sub_dtype = masking_cfg.add_sub_dtype
+        out_dtype = masking_cfg.out_dtype
+        if device.type == "cpu":
+            if add_sub_dtype == torch.float16:
+                add_sub_dtype = torch.float32
+            if out_dtype == torch.float16:
+                out_dtype = torch.float32
+
         postprocess = _create_spec_postprocessor(
             istft_module,
             num_channels,
             chunk_size,
-            masking_cfg.add_sub_dtype,
-            masking_cfg.out_dtype,
+            add_sub_dtype,
+            out_dtype,
             model_output_type,
         )
     return ModelWaveformToWaveform(model, preprocess, postprocess)
@@ -487,7 +505,7 @@ class LogMelSpect(nn.Module):
             f_max=f_max,
             n_mels=n_mels,
             mel_scale=mel_scale,
-            normalized=normalized,  # type: ignore
+            normalized=normalized,
             power=power,
         )
         self.log_multiplier = log_multiplier

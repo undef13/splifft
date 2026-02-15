@@ -26,92 +26,9 @@
       "title": "AudioIOConfig",
       "type": "object"
     },
-    "ChunkingConfig": {
-      "additionalProperties": false,
-      "properties": {
-        "strategy": {
-          "default": "waveform",
-          "enum": [
-            "waveform",
-            "spectrogram"
-          ],
-          "title": "Strategy",
-          "type": "string"
-        },
-        "method": {
-          "const": "overlap_add_windowed",
-          "default": "overlap_add_windowed",
-          "title": "Method",
-          "type": "string"
-        },
-        "overlap_ratio": {
-          "default": 0.5,
-          "exclusiveMaximum": 1,
-          "minimum": 0,
-          "title": "Overlap Ratio",
-          "type": "number"
-        },
-        "window_shape": {
-          "default": "hann",
-          "enum": [
-            "hann",
-            "hamming",
-            "linear_fade"
-          ],
-          "title": "Window Shape",
-          "type": "string"
-        },
-        "padding_mode": {
-          "default": "reflect",
-          "enum": [
-            "reflect",
-            "constant",
-            "replicate"
-          ],
-          "title": "Padding Mode",
-          "type": "string"
-        },
-        "trim_margin": {
-          "anyOf": [
-            {
-              "minimum": 0,
-              "type": "integer"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Trim Margin"
-        },
-        "overlap_mode": {
-          "anyOf": [
-            {
-              "enum": [
-                "keep_first",
-                "keep_last"
-              ],
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Overlap Mode"
-        }
-      },
-      "title": "ChunkingConfig",
-      "type": "object"
-    },
     "InferenceConfig": {
       "additionalProperties": false,
       "properties": {
-        "normalize_input_audio": {
-          "default": false,
-          "title": "Normalize Input Audio",
-          "type": "boolean"
-        },
         "batch_size": {
           "default": 8,
           "exclusiveMinimum": 0,
@@ -152,11 +69,6 @@
             }
           ],
           "default": null
-        },
-        "apply_tta": {
-          "default": false,
-          "title": "Apply Tta",
-          "type": "boolean"
         }
       },
       "title": "InferenceConfig",
@@ -187,6 +99,33 @@
         "output_stem_names"
       ],
       "title": "LazyModelConfig",
+      "type": "object"
+    },
+    "LogMelChunkingConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "trim_margin": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Trim Margin",
+          "type": "integer"
+        },
+        "overlap_mode": {
+          "default": "keep_first",
+          "enum": [
+            "keep_first",
+            "keep_last"
+          ],
+          "title": "Overlap Mode",
+          "type": "string"
+        },
+        "avoid_short_end": {
+          "default": true,
+          "title": "Avoid Short End",
+          "type": "boolean"
+        }
+      },
+      "title": "LogMelChunkingConfig",
       "type": "object"
     },
     "LogMelConfig": {
@@ -301,6 +240,18 @@
         }
       },
       "title": "MaskingConfig",
+      "type": "object"
+    },
+    "NormalizationConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": false,
+          "title": "Enabled",
+          "type": "boolean"
+        }
+      },
+      "title": "NormalizationConfig",
       "type": "object"
     },
     "OutputConfig": {
@@ -493,6 +444,46 @@
       },
       "title": "TorchCompileConfig",
       "type": "object"
+    },
+    "WaveformChunkingConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "const": "overlap_add_windowed",
+          "default": "overlap_add_windowed",
+          "title": "Method",
+          "type": "string"
+        },
+        "overlap_ratio": {
+          "default": 0.5,
+          "exclusiveMaximum": 1,
+          "minimum": 0,
+          "title": "Overlap Ratio",
+          "type": "number"
+        },
+        "window_shape": {
+          "default": "hann",
+          "enum": [
+            "hann",
+            "hamming",
+            "linear_fade"
+          ],
+          "title": "Window Shape",
+          "type": "string"
+        },
+        "padding_mode": {
+          "default": "reflect",
+          "enum": [
+            "reflect",
+            "constant",
+            "replicate"
+          ],
+          "title": "Padding Mode",
+          "type": "string"
+        }
+      },
+      "title": "WaveformChunkingConfig",
+      "type": "object"
     }
   },
   "additionalProperties": false,
@@ -536,8 +527,30 @@
     "inference": {
       "$ref": "#/$defs/InferenceConfig"
     },
-    "chunking": {
-      "$ref": "#/$defs/ChunkingConfig"
+    "normalization": {
+      "$ref": "#/$defs/NormalizationConfig"
+    },
+    "waveform_chunking": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/WaveformChunkingConfig"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "logmel_chunking": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/LogMelChunkingConfig"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "masking": {
       "$ref": "#/$defs/MaskingConfig"

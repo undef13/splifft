@@ -35,7 +35,7 @@ from typing_extensions import Self
 
 from . import types as t
 from .core import str_to_torch_dtype
-from .models import ModelParamsLikeT
+from .models import ModelParamsLike, ModelParamsLikeT
 
 
 def _get_torch_dtype_schema(_source_type: Any, _handler: GetCoreSchemaHandler) -> CoreSchema:
@@ -133,7 +133,7 @@ class LazyModelConfig(BaseModel):
         )  # type: ignore
         # types defined within `TYPE_CHECKING` blocks will be forward references, so we need rebuild
         ta.rebuild(_types_namespace={"TorchDtype": TorchDtype, "t": t})
-        model_params_concrete: ModelParamsLikeT = ta.validate_python(self.model_dump())  # type: ignore
+        model_params_concrete: ModelParamsLikeT = ta.validate_python(self.model_dump())
         return model_params_concrete
 
     @property
@@ -194,25 +194,33 @@ class TorchCompileConfig(BaseModel):
 
 
 class InferenceConfig(BaseModel):
-    normalize_input_audio: bool = False
     batch_size: t.BatchSize = 8
     force_weights_dtype: TorchDtype | None = None
     use_autocast_dtype: TorchDtype | None = None
     compile_model: TorchCompileConfig | None = None
-    apply_tta: bool = False
 
     model_config = _PYDANTIC_STRICT_CONFIG
 
 
-class ChunkingConfig(BaseModel):
-    strategy: t.ChunkingStrategy = "waveform"
+class NormalizationConfig(BaseModel):
+    enabled: bool = False
+
+    model_config = _PYDANTIC_STRICT_CONFIG
+
+
+class WaveformChunkingConfig(BaseModel):
     method: Literal["overlap_add_windowed"] = "overlap_add_windowed"
     overlap_ratio: t.OverlapRatio = 0.5
     window_shape: t.WindowShape = "hann"
     padding_mode: t.PaddingMode = "reflect"
-    # used when strategy="spectrogram"
-    trim_margin: t.TrimMargin | None = None
-    overlap_mode: t.OverlapMode | None = None
+
+    model_config = _PYDANTIC_STRICT_CONFIG
+
+
+class LogMelChunkingConfig(BaseModel):
+    trim_margin: t.TrimMargin = 0
+    overlap_mode: t.OverlapMode = "keep_first"
+    avoid_short_end: bool = True
 
     model_config = _PYDANTIC_STRICT_CONFIG
 
@@ -271,7 +279,9 @@ class Config(BaseModel):
     log_mel: LogMelConfig | None = None
     audio_io: AudioIOConfig = Field(default_factory=AudioIOConfig)
     inference: InferenceConfig = Field(default_factory=InferenceConfig)
-    chunking: ChunkingConfig = Field(default_factory=ChunkingConfig)
+    normalization: NormalizationConfig = Field(default_factory=NormalizationConfig)
+    waveform_chunking: WaveformChunkingConfig | None = None
+    logmel_chunking: LogMelChunkingConfig | None = None
     masking: MaskingConfig = Field(default_factory=MaskingConfig)
     derived_stems: DerivedStemsConfig | None = None
     output: OutputConfig = Field(default_factory=OutputConfig)
@@ -313,6 +323,54 @@ class Config(BaseModel):
                     )
             existing_stem_names.append(derived_stem_name)
         return self
+
+    def validate_inference_contract(self, model_params: ModelParamsLike) -> t.InferenceArchetype:
+        archetype = model_params.inference_archetype
+        input_type = model_params.input_type
+        output_type = model_params.output_type
+
+        if archetype == "standard_end_to_end":
+            if self.waveform_chunking is None:
+                raise ValueError("`waveform_chunking` is required for standard_end_to_end pipeline")
+            if output_type != "waveform":
+                raise ValueError(
+                    f"standard_end_to_end expects waveform model output, got {output_type}"
+                )
+        elif archetype == "frequency_masking":
+            if self.stft is None:
+                raise ValueError("`stft` is required for frequency_masking pipeline")
+            if self.waveform_chunking is None:
+                raise ValueError("`waveform_chunking` is required for frequency_masking pipeline")
+            if input_type not in {"spectrogram", "waveform_and_spectrogram"}:
+                raise ValueError(
+                    f"frequency_masking expects spectrogram-like model input, got {input_type}"
+                )
+            if output_type not in {"spectrogram_mask", "spectrogram"}:
+                raise ValueError(
+                    f"frequency_masking expects spectrogram-like model output, got {output_type}"
+                )
+        elif archetype == "event_detection":
+            if self.log_mel is None:
+                raise ValueError("`log_mel` is required for event_detection pipeline")
+            if self.logmel_chunking is None:
+                raise ValueError("`logmel_chunking` is required for event_detection pipeline")
+            if input_type != "spectrogram":
+                raise ValueError(
+                    f"event_detection expects spectrogram model input, got {input_type}"
+                )
+            if output_type != "logits":
+                raise ValueError(f"event_detection expects logits model output, got {output_type}")
+        else:
+            raise ValueError(f"unknown inference archetype: {archetype}")
+
+        if output_type == "logits" and self.output.file_format != "npy":
+            raise ValueError(
+                f"logits models require output.file_format='npy', got {self.output.file_format!r}"
+            )
+        if output_type != "logits" and self.output.file_format == "npy":
+            raise ValueError("waveform/spectrogram models cannot use output.file_format='npy'")
+
+        return archetype
 
     @classmethod
     def from_file(cls, path: t.BytesPath | t.StrPath) -> Config:

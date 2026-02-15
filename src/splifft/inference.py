@@ -1,309 +1,408 @@
-"""High level orchestrator for model inference"""
+"""Public inference APIs."""
+# put heavy logic inside core.py, this file should just wire up the components together.
 
 from __future__ import annotations
 
+import contextlib
 import math
-from typing import TYPE_CHECKING, cast
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Generator, Literal, TypeAlias, cast
 
 import torch
-from rich.progress import (
-    BarColumn,
-    Progress,
-    ProgressColumn,
-    SpinnerColumn,
-    TaskProgressColumn,
-    TextColumn,
-    TimeRemainingColumn,
-)
 from torch import nn
 
+from . import core
 from . import types as t
-from .core import (
-    LogMelSpect,
-    _get_window_fn,
-    aggregate_logits,
-    create_w2w_model,
-    denormalize_audio,
-    derive_stems,
-    generate_chunks,
-    normalize_audio,
-    split_spectrogram,
-    stitch_chunks,
-)
 
 if TYPE_CHECKING:
-    from .config import ChunkingConfig, Config, LogMelConfig, MaskingConfig, StemName, StftConfig
-    from .core import Audio, NormalizationStats
-    from .models import (
-        ModelParamsLike,
-    )
+    from .config import Config, StemName
+    from .models import ModelParamsLike
 
 
-def run_inference_on_file(
-    mixture: Audio[t.RawAudioTensor],
-    config: Config,
-    model: nn.Module,
-    model_params_concrete: ModelParamsLike,
-) -> dict[StemName, t.RawAudioTensor] | dict[str, t.LogitsTensor]:
-    """Runs the full source separation pipeline on a single audio file."""
-    mixture_data: t.RawAudioTensor | t.NormalizedAudioTensor = mixture.data
-    mixture_stats: NormalizationStats | None = None
-    if config.inference.normalize_input_audio:
-        norm_audio = normalize_audio(mixture)
-        mixture_data = norm_audio.audio.data
-        mixture_stats = norm_audio.stats
-
-    # HACK we dispatch to two very similar functions, which results in code duplication
-    # but is unavoidable because:
-    # - demucs: waveform -> split -> model -> stitch -> waveform
-    # - bs: waveform -> split -> stft -> model -> istft -> stitch -> waveform
-    # - beatthis: waveform -> log-mel -> **split** -> model -> **aggregate** -> logits
-    # notice that the splitting and aggregation is done in spectrogram-space
-    # and has almost completely different logic. so we hardcode it for now.
-    # maybe in the future if we can somehow unify it, revisit.
-    if config.chunking.strategy == "spectrogram":
-        logits_data = _separate_beatthis(
-            mixture_data=mixture_data,
-            chunk_cfg=config.chunking,
-            model=model,
-            batch_size=config.inference.batch_size,
-            num_model_stems=len(config.model.output_stem_names),
-            chunk_size=config.model.chunk_size,
-            model_input_type=model_params_concrete.input_type,
-            log_mel_cfg=config.log_mel,
-            use_autocast_dtype=config.inference.use_autocast_dtype,
-        )
-        # NOTE: we do not need to support derived stems or do tta for logits
-        stems = {}
-        for i, name in enumerate(config.model.output_stem_names):
-            stems[name] = t.LogitsTensor(logits_data[i])
-        return stems
-
-    separated_data = _separate_waveform(
-        mixture_data=mixture_data,
-        chunk_cfg=config.chunking,
-        model=model,
-        batch_size=config.inference.batch_size,
-        num_model_stems=len(config.model.output_stem_names),
-        chunk_size=config.model.chunk_size,
-        model_input_type=model_params_concrete.input_type,
-        model_output_type=model_params_concrete.output_type,
-        stft_cfg=config.stft,
-        masking_cfg=config.masking,
-        use_autocast_dtype=config.inference.use_autocast_dtype,
-    )
-
-    denormalized_stems: dict[t.ModelOutputStemName, t.RawAudioTensor] = {}
-    for i, stem_name in enumerate(config.model.output_stem_names):
-        stem_data = separated_data[i, ...]
-        if mixture_stats is not None:
-            stem_data = denormalize_audio(
-                audio_data=t.NormalizedAudioTensor(stem_data),
-                stats=mixture_stats,
-            )
-        denormalized_stems[stem_name] = t.RawAudioTensor(stem_data)
-
-    if config.inference.apply_tta:
-        raise NotImplementedError
-
-    output_stems = denormalized_stems
-    if config.derived_stems:
-        output_stems = derive_stems(
-            denormalized_stems,
-            mixture.data,
-            config.derived_stems,
-        )
-
-    return output_stems
+SUPPORTED_MODELS: dict[str, tuple[str, str]] = {
+    "bs_roformer": ("splifft.models.bs_roformer", "BSRoformer"),
+    "mel_roformer": ("splifft.models.bs_roformer", "BSRoformer"),
+    "beat_this": ("splifft.models.beat_this", "BeatThis"),
+}
 
 
-def _progress_columns(
-    batch_size: t.BatchSize,
-    device: torch.device,
-    use_autocast_dtype: torch.dtype | None,
-) -> tuple[ProgressColumn, ...]:
-    dtype_str = f" • {use_autocast_dtype}" if use_autocast_dtype else ""
-    info_text = f"[cyan](bs=[bold]{batch_size}[/bold] • {device.type}{dtype_str})[/cyan]"
-    return (
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        TaskProgressColumn(),
-        TimeRemainingColumn(),
-        TextColumn(info_text),
-    )
-
-
-def _separate_waveform(
-    mixture_data: t.RawAudioTensor | t.NormalizedAudioTensor,
-    chunk_cfg: ChunkingConfig,
-    model: nn.Module,
-    batch_size: t.BatchSize,
-    num_model_stems: t.NumModelStems,
-    chunk_size: t.ChunkSize,
-    model_input_type: t.ModelInputType,
-    model_output_type: t.ModelOutputType,
-    stft_cfg: StftConfig | None,
-    masking_cfg: MaskingConfig,
+def _resolve_runtime_dtype(
+    dtype: torch.dtype | None,
     *,
-    use_autocast_dtype: torch.dtype | None = None,
-) -> t.RawSeparatedTensor:
-    """Chunk waveform -> model -> overlap-add stitch."""
-    if model_output_type == "logits":
+    device: torch.device,
+    for_autocast: bool = False,
+) -> torch.dtype | None:
+    """Return a device-safe dtype fallback for inference-time casting/autocast."""
+    if dtype is None:
+        return None
+    if device.type == "cpu" and dtype == torch.float16:
+        # CPU fp16 kernels are incomplete/slow; keep numerics in a broadly supported dtype.
+        return torch.bfloat16 if for_autocast else torch.float32
+    return dtype
+
+
+def resolve_model_entrypoint(
+    model_type: t.ModelType,
+    module_name: str | None,
+    class_name: str | None,
+) -> tuple[str, str]:
+    if module_name is not None and class_name is not None:
+        return module_name, class_name
+    try:
+        return SUPPORTED_MODELS[model_type]
+    except KeyError as e:
         raise ValueError(
-            f"logits models must use `{_separate_beatthis.__qualname__}`, not `{_separate_waveform.__qualname__}`"
+            f"could not resolve model entrypoint for model_type={model_type!r}; "
+            "provide both module and class explicitly"
+        ) from e
+
+
+@dataclass(frozen=True)
+class ChunkProcessed:
+    batch_index: int
+    total_batches: int
+
+
+@dataclass(frozen=True)
+class Stage:
+    stage: str
+    total_batches: int | None = field(kw_only=True, default=None)
+
+    @dataclass(frozen=True)
+    class Started:
+        stage: str
+        total_batches: int | None = None
+
+    @dataclass(frozen=True)
+    class Completed:
+        stage: str
+
+    @property
+    def started(self) -> Started:
+        return Stage.Started(stage=self.stage, total_batches=self.total_batches)
+
+    @property
+    def completed(self) -> Completed:
+        return Stage.Completed(stage=self.stage)
+
+    def __enter__(self) -> Stage:
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        return None
+
+
+@dataclass(frozen=True)
+class InferenceOutput:
+    outputs: dict[StemName, t.RawAudioTensor] | dict[str, t.LogitsTensor]
+    # `sample_rate` exists because if the user passed in a bare path to an audio file,
+    # we need to know the sample rate to write the output files.
+    sample_rate: t.SampleRate
+
+
+InferenceEvent: TypeAlias = Stage.Started | ChunkProcessed | Stage.Completed | InferenceOutput
+
+
+@dataclass(frozen=True)
+class InferenceEngine:
+    config: Config
+    model: nn.Module
+    model_params_concrete: ModelParamsLike
+
+    @classmethod
+    def from_pretrained(
+        cls,
+        *,
+        config_path: t.StrPath | t.BytesPath,
+        checkpoint_path: t.StrPath,
+        device: torch.device | str | None = None,
+        module_name: str | None = None,
+        class_name: str | None = None,
+        package_name: str | None = None,
+    ) -> InferenceEngine:
+        from .config import Config
+        from .io import load_weights
+        from .models import ModelMetadata
+
+        if device is None:
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+        runtime_device = torch.device(device)
+
+        config = Config.from_file(config_path)
+        resolved_module, resolved_class = resolve_model_entrypoint(
+            config.model_type, module_name, class_name
+        )
+        metadata = ModelMetadata.from_module(
+            module_name=resolved_module,
+            model_cls_name=resolved_class,
+            model_type=config.model_type,
+            package=package_name,
+        )
+        model_params = config.model.to_concrete(metadata.params)
+        model = metadata.model(model_params)
+        if (forced_dtype := config.inference.force_weights_dtype) is not None:
+            model = model.to(_resolve_runtime_dtype(forced_dtype, device=runtime_device))
+        model = load_weights(model, checkpoint_path, device=runtime_device).eval()
+
+        # maybe we should to an explicit try_compile() method while emitting events but eh.
+        # we shuold probably log since it can take extremely long
+        if (compile_cfg := config.inference.compile_model) is not None:
+            compiled_model = torch.compile(
+                model,
+                fullgraph=compile_cfg.fullgraph,
+                dynamic=compile_cfg.dynamic,
+                mode=compile_cfg.mode,
+            )
+            model = cast(nn.Module, compiled_model)
+
+        return cls(config=config, model=model, model_params_concrete=model_params)
+
+    def _autocast_context(self, device: torch.device) -> contextlib.AbstractContextManager[object]:
+        if (is_autocast_available := getattr(torch.amp, "is_autocast_available", None)) is None:
+            return contextlib.nullcontext()
+        if not is_autocast_available(device.type):
+            return contextlib.nullcontext()
+        if (
+            autocast_dtype := _resolve_runtime_dtype(
+                self.config.inference.use_autocast_dtype,
+                device=device,
+                for_autocast=True,
+            )
+        ) is None:
+            return contextlib.nullcontext()
+        return torch.autocast(device_type=device.type, dtype=autocast_dtype)
+
+    def to_audio_tensor(
+        self,
+        mixture: t.StrPath | t.BytesPath | t.RawAudioTensor | core.Audio[t.RawAudioTensor],
+    ) -> core.Audio[t.RawAudioTensor]:
+        if isinstance(mixture, core.Audio):
+            return mixture
+        elif isinstance(mixture, torch.Tensor):
+            return core.Audio(
+                data=t.RawAudioTensor(mixture),
+                sample_rate=self.config.audio_io.target_sample_rate,
+            )
+        else:
+            from .io import read_audio
+
+            device = next(self.model.parameters()).device
+            return read_audio(
+                mixture,  # type: ignore[arg-type]
+                self.config.audio_io.target_sample_rate,
+                self.config.audio_io.force_channels,
+                device=device,
+            )
+
+    def run(
+        self,
+        mixture: t.StrPath | t.BytesPath | t.RawAudioTensor | core.Audio[t.RawAudioTensor],
+    ) -> InferenceOutput:
+        for event in self.stream(mixture):
+            if isinstance(event, InferenceOutput):
+                return event
+        raise RuntimeError("inference stream finished without outputs")
+
+    def stream(
+        self,
+        mixture: t.StrPath | t.BytesPath | t.RawAudioTensor | core.Audio[t.RawAudioTensor],
+    ) -> Generator[InferenceEvent, None, None]:
+        archetype = self.config.validate_inference_contract(self.model_params_concrete)
+
+        audio_tensor = self.to_audio_tensor(mixture)
+        mixture_data: t.RawAudioTensor | t.NormalizedAudioTensor = audio_tensor.data
+        mixture_stats: core.NormalizationStats | None = None
+
+        if self.config.normalization.enabled:
+            with Stage("normalize") as s:
+                yield s.started
+                normalized = core.normalize_audio(audio_tensor)
+                mixture_data = normalized.audio.data
+                mixture_stats = normalized.stats
+                yield s.completed
+
+        if archetype == "event_detection":
+            logits = yield from self._stream_event_detection(mixture_data)
+            outputs: dict[str, t.LogitsTensor] = {}
+            for i, name in enumerate(self.config.model.output_stem_names):
+                outputs[name] = t.LogitsTensor(logits[i])
+            yield InferenceOutput(outputs=outputs, sample_rate=audio_tensor.sample_rate)
+            return
+
+        separated_data = yield from self._stream_waveform_pipeline(mixture_data, archetype)
+
+        denormalized_stems: dict[t.ModelOutputStemName, t.RawAudioTensor] = {}
+        with Stage("collect_outputs") as s:
+            yield s.started
+            for i, stem_name in enumerate(self.config.model.output_stem_names):
+                stem_data = separated_data[i, ...]
+                if mixture_stats is not None:
+                    stem_data = core.denormalize_audio(
+                        audio_data=t.NormalizedAudioTensor(stem_data),
+                        stats=mixture_stats,
+                    )
+                denormalized_stems[stem_name] = t.RawAudioTensor(stem_data)
+            yield s.completed
+
+        output_stems: dict[StemName, t.RawAudioTensor] = denormalized_stems
+        if derived_stems_cfg := self.config.derived_stems:
+            with Stage("derive_stems") as s:
+                yield s.started
+                output_stems = core.derive_stems(
+                    denormalized_stems,
+                    audio_tensor.data,
+                    derived_stems_cfg,
+                )
+                yield s.completed
+
+        yield InferenceOutput(outputs=output_stems, sample_rate=audio_tensor.sample_rate)
+
+    def _stream_waveform_pipeline(
+        self,
+        mixture_data: t.RawAudioTensor | t.NormalizedAudioTensor,
+        archetype: Literal["standard_end_to_end", "frequency_masking"],
+    ) -> Generator[InferenceEvent, None, t.RawSeparatedTensor]:
+        if (chunk_cfg := self.config.waveform_chunking) is None:
+            raise ValueError("missing `waveform_chunking`")
+
+        output_type = self.model_params_concrete.output_type
+        if output_type == "logits":
+            raise ValueError("waveform pipeline cannot run logits models")
+
+        stft_cfg = self.config.stft if archetype == "frequency_masking" else None
+        device = mixture_data.device
+        chunk_size = self.config.model.chunk_size
+        hop_size = int(chunk_size * (1 - chunk_cfg.overlap_ratio))
+        window = core._get_window_fn(chunk_cfg.window_shape, chunk_size, device)
+
+        original_num_samples = mixture_data.shape[-1]
+        padding = chunk_size - hop_size
+        padded_length = original_num_samples + 2 * padding
+        rem = (padded_length - chunk_size) % hop_size
+        if rem != 0:
+            padded_length += hop_size - rem
+        num_chunks = max(0, (padded_length - chunk_size) // hop_size + 1)
+        total_batches = math.ceil(num_chunks / self.config.inference.batch_size)
+
+        chunk_generator = core.generate_chunks(
+            audio_data=mixture_data,
+            chunk_size=chunk_size,
+            hop_size=hop_size,
+            batch_size=self.config.inference.batch_size,
+            padding_mode=chunk_cfg.padding_mode,
         )
 
-    device = mixture_data.device
-    original_num_samples = mixture_data.shape[-1]
-    hop_size = int(chunk_size * (1 - chunk_cfg.overlap_ratio))
-    window = _get_window_fn(chunk_cfg.window_shape, chunk_size, device)
+        model_w2w = core.create_w2w_model(
+            model=self.model,
+            model_input_type=self.model_params_concrete.input_type,
+            model_output_type=output_type,
+            stft_cfg=stft_cfg,
+            num_channels=mixture_data.shape[0],
+            chunk_size=chunk_size,
+            masking_cfg=self.config.masking,
+        )
 
-    padded_length = original_num_samples + 2 * (chunk_size - hop_size)
-    num_chunks = max(0, (padded_length - chunk_size) // hop_size + 1)
-    total_batches = math.ceil(num_chunks / batch_size)
-
-    chunk_generator = generate_chunks(
-        audio_data=mixture_data,
-        chunk_size=chunk_size,
-        hop_size=hop_size,
-        batch_size=batch_size,
-        padding_mode=chunk_cfg.padding_mode,
-    )
-
-    model_w2w = create_w2w_model(
-        model=model,
-        model_input_type=model_input_type,
-        model_output_type=model_output_type,
-        stft_cfg=stft_cfg,
-        num_channels=mixture_data.shape[0],
-        chunk_size=chunk_size,
-        masking_cfg=masking_cfg,
-    )
-
-    separated_chunks: list[t.SeparatedChunkedTensor] = []
-    with Progress(
-        *_progress_columns(batch_size, device, use_autocast_dtype), transient=True
-    ) as progress:
-        task = progress.add_task("processing chunks...", total=total_batches)
-
+        separated_chunks: list[t.SeparatedChunkedTensor] = []
         with (
             torch.inference_mode(),
-            torch.autocast(
-                device_type=device.type,
-                enabled=use_autocast_dtype is not None,
-                dtype=use_autocast_dtype,
-            ),
+            self._autocast_context(device),
         ):
+            batch_idx = 0
             for chunk_batch in chunk_generator:
                 separated_batch = model_w2w(chunk_batch)
                 separated_chunks.append(cast(t.SeparatedChunkedTensor, separated_batch))
-                progress.update(task, advance=1)
+                batch_idx += 1
+                yield ChunkProcessed(batch_index=batch_idx, total_batches=total_batches)
 
-    return stitch_chunks(
-        processed_chunks=separated_chunks,
-        num_stems=num_model_stems,
-        chunk_size=chunk_size,
-        hop_size=hop_size,
-        target_num_samples=original_num_samples,
-        window=t.WindowTensor(window),
-    )
+        with Stage("stitch") as s:
+            yield s.started
+            stitched = core.stitch_chunks(
+                processed_chunks=separated_chunks,
+                num_stems=len(self.config.model.output_stem_names),
+                chunk_size=chunk_size,
+                hop_size=hop_size,
+                target_num_samples=original_num_samples,
+                window=t.WindowTensor(window),
+            )
+            yield s.completed
+        return stitched
 
+    def _stream_event_detection(
+        self,
+        mixture_data: t.RawAudioTensor | t.NormalizedAudioTensor,
+    ) -> Generator[InferenceEvent, None, t.LogitsTensor]:
+        if (log_mel_cfg := self.config.log_mel) is None:
+            raise ValueError("missing `log_mel`")
+        if (chunk_cfg := self.config.logmel_chunking) is None:
+            raise ValueError("missing `logmel_chunking`")
 
-def _separate_beatthis(
-    mixture_data: t.RawAudioTensor | t.NormalizedAudioTensor,
-    chunk_cfg: ChunkingConfig,
-    model: nn.Module,
-    batch_size: t.BatchSize,
-    num_model_stems: t.NumModelStems,
-    chunk_size: t.ChunkSize,
-    model_input_type: t.ModelInputType,
-    log_mel_cfg: LogMelConfig | None,
-    *,
-    use_autocast_dtype: torch.dtype | None = None,
-) -> t.LogitsTensor:
-    """Full-audio log-mel -> split spectrogram -> model -> aggregate logits."""
-    if log_mel_cfg is None:
-        raise ValueError("expected log_mel config for logits model, but found `None`.")
-    if model_input_type != "spectrogram":
-        raise ValueError(f"expected spectrogram input for logits model, got {model_input_type}")
+        device = mixture_data.device
+        with Stage("log_mel") as s:
+            yield s.started
+            mel_preprocessor = core.LogMelSpect(
+                sample_rate=log_mel_cfg.sample_rate,
+                n_fft=log_mel_cfg.n_fft,
+                hop_length=log_mel_cfg.hop_length,
+                n_mels=log_mel_cfg.n_mels,
+                f_min=log_mel_cfg.f_min,
+                f_max=log_mel_cfg.f_max,
+                mel_scale=log_mel_cfg.mel_scale,
+                normalized=log_mel_cfg.normalized,
+                power=log_mel_cfg.power,
+                log_multiplier=log_mel_cfg.log_multiplier,
+            ).to(device)
 
-    device = mixture_data.device
-    mel_preprocessor = LogMelSpect(
-        sample_rate=log_mel_cfg.sample_rate,
-        n_fft=log_mel_cfg.n_fft,
-        hop_length=log_mel_cfg.hop_length,
-        n_mels=log_mel_cfg.n_mels,
-        f_min=log_mel_cfg.f_min,
-        f_max=log_mel_cfg.f_max,
-        mel_scale=log_mel_cfg.mel_scale,
-        normalized=log_mel_cfg.normalized,
-        power=log_mel_cfg.power,
-        log_multiplier=log_mel_cfg.log_multiplier,
-    ).to(device)
+            mixture_mono = (
+                mixture_data.mean(dim=0, keepdim=True)
+                if mixture_data.shape[0] > 1
+                else mixture_data
+            )
+            with (
+                torch.inference_mode(),
+                self._autocast_context(device),
+            ):
+                full_spect = mel_preprocessor(mixture_mono).squeeze(0).squeeze(0).transpose(0, 1)
+            yield s.completed
 
-    # hardcoding mono for BeatThis for now
-    if mixture_data.shape[0] > 1:
-        mixture_mono = mixture_data.mean(dim=0, keepdim=True)
-    else:
-        mixture_mono = mixture_data
+        if (frame_chunk_size := self.config.model.chunk_size // log_mel_cfg.hop_length) <= 0:
+            raise ValueError(
+                f"invalid frame chunk size computed from {self.config.model.chunk_size=} and {log_mel_cfg.hop_length=}"
+            )
 
-    with (
-        torch.inference_mode(),
-        torch.autocast(
-            device_type=device.type,
-            enabled=use_autocast_dtype is not None,
-            dtype=use_autocast_dtype,
-        ),
-    ):
-        # (B=1, C=1, F, T) -> (T, F)
-        full_spect = mel_preprocessor(mixture_mono).squeeze(0).squeeze(0).transpose(0, 1)
-
-    frame_chunk_size = chunk_size // log_mel_cfg.hop_length
-    if frame_chunk_size <= 0:
-        raise ValueError(
-            f"invalid frame chunk size computed from {chunk_size=} and {log_mel_cfg.hop_length=}"
+        spect_chunks, starts = core.split_spectrogram(
+            t.LogMelSpectrogram(full_spect),
+            chunk_size=frame_chunk_size,
+            trim_margin=chunk_cfg.trim_margin,
+            avoid_short_end=chunk_cfg.avoid_short_end,
         )
-    trim_margin = chunk_cfg.trim_margin or 0
-    spect_chunks, starts = split_spectrogram(
-        t.LogMelSpectrogram(full_spect),
-        chunk_size=frame_chunk_size,
-        trim_margin=trim_margin,
-        avoid_short_end=True,
-    )
 
-    total_batches = math.ceil(len(spect_chunks) / batch_size)
-    logits_chunks: list[t.LogitsTensor] = []
-    with Progress(
-        *_progress_columns(batch_size, device, use_autocast_dtype), transient=True
-    ) as progress:
-        task = progress.add_task("processing chunks...", total=total_batches)
-
+        total_batches = math.ceil(len(spect_chunks) / self.config.inference.batch_size)
+        logits_chunks: list[t.LogitsTensor] = []
         with (
             torch.inference_mode(),
-            torch.autocast(
-                device_type=device.type,
-                enabled=use_autocast_dtype is not None,
-                dtype=use_autocast_dtype,
-            ),
+            self._autocast_context(device),
         ):
-            for i in range(0, len(spect_chunks), batch_size):
-                batch_chunks = spect_chunks[i : i + batch_size]
+            batch_idx = 0
+            for i in range(0, len(spect_chunks), self.config.inference.batch_size):
+                batch_chunks = spect_chunks[i : i + self.config.inference.batch_size]
                 batch_tensors = [torch.as_tensor(chunk) for chunk in batch_chunks]
-                # (B, T, F) -> (B, F, T) for BeatThis model input
                 model_input = torch.stack(batch_tensors, dim=0).transpose(1, 2)
-                logits = model(model_input)
-                # model returns (Stems, Batch, Time), we need (Batch, Stems, Time) for aggregation
+                logits = self.model(model_input)
                 logits = logits.permute(1, 0, 2)
                 logits_chunks.append(t.LogitsTensor(logits))
-                progress.update(task, advance=1)
+                batch_idx += 1
+                yield ChunkProcessed(batch_index=batch_idx, total_batches=total_batches)
 
-    return aggregate_logits(
-        processed_chunks=logits_chunks,
-        starts=starts,
-        full_size=full_spect.shape[0],
-        chunk_size=frame_chunk_size,
-        num_stems=num_model_stems,
-        trim_margin=trim_margin,
-        overlap_mode=chunk_cfg.overlap_mode or "keep_first",
-    )
+        with Stage("aggregate_logits") as s:
+            yield s.started
+            logits = core.aggregate_logits(
+                processed_chunks=logits_chunks,
+                starts=starts,
+                full_size=full_spect.shape[0],
+                chunk_size=frame_chunk_size,
+                num_stems=len(self.config.model.output_stem_names),
+                trim_margin=chunk_cfg.trim_margin,
+                overlap_mode=chunk_cfg.overlap_mode,
+            )
+            yield s.completed
+        return logits

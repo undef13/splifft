@@ -151,11 +151,16 @@ ChunkDuration: TypeAlias = Gt0[float]
 Equivalent to [chunk size][splifft.types.ChunkSize] divided by the [sample rate][splifft.types.SampleRate].
 """
 
-ChunkingStrategy: TypeAlias = Literal["waveform", "spectrogram"]
-"""The domain in which chunking is performed.
+InferenceArchetype: TypeAlias = Literal[
+    "standard_end_to_end",
+    "frequency_masking",
+    "event_detection",
+]
+"""Inference pipeline archetype used to route runtime execution.
 
-- `waveform`: Chunk the raw audio signal. Standard for source separation.
-- `spectrogram`: Compute features (e.g. log-mel) on the full audio first, then chunk the spectrogram. Used by `beat_this`.
+- `standard_end_to_end`: waveform -> model -> waveform (e.g. demucs)
+- `frequency_masking`: waveform -> STFT -> model -> iSTFT -> waveform (e.g. bs-roformer)
+- `event_detection`: waveform -> log-mel -> model -> logits (e.g. beat_this)
 """
 
 OverlapRatio: TypeAlias = Annotated[float, at.Ge(0), at.Lt(1)]
