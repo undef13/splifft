@@ -247,7 +247,7 @@ Identifier: TypeAlias = at.LowerCase[str]
 """`{{architecture}}-{{first_author}}-{{unique_name_short}}`, use underscore if it has spaces"""
 # fmt: off
 Instrument: TypeAlias = Literal[
-    "instrumental", "vocals", "drums", "bass", "other", "piano",
+    "instrum", "vocals", "drums", "bass", "other", "piano",
     "lead_vocals", "back_vocals",
     "guitar",
     "vocals1", "vocals2",

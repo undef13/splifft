@@ -100,7 +100,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-unwa-large_inst_v2",
         "created_at": "2026-01-25T11:36:07.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "metrics": [ {"source": "https://mvsep.com/quality_checker/entry/9580"} ],
         "description": [
             {
@@ -182,12 +182,10 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-flowers_v10",
         "created_at": "2026-01-04T22:58:53.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "metrics": [
             {
-                "values": {
-                    "instrumental": {"bleedless": 36.68, "fullness": 37.12, "sdr": 16.95}
-                },
+                "values": { "instrum": {"bleedless": 36.68, "fullness": 37.12, "sdr": 16.95} },
                 "source": "https://mvsep.com/quality_checker/entry/9505"
             }
         ],
@@ -220,11 +218,11 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-becruily-deux",
         "created_at": "2025-12-29T17:15:41.000Z",
-        "output": ["vocals", "instrumental"],
+        "output": ["vocals", "instrum"],
         "metrics": [
             {
                 "values": {
-                    "instrumental": {"bleedless": 41.3606, "fullness": 34.2534, "sdr": 17.5466},
+                    "instrum": {"bleedless": 41.3606, "fullness": 34.2534, "sdr": 17.5466},
                     "vocals": {"bleedless": 28.9679, "fullness": 23.249, "sdr": 11.3695}
                 }
             }
@@ -248,10 +246,10 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-12-23T19:27:31.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "metrics": [
             {
-                "values": { "instrumental": {"bleedless": 36.2, "fullness": 37.19, "sdr": 16.56} },
+                "values": { "instrum": {"bleedless": 36.2, "fullness": 37.19, "sdr": 16.56} },
                 "source": "https://mvsep.com/quality_checker/entry/9464"
             }
         ],
@@ -274,10 +272,10 @@
         "architecture": "bs_roformer",
         "config_id": "bs_roformer-unwa-hyperace_v2_instrum",
         "created_at": "2025-12-20T10:31:44.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "metrics": [
             {
-                "values": { "instrumental": {"bleedless": 37.87, "fullness": 38.03, "sdr": 17.4} },
+                "values": { "instrum": {"bleedless": 37.87, "fullness": 38.03, "sdr": 17.4} },
                 "source": "https://mvsep.com/quality_checker/entry/9475"
             }
         ],
@@ -346,10 +344,10 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-11-22T06:46:24.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "metrics": [
             {
-                "values": { "instrumental": {"fullness": 27.07, "bleedless": 47.49, "sdr": 16.71} }
+                "values": { "instrum": {"fullness": 27.07, "bleedless": 47.49, "sdr": 16.71} }
             }
         ],
         "description": [
@@ -401,7 +399,7 @@
         "architecture": "bs_roformer",
         "config_id": "bs_roformer-unwa-hyperace_v1_instrum",
         "created_at": "2025-11-21T15:53:05.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -461,7 +459,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-mesk-rifforge",
         "created_at": "2025-10-26T15:50:53.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -521,7 +519,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-10-05T18:40:31.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -541,7 +539,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-neoculture-inst_vfx",
         "created_at": "2025-10-05T09:14:38.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -586,10 +584,10 @@
         "architecture": "bs_roformer",
         "config_id": ".bs_roformer-unwa-inst_fno",
         "created_at": "2025-08-21T13:29:45.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "metrics": [
             {
-                "values": { "instrumental": {"bleedless": 42.87, "fullness": 32.03, "sdr": 17.6} }
+                "values": { "instrum": {"bleedless": 42.87, "fullness": 32.03, "sdr": 17.6} }
             }
         ],
         "description": [
@@ -621,7 +619,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-mesk-rifforge_beta",
         "created_at": "2025-08-15T16:55:16.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "description": [
             {
                 "content": [
@@ -696,11 +694,11 @@
         "architecture": "bs_roformer",
         "config_id": "bs_roformer-unwa-resurrection_instrumental",
         "created_at": "2025-07-31T16:36:49.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "status": "tested",
         "metrics": [
             {
-                "values": { "instrumental": {"sdr": 17.25, "bleedless": 40.14, "fullness": 34.93} }
+                "values": { "instrum": {"sdr": 17.25, "bleedless": 40.14, "fullness": 34.93} }
             }
         ],
         "description": [
@@ -945,10 +943,10 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-06-20T07:55:32.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "metrics": [
             {
-                "values": { "instrumental": {"fullness": 29.38, "bleedless": 44.95} }
+                "values": { "instrum": {"fullness": 29.38, "bleedless": 44.95} }
             }
         ],
         "description": [
@@ -977,7 +975,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-unwa-bleed_suppressor_v1",
         "created_at": "2025-06-03T17:54:14.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -997,10 +995,10 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-06-02T21:03:00.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "metrics": [
             {
-                "values": { "instrumental": {"fullness": 35.05, "bleedless": 36.9, "sdr": 16.59} }
+                "values": { "instrum": {"fullness": 35.05, "bleedless": 36.9, "sdr": 16.59} }
             }
         ],
         "description": [
@@ -1084,10 +1082,10 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-05-31T06:03:10.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "metrics": [
             {
-                "values": { "instrumental": {"fullness": 29.83, "bleedless": 39.36, "sdr": 16.51} }
+                "values": { "instrum": {"fullness": 29.83, "bleedless": 39.36, "sdr": 16.51} }
             }
         ],
         "resources": [
@@ -1126,10 +1124,10 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-05-20T20:46:21.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "metrics": [
             {
-                "values": { "instrumental": {"bleedless": 38.06, "fullness": 35.57, "sdr": 16.51} }
+                "values": { "instrum": {"bleedless": 38.06, "fullness": 35.57, "sdr": 16.51} }
             }
         ],
         "description": [
@@ -1341,10 +1339,10 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-unwa-inst",
         "created_at": "2025-04-04T09:54:03.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "metrics": [
             {
-                "values": { "instrumental": {"bleedless": 36.53, "fullness": 37.89, "sdr": 16.65} }
+                "values": { "instrum": {"bleedless": 36.53, "fullness": 37.89, "sdr": 16.65} }
             }
         ],
         "description": [
@@ -1388,10 +1386,10 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-unwa-inst",
         "created_at": "2025-04-03T16:08:45.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "metrics": [
             {
-                "values": { "instrumental": {"bleedless": 38.26, "fullness": 35.31, "sdr": 16.72} }
+                "values": { "instrum": {"bleedless": 38.26, "fullness": 35.31, "sdr": 16.72} }
             }
         ],
         "description": [
@@ -1435,12 +1433,10 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-mesk-metal_preview",
         "created_at": "2025-04-01T10:51:46.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "metrics": [
             {
-                "values": {
-                    "instrumental": {"bleedless": 48.81, "fullness": 42.85, "sdr": 13.7621}
-                },
+                "values": { "instrum": {"bleedless": 48.81, "fullness": 42.85, "sdr": 13.7621} },
                 "source": "private dataset"
             }
         ],
@@ -1507,7 +1503,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-03-25T22:18:12.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "description": [
             { "content": ["noticed too many vocal residues.", "there is no noise"] }
         ],
@@ -1558,7 +1554,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-03-05T04:24:52.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "description": [
             {
                 "content": [
@@ -1588,10 +1584,10 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-03-04T02:58:20.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "metrics": [
             {
-                "values": { "instrumental": {"bleedless": 41.69, "fullness": 32.13} }
+                "values": { "instrum": {"bleedless": 41.69, "fullness": 32.13} }
             }
         ],
         "description": [
@@ -1616,7 +1612,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-28T07:13:33.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -1636,7 +1632,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-28T03:06:18.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -1656,7 +1652,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-27T21:40:20.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "description": [
             { "content": ["i hear less noise compared to v1e, but it has worse bleedless metric"] }
         ],
@@ -1708,7 +1704,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-27T06:17:17.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "description": [
             {
                 "content": [
@@ -1735,10 +1731,10 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-27T06:17:17.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "metrics": [
             {
-                "values": { "instrumental": {"bleedless": 34.66, "fullness": 38.96} }
+                "values": { "instrum": {"bleedless": 34.66, "fullness": 38.96} }
             }
         ],
         "description": [
@@ -1767,10 +1763,10 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-26T21:06:06.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "metrics": [
             {
-                "values": { "instrumental": {"bleedless": 35.01, "fullness": 38.39} }
+                "values": { "instrum": {"bleedless": 35.01, "fullness": 38.39} }
             }
         ],
         "description": [
@@ -1895,10 +1891,10 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-16T01:38:05.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "metrics": [
             {
-                "values": { "instrumental": {"bleedless": 32.63, "fullness": 41.68} },
+                "values": { "instrum": {"bleedless": 32.63, "fullness": 41.68} },
                 "source": "https://mvsep.com/quality_checker/entry/7915"
             }
         ],
@@ -1930,7 +1926,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-12T22:05:40.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "description": [
             {
                 "content": [
@@ -1957,7 +1953,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-12T01:52:44.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "metrics": [ {"source": "https://mvsep.com/quality_checker/entry/7884"} ],
         "resources": [
             {
@@ -1978,7 +1974,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-amane-small",
         "created_at": "2025-02-11T23:55:13.000Z",
-        "output": ["instrumental", "vocals"],
+        "output": ["instrum", "vocals"],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -2018,7 +2014,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-08T02:41:37.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "description": [
             {
                 "content": [
@@ -2046,7 +2042,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-08T02:32:10.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -2124,10 +2120,10 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-01-27T22:07:13.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "metrics": [
             {
-                "values": { "instrumental": {"fullness": 39.4, "bleedless": 33.49} }
+                "values": { "instrum": {"fullness": 39.4, "bleedless": 33.49} }
             }
         ],
         "description": [
@@ -2178,10 +2174,10 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-01-26T16:20:12.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "metrics": [
             {
-                "values": { "instrumental": {"sdr": 16.43, "fullness": 38.71, "bleedless": 35.62} }
+                "values": { "instrum": {"sdr": 16.43, "fullness": 38.71, "bleedless": 35.62} }
             }
         ],
         "description": [
@@ -2372,12 +2368,10 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-becruily-instrumental",
         "created_at": "2024-12-27T13:41:55.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "metrics": [
             {
-                "values": {
-                    "instrumental": {"sdr": 16.4719, "fullness": 33.9763, "bleedless": 40.4849}
-                }
+                "values": { "instrum": {"sdr": 16.4719, "fullness": 33.9763, "bleedless": 40.4849} }
             }
         ],
         "description": [
@@ -2443,7 +2437,7 @@
         "architecture": "bs_roformer",
         "config_id": ".bs_roformer-unwa-inst_exp_value_residual",
         "created_at": "2024-12-26T08:55:53.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "description": [
             {
                 "content": [
@@ -2651,7 +2645,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-unwa-inst",
         "created_at": "2024-11-20T05:33:47.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "description": [
             {
                 "content": [
@@ -2680,10 +2674,10 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-unwa-v2",
         "created_at": "2024-11-04T11:53:53.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "metrics": [
             {
-                "values": { "instrumental": {"sdr": 16.845} }
+                "values": { "instrum": {"sdr": 16.845} }
             }
         ],
         "description": [
@@ -2720,7 +2714,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-unwa-duality",
         "created_at": "2024-10-30T14:55:31.000Z",
-        "output": ["vocals", "instrumental"],
+        "output": ["vocals", "instrum"],
         "description": [
             { "content": ["slightly a bit better sdr and fewer residues"] }
         ],
@@ -2743,7 +2737,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-unwa-duality",
         "created_at": "2024-10-29T16:46:19.000Z",
-        "output": ["vocals", "instrumental"],
+        "output": ["vocals", "instrum"],
         "description": [
             {
                 "content": [
@@ -2771,7 +2765,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-unwa-inst",
         "created_at": "2024-10-22T08:21:44.000Z",
-        "output": ["instrumental"],
+        "output": ["instrum"],
         "description": [
             {
                 "content": [
@@ -2884,7 +2878,7 @@
         "status": "tested",
         "metrics": [
             {
-                "values": { "instrumental": {"sdr": 12.59} }
+                "values": { "instrum": {"sdr": 12.59} }
             }
         ],
         "description": [

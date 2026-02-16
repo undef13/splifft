@@ -5,7 +5,7 @@
         "chunk_size": 485100,
         "output_stem_names": [
             "vocals",
-            "instrumental"
+            "instrum"
         ],
         "dim": 384,
         "depth": 6,

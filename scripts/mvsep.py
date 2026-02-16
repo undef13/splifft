@@ -205,16 +205,37 @@ def process() -> None:
 #
 # visualization
 #
+def _derive_bounds_from_highlights(
+    cols_to_plot: list[str], highlights: dict[int, dict[str, Any]]
+) -> dict[str, tuple[float, float]]:
+    bounds: dict[str, tuple[float, float]] = {}
+    for col in cols_to_plot:
+        values = []
+        for row in highlights.values():
+            v = row.get(col)
+            if isinstance(v, (int, float)):
+                values.append(float(v))
+
+        if not values:
+            continue
+
+        lo = min(values)
+        hi = max(values)
+        span = hi - lo
+        margin = max(span * 0.20, 0.1) if span > 0 else 0.2
+        bounds[col] = (lo - margin, hi + margin)
+
+    return bounds
 
 
 @app.command()
 def correlations(
-    instruments: list[str] = ["instrumental", "vocals", "drums", "bass", "other", "piano"],
+    instruments: list[str] = ["instrum", "vocals", "drums", "bass", "other", "piano"],
     metrics_to_plot: list[str] = [
         "sdr",
         "bleedless",
         "fullness",
-        # "l1_freq",
+        "l1_freq",
         # "aura_stft",
         # "aura_mrstft",
     ],
@@ -223,7 +244,6 @@ def correlations(
         typer.Option("--id", "-i", help="one or more entry IDs to highlight on the plot."),
     ] = None,
 ) -> None:
-    import polars as pl
     from matplotlib.lines import Line2D
 
     if not FP_QUALITY.exists():
@@ -264,6 +284,8 @@ def correlations(
             logger.error(f"instrument `{instrument}` missing data for metrics: {missing_cols}")
             continue
 
+        col_bounds = _derive_bounds_from_highlights(cols_to_plot, highlights)
+
         plot_df = df.select(cols_to_plot).drop_nulls().to_numpy()
         num_metrics = len(cols_to_plot)
 
@@ -281,9 +303,15 @@ def correlations(
                     ax.axis("off")
                     continue
 
-                # main plots
+                x_col = cols_to_plot[j]
+                y_col = cols_to_plot[i]
+                x_bounds = col_bounds.get(x_col)
+                y_bounds = col_bounds.get(y_col)
+
                 if i == j:
-                    ax.hist(plot_df[:, i], bins=30, color="#155473")
+                    # ax.hist(plot_df[:, i], bins=30, color="#155473")
+                    if x_bounds:
+                        ax.set_xlim(*x_bounds)
                 else:
                     ax.scatter(
                         plot_df[:, j],
@@ -293,8 +321,11 @@ def correlations(
                         color="#eeeeee",
                         edgecolors="none",
                     )
+                    if x_bounds:
+                        ax.set_xlim(*x_bounds)
+                    if y_bounds:
+                        ax.set_ylim(*y_bounds)
 
-                # highlight lines and legend creation
                 for idx, (id, data) in enumerate(highlights.items()):
                     color = f"C{idx}"
                     if id not in added_to_legend:
@@ -305,18 +336,21 @@ def correlations(
                         added_to_legend.add(id)
 
                     if i == j:
-                        if val := data.get(cols_to_plot[i]):
+                        val = data.get(cols_to_plot[i])
+                        if val is not None:
                             ax.axvline(val, color=color, lw=1)
                     elif j > i:
-                        ax.scatter(
-                            data.get(cols_to_plot[j], 0),
-                            data.get(cols_to_plot[i], 0),
-                            color=color,
-                            s=20,
-                            edgecolors="none",
-                        )
+                        x_val = data.get(cols_to_plot[j])
+                        y_val = data.get(cols_to_plot[i])
+                        if x_val is not None and y_val is not None:
+                            ax.scatter(
+                                x_val,
+                                y_val,
+                                color=color,
+                                s=20,
+                                edgecolors="none",
+                            )
 
-                # axis labels and ticks
                 clean_label_j = cols_to_plot[j].replace(f"_{instrument}", "")
                 clean_label_i = cols_to_plot[i].replace(f"_{instrument}", "")
                 ax.tick_params(

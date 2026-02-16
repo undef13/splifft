@@ -174,7 +174,7 @@ There are three steps. You do not need to have Python installed.
     [00:00:57] INFO     wrote stem `vocals` to data/audio/output/3BFTio5296w/vocals.flac                 __main__.py:158
                INFO     wrote stem `guitar` to data/audio/output/3BFTio5296w/guitar.flac                 __main__.py:158
                INFO     wrote stem `piano` to data/audio/output/3BFTio5296w/piano.flac                   __main__.py:158
-    [00:00:58] INFO     wrote stem `instrumental` to data/audio/output/3BFTio5296w/instrumental.flac     __main__.py:158
+    [00:00:58] INFO     wrote stem `instrum` to data/audio/output/3BFTio5296w/instrum.flac               __main__.py:158
                INFO     wrote stem `drums_and_bass` to data/audio/output/3BFTio5296w/drums_and_bass.flac __main__.py:158
     ```
 
@@ -201,7 +201,7 @@ This will install the absolutely minimal core dependencies used under the `src/s
 
 ```sh
 # enable the built-in configuration, inference and CLI
-uv add "splifft[config,inference,cli]"
+uv add "splifft[config,inference,cli,web]"
 ```
 
 This will install `splifft` in your venv.

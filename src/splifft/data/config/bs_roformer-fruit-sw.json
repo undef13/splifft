@@ -35,7 +35,7 @@
         "out_dtype": "float16"
     },
     "derived_stems": {
-        "instrumental": {
+        "instrum": {
             "operation": "subtract",
             "stem_name": "mixture",
             "by_stem_name": "vocals"

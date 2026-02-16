@@ -4,7 +4,7 @@
     "model": {
         "chunk_size": 733824,
         "output_stem_names": [
-            "instrumental"
+            "instrum"
         ],
         "dim": 512,
         "depth": 24,

@@ -60,7 +60,7 @@ Use the [`splifft.inference.InferenceEngine.from_pretrained`][] for a convenient
             -1.3759e-05, -1.3933e-05],
             [-1.3881e-05, -1.3810e-05, -1.3881e-05,  ..., -1.3849e-05,
             -1.3843e-05, -1.3849e-05]], device='cuda:0'),
-            'instrumental': tensor([[ 1.3789e-05,  1.3904e-05,  1.3789e-05,  ...,  
+            'instrum': tensor([[ 1.3789e-05,  1.3904e-05,  1.3789e-05,  ...,  
     4.7834e-05,
             -2.5873e-05,  5.2345e-05],
             [ 1.3860e-05,  1.3833e-05,  1.3860e-05,  ...,  6.8972e-05,
