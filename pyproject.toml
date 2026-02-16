@@ -63,6 +63,7 @@ networking = [
     "orjson>=3.10.18",
 ]
 analysis = ["matplotlib>=3.10.3", "polars>=1.30.0"]
+msst-compat = ["pyyaml>=6.0.3"]
 
 [project.scripts]
 splifft = "splifft.__main__:app"

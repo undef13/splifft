@@ -51,7 +51,7 @@
           },
           "propertyNames": {
             "enum": [
-              "instrum",
+              "instrumental",
               "vocals",
               "drums",
               "bass",
@@ -67,6 +67,8 @@
               "music",
               "sfx",
               "speech",
+              "foreground",
+              "background",
               "restored",
               "back",
               "lead",
@@ -197,7 +199,7 @@
         "output": {
           "items": {
             "enum": [
-              "instrum",
+              "instrumental",
               "vocals",
               "drums",
               "bass",
@@ -213,6 +215,8 @@
               "music",
               "sfx",
               "speech",
+              "foreground",
+              "background",
               "restored",
               "back",
               "lead",
@@ -256,12 +260,7 @@
         "status": {
           "anyOf": [
             {
-              "enum": [
-                "alpha",
-                "beta",
-                "stable",
-                "deprecated"
-              ],
+              "const": "tested",
               "type": "string"
             },
             {

@@ -1,0 +1,34 @@
+{
+    "identifier": "mel_roformer-amane-4_stems_large",
+    "model_type": "bs_roformer",
+    "model": {
+        "chunk_size": 661500,
+        "output_stem_names": [
+            "drums",
+            "bass",
+            "other",
+            "vocals"
+        ],
+        "dim": 384,
+        "depth": 8,
+        "band_config": {
+            "kind": "mel",
+            "stft_n_fft": 4096
+        },
+        "stft_hop_length": 882,
+        "norm_output": true,
+        "mask_estimator_depth": 3,
+        "skip_connection": true
+    },
+    "stft": {
+        "n_fft": 4096,
+        "hop_length": 882,
+        "win_length": 4096
+    },
+    "inference": {
+        "batch_size": 1
+    },
+    "waveform_chunking": {
+        "overlap_ratio": 0.75
+    }
+}

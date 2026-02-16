@@ -149,9 +149,9 @@ class LazyModelConfig(BaseModel):
 class StftConfig(BaseModel):
     """configuration for the short-time fourier transform."""
 
-    n_fft: t.FftSize
-    hop_length: t.HopSize
-    win_length: t.FftSize
+    n_fft: t.FftSize = 2048
+    hop_length: t.HopSize = 512
+    win_length: t.FftSize = 2048
     window_shape: t.WindowShape = "hann"
     normalized: bool = False
     conv_dtype: TorchDtype | None = None
@@ -259,7 +259,7 @@ DerivedStemsConfig: TypeAlias = dict[DerivedStemName, DerivedStemRule]
 
 class OutputConfig(BaseModel):
     stem_names: Literal["all"] | NonEmptyUnique[Tuple[StemName]] = "all"
-    file_format: t.FileFormat = "wav"
+    file_format: t.FileFormat = "flac"
     bit_rate: t.BitRate | None = None
     """Output bit rate for lossy formats. The default is chosen by FFmpeg."""
 
@@ -412,7 +412,7 @@ class Model(BaseModel):
     created_at: str | None = None
     """ISO8601 date, time is optional (e.g. YYYY-MM-DD)"""
     output: NonEmptyUnique[list[t.Instrument]] = Field(default_factory=list)
-    status: Literal["alpha", "beta", "stable", "deprecated"] | None = None
+    status: Literal["tested"] | None = None
     metrics: list[Metrics] = Field(default_factory=list)
     description: list[Comment] = Field(default_factory=list)
     resources: list[Resource] = Field(default_factory=list)

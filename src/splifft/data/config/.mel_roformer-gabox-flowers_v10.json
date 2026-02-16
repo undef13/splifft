@@ -1,0 +1,26 @@
+{
+    "identifier": "mel_roformer-gabox-flowers_v10",
+    "model_type": "bs_roformer",
+    "model": {
+        "chunk_size": 352800,
+        "output_stem_names": [
+            "other"
+        ],
+        "dim": 256,
+        "depth": 12,
+        "band_config": {
+            "kind": "mel"
+        },
+        "stft_hop_length": 441,
+        "norm_output": true,
+        "mask_estimator_depth": 3,
+        "use_torch_checkpoint": true
+    },
+    "stft": {
+        "hop_length": 441
+    },
+    "inference": {
+        "batch_size": 1
+    },
+    "waveform_chunking": {}
+}

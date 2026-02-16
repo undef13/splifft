@@ -209,7 +209,7 @@ def process() -> None:
 
 @app.command()
 def correlations(
-    instruments: list[str] = ["instrum", "vocals", "drums", "bass", "other", "piano"],
+    instruments: list[str] = ["instrumental", "vocals", "drums", "bass", "other", "piano"],
     metrics_to_plot: list[str] = [
         "sdr",
         "bleedless",

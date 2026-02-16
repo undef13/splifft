@@ -1,0 +1,27 @@
+{
+    "identifier": "mel_roformer-becruily-guitar",
+    "model_type": "bs_roformer",
+    "model": {
+        "chunk_size": 485100,
+        "output_stem_names": [
+            "guitar"
+        ],
+        "dim": 256,
+        "depth": 4,
+        "band_config": {
+            "kind": "mel"
+        },
+        "stft_hop_length": 441,
+        "ff_mult": 1,
+        "norm_output": true,
+        "mask_estimator_depth": 3,
+        "mlp_expansion_factor": 1
+    },
+    "stft": {
+        "hop_length": 441
+    },
+    "inference": {
+        "batch_size": 1
+    },
+    "waveform_chunking": {}
+}

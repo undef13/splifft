@@ -58,16 +58,16 @@ DEFAULT_FREQS_PER_BANDS = (
 
 @dataclass
 class FixedBandsConfig:
-    kind: Literal["fixed"] = "fixed"
+    kind: Literal["fixed"]
     freqs_per_bands: tuple[t.Gt0[int], ...] = field(default_factory=lambda: DEFAULT_FREQS_PER_BANDS)
 
 
 @dataclass
 class MelBandsConfig:
     kind: Literal["mel"]
-    num_bands: t.Gt0[int]
-    sample_rate: t.Gt0[int]
-    stft_n_fft: t.Gt0[int]
+    stft_n_fft: t.Gt0[int] = 2048
+    num_bands: t.Gt0[int] = 60
+    sample_rate: t.Gt0[int] = 44100
 
 
 @dataclass
@@ -76,12 +76,12 @@ class BSRoformerParams(ModelParamsLike):
     output_stem_names: tuple[t.ModelOutputStemName, ...]
     dim: t.Gt0[int]
     depth: t.Gt0[int]
-    stft_hop_length: t.HopSize
+    band_config: FixedBandsConfig | MelBandsConfig
+    stft_hop_length: t.HopSize = 512
     stereo: bool = True
     time_transformer_depth: t.Gt0[int] = 1
     freq_transformer_depth: t.Gt0[int] = 1
     linear_transformer_depth: t.Ge0[int] = 0
-    band_config: FixedBandsConfig | MelBandsConfig = field(default_factory=FixedBandsConfig)
     dim_head: int = 64
     heads: t.Gt0[int] = 8
     attn_dropout: t.Dropout = 0.0

@@ -1,13 +1,194 @@
 {
+    "mel_roformer-unwa-big_beta7": {
+        "authors": ["unwa"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-unwa-big_beta7",
+        "created_at": "2026-02-13T15:39:51.000Z",
+        "output": ["vocals"],
+        "metrics": [ {"source": "https://mvsep.com/quality_checker/entry/9633"} ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/resolve/main/big_beta7.ckpt",
+                "digest": "sha256:9d68b9a8689a3500c45d3418a7811934e557760db07285f483088a0965b0eb88"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/pcunwa/Mel-Band-Roformer-big/resolve/main/big_beta7.yaml"
+            }
+        ],
+        "model_size": 944675923
+    },
+    "bs_roformer-anvuew-dereverb": {
+        "authors": ["anvuew"],
+        "purpose": "dereverb",
+        "architecture": "bs_roformer",
+        "config_id": ".bs_roformer-anvuew-dereverb",
+        "created_at": "2026-02-13T07:01:55.000Z",
+        "output": ["dereverb"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/anvuew/dereverb_bs_roformer/resolve/main/dereverb_bs_roformer_anvuew_sdr_22.5050.ckpt",
+                "digest": "sha256:b4dfa4c4aa251c0afc303e5d512d904a1c2255e51d8d0dbfbddb18d740563d42"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/anvuew/dereverb_bs_roformer/resolve/main/config.yaml"
+            }
+        ],
+        "model_size": 204496717
+    },
+    "mel_roformer-jasper-vocalsandeffects": {
+        "authors": ["jasper"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "created_at": "2026-02-01T10:19:00Z",
+        "output": ["vocals"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://drive.google.com/file/d/1WDgbQPTykaEVNrG4qRy1FlwE_YCiOE6V/view?usp=sharing"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://drive.google.com/file/d/10eTjyjmUwdjTgfEBS4Cwks-XxBLEkEEu/view?usp=sharing"
+            }
+        ]
+    },
+    "mdx23c-jasper-dnr": {
+        "authors": ["jasper"],
+        "purpose": "separation",
+        "architecture": "mdx23c",
+        "created_at": "2026-02-01T10:09:00Z",
+        "output": ["foreground", "background"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://drive.google.com/file/d/1ftKK4G9aOPknAm5wvGsJpZpFJ5L4rjBe/view?usp=sharing"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://drive.google.com/file/d/1xo37CIqjmpgSBM5ZENsVYysQs_sILPiv/view?usp=sharing"
+            }
+        ]
+    },
+    "mel_roformer-gabox-voc_fv7": {
+        "authors": ["gabox"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-voc_fv7",
+        "created_at": "2026-01-27T03:17:48.000Z",
+        "output": ["vocals"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/voc_fv7.ckpt",
+                "digest": "sha256:77b9e4b54802d670c02daceb30c61ec825dc54ca6c29c34b03cdd5e9f78382b6"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/vocals/v7.yaml"
+            }
+        ],
+        "model_size": 489571079
+    },
+    "mel_roformer-unwa-large_v2_inst": {
+        "authors": ["unwa"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-unwa-large_v2_inst",
+        "created_at": "2026-01-25T11:36:07.000Z",
+        "output": ["vocals", "instrumental"],
+        "metrics": [ {"source": "https://mvsep.com/quality_checker/entry/9580"} ],
+        "description": [
+            {
+                "content": [
+                    "The SDR is slightly higher than FNO, and the cumbersome installation process is no longer required.",
+                    "Simply replace the model file, just like with the HyperACE model.",
+                    "Instead of increasing the depth to 16, I added a four-layer TransformerBlock to the MaskEstimator."
+                ],
+                "author": "unwa"
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-Large-Inst/resolve/main/bs_large_v2_inst.ckpt",
+                "digest": "sha256:09251ab8b5bb892414a6ab8aa80a1be30c17852d5e7f4e76943610de049e4bc4"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-Large-Inst/resolve/main/config.yaml"
+            }
+        ],
+        "model_size": 238214371
+    },
+    "mel_roformer-chencfd-guitar": {
+        "authors": ["chencfd"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-chencfd-guitar",
+        "created_at": "2026-01-23T09:57:32Z",
+        "output": ["guitar"],
+        "metrics": [
+            {
+                "values": { "guitar": {"sdr": 7.98} }
+            }
+        ],
+        "description": [
+            { "content": ["trained on moisesdb"] }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://github.com/chenCFD/Guitar_Source_Separation/releases/download/v1.0/model_mel_band_roformer_ep_314_sdr_7.9825.ckpt",
+                "digest": "sha256:1a81a87b46eed215c051579ac5cff3b139bfdfb9fa3bf4666df059ef87404d14"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://github.com/chenCFD/Guitar_Source_Separation/releases/download/v1.0/config_moisesdb_mel_band_roformer_guitar.yaml"
+            },
+            {
+                "kind": "other",
+                "url": "https://github.com/ZFTurbo/Music-Source-Separation-Training/issues/1#issuecomment-3789629317"
+            }
+        ],
+        "model_size": 276726667
+    },
+    "scnet-aname-4stems_huge_v1": {
+        "authors": ["aname"],
+        "purpose": "separation",
+        "architecture": "scnet",
+        "created_at": "2026-01-11T13:49:57.000Z",
+        "output": ["drums", "bass", "other", "vocals"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/Aname-Tommy/Huge-SCNet-4stems/resolve/main/huge_scnet_4stems_v1.pt",
+                "digest": "sha256:d8262daa68e8567638b4a15dbe97f5f2103c180feb51e2b8fcc65af7a6fce608"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/Aname-Tommy/Huge-SCNet-4stems/resolve/main/config.yaml"
+            }
+        ],
+        "model_size": 261351656
+    },
     "mel_roformer-gabox-flowers_v10": {
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-flowers_v10",
         "created_at": "2026-01-04T22:58:53.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "metrics": [
             {
-                "values": { "instrum": {"bleedless": 36.68, "fullness": 37.12, "sdr": 16.95} }
+                "values": {
+                    "instrumental": {"bleedless": 36.68, "fullness": 37.12, "sdr": 16.95}
+                },
+                "source": "https://mvsep.com/quality_checker/entry/9505"
             }
         ],
         "description": [
@@ -23,12 +204,12 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/blob/main/melbandroformers/instrumental/inst_gaboxFlowersV10.ckpt",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/inst_gaboxFlowersV10.ckpt",
                 "digest": "sha256:fe3aa51927beb60ff345b8b672c11760fb8bdaa6039d8c61631416a5b4f7a047"
             },
             {
                 "kind": "config_msst",
-                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/blob/main/melbandroformers/instrumental/v10.yaml"
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/instrumental/v10.yaml"
             }
         ],
         "model_size": 489571079
@@ -37,8 +218,17 @@
         "authors": ["becruily"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-becruily-deux",
         "created_at": "2025-12-29T17:15:41.000Z",
-        "output": ["vocals", "instrum"],
+        "output": ["vocals", "instrumental"],
+        "metrics": [
+            {
+                "values": {
+                    "instrumental": {"bleedless": 41.3606, "fullness": 34.2534, "sdr": 17.5466},
+                    "vocals": {"bleedless": 28.9679, "fullness": 23.249, "sdr": 11.3695}
+                }
+            }
+        ],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -56,11 +246,13 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-12-23T19:27:31.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "metrics": [
             {
-                "values": { "instrum": {"bleedless": 36.2, "fullness": 37.19, "sdr": 16.56} }
+                "values": { "instrumental": {"bleedless": 36.2, "fullness": 37.19, "sdr": 16.56} },
+                "source": "https://mvsep.com/quality_checker/entry/9464"
             }
         ],
         "resources": [
@@ -80,6 +272,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "bs_roformer",
+        "config_id": ".bs_roformer-unwa-hyperace_v2_vocals",
         "created_at": "2025-12-20T10:31:44.000Z",
         "output": ["vocals"],
         "metrics": [
@@ -100,12 +293,12 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/blob/main/v2_inst/bs_roformer_inst_hyperacev2.ckpt",
-                "digest": "sha256:4d61178ef966d2b4e9ad456ffbbc6fd5b2828df07a7af32931142c1a5ff1fe6f"
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_voc/bs_roformer_inst_hyperacev2.ckpt",
+                "digest": "sha256:54cf516f621f2f460bf660ed137e244b8931bf7a2ce85ddceecff816dbc4d668"
             },
             {
                 "kind": "config_msst",
-                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/blob/main/v2_inst/config.yaml"
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_voc/config.yaml"
             }
         ],
         "model_size": 288725646
@@ -114,11 +307,12 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "bs_roformer",
+        "config_id": ".bs_roformer-unwa-hyperace_v2_instrum",
         "created_at": "2025-12-18T14:27:44.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "metrics": [
             {
-                "values": { "instrum": {"bleedless": 37.87, "fullness": 38.03, "sdr": 17.4} },
+                "values": { "instrumental": {"bleedless": 37.87, "fullness": 38.03, "sdr": 17.4} },
                 "source": "https://mvsep.com/quality_checker/entry/9475"
             }
         ],
@@ -135,12 +329,12 @@
         "resources": [
             {
                 "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/blob/main/v2_voc/bs_roformer_voc_hyperacev2.ckpt",
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_voc/bs_roformer_voc_hyperacev2.ckpt",
                 "digest": "sha256:54cf516f621f2f460bf660ed137e244b8931bf7a2ce85ddceecff816dbc4d668"
             },
             {
                 "kind": "config_msst",
-                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/blob/main/v2_voc/bs_roformer_voc_hyperacev2.ckpt"
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_inst/config.yaml"
             }
         ],
         "model_size": 288724430
@@ -149,11 +343,12 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-11-22T06:46:24.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "metrics": [
             {
-                "values": { "instrum": {"fullness": 27.07, "bleedless": 47.49, "sdr": 16.71} }
+                "values": { "instrumental": {"fullness": 27.07, "bleedless": 47.49, "sdr": 16.71} }
             }
         ],
         "description": [
@@ -183,9 +378,9 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": "mel_roformer-gabox-vocals",
         "created_at": "2025-11-22T06:45:01.000Z",
         "output": ["vocals"],
-        "status": "beta",
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -203,9 +398,9 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": "mel_roformer-gabox-vocals",
         "created_at": "2025-11-13T00:50:40.000Z",
         "output": ["vocals"],
-        "status": "beta",
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -223,8 +418,9 @@
         "authors": ["mesk"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-mesk-rifforge",
         "created_at": "2025-10-26T15:50:53.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -242,9 +438,9 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": "mel_roformer-gabox-vocals",
         "created_at": "2025-10-18T01:51:23.000Z",
         "output": ["vocals"],
-        "status": "beta",
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -262,6 +458,7 @@
         "authors": ["anvuew"],
         "purpose": "separation",
         "architecture": "bs_roformer",
+        "config_id": ".bs_roformer-anvuew-karaoke",
         "created_at": "2025-10-17T07:36:23.000Z",
         "output": ["lead_vocals"],
         "resources": [
@@ -281,8 +478,9 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-10-05T18:40:31.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -300,8 +498,9 @@
         "authors": ["neoculture"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-neoculture-inst_vfx",
         "created_at": "2025-10-05T09:14:38.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -319,6 +518,7 @@
         "authors": ["anvuew"],
         "purpose": "dereverb",
         "architecture": "bs_roformer",
+        "config_id": ".bs_roformer-anvuew-dereverb_room_mono",
         "created_at": "2025-09-10T03:15:05.000Z",
         "output": ["dry"],
         "metrics": [
@@ -343,11 +543,12 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "bs_roformer",
+        "config_id": ".bs_roformer-unwa-inst_fno",
         "created_at": "2025-08-21T13:29:45.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "metrics": [
             {
-                "values": { "instrum": {"bleedless": 42.87, "fullness": 32.03, "sdr": 17.6} }
+                "values": { "instrumental": {"bleedless": 42.87, "fullness": 32.03, "sdr": 17.6} }
             }
         ],
         "description": [
@@ -377,9 +578,9 @@
         "authors": ["mesk"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-mesk-rifforge_beta",
         "created_at": "2025-08-15T16:55:16.000Z",
-        "output": ["instrum"],
-        "status": "beta",
+        "output": ["instrumental"],
         "description": [
             {
                 "content": [
@@ -414,6 +615,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": "mel_roformer-gabox-vocals",
         "created_at": "2025-08-07T09:45:17.000Z",
         "output": ["vocals"],
         "metrics": [
@@ -451,11 +653,13 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "bs_roformer",
+        "config_id": "bs_roformer-unwa-resurrection_instrumental",
         "created_at": "2025-07-31T16:36:49.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
+        "status": "tested",
         "metrics": [
             {
-                "values": { "instrum": {"sdr": 17.25, "bleedless": 40.14, "fullness": 34.93} }
+                "values": { "instrumental": {"sdr": 17.25, "bleedless": 40.14, "fullness": 34.93} }
             }
         ],
         "description": [
@@ -511,6 +715,7 @@
         "authors": ["gabox"],
         "purpose": "dereverb",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-karaoke",
         "created_at": "2025-07-31T06:23:28.000Z",
         "output": ["vocals_dry"],
         "description": [
@@ -545,6 +750,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-karaoke",
         "created_at": "2025-07-31T06:21:50.000Z",
         "output": ["lead"],
         "metrics": [
@@ -580,6 +786,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": "mel_roformer-gabox-vocals",
         "created_at": "2025-07-19T23:02:16.000Z",
         "output": ["vocals"],
         "metrics": [
@@ -600,12 +807,14 @@
         ],
         "model_size": 913031195
     },
-    "bs_roformer-unwa-resurrection": {
+    "bs_roformer-unwa-resurrection_vocals": {
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "bs_roformer",
+        "config_id": "bs_roformer-unwa-resurrection_vocals",
         "created_at": "2025-07-19T13:57:10.000Z",
         "output": ["vocals"],
+        "status": "tested",
         "metrics": [
             {
                 "values": { "vocals": {"bleedless": 39.99, "fullness": 15.14, "sdr": 11.34} }
@@ -692,11 +901,12 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-06-20T07:55:32.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "metrics": [
             {
-                "values": { "instrum": {"fullness": 29.38, "bleedless": 44.95} }
+                "values": { "instrumental": {"fullness": 29.38, "bleedless": 44.95} }
             }
         ],
         "description": [
@@ -723,8 +933,9 @@
         "authors": ["unwa", "97chris"],
         "purpose": "debleed",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-unwa-bleed_suppressor_v1",
         "created_at": "2025-06-03T17:54:14.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -742,11 +953,12 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-06-02T21:03:00.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "metrics": [
             {
-                "values": { "instrum": {"fullness": 35.05, "bleedless": 36.9, "sdr": 16.59} }
+                "values": { "instrumental": {"fullness": 35.05, "bleedless": 36.9, "sdr": 16.59} }
             }
         ],
         "description": [
@@ -793,6 +1005,7 @@
         "authors": ["unwa", "aufr33"],
         "purpose": "separation",
         "architecture": "bs_roformer",
+        "config_id": "bs_roformer-unwa-revive",
         "created_at": "2025-05-31T15:02:19.000Z",
         "output": ["vocals"],
         "metrics": [
@@ -827,12 +1040,12 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-05-31T06:03:10.000Z",
-        "output": ["instrum"],
-        "status": "alpha",
+        "output": ["instrumental"],
         "metrics": [
             {
-                "values": { "instrum": {"fullness": 29.83, "bleedless": 39.36, "sdr": 16.51} }
+                "values": { "instrumental": {"fullness": 29.83, "bleedless": 39.36, "sdr": 16.51} }
             }
         ],
         "resources": [
@@ -855,7 +1068,7 @@
         "config_id": "bs_roformer-fruit-sw",
         "created_at": "2025-05-28T15:00:00.000Z",
         "output": ["bass", "drums", "other", "vocals", "guitar", "piano"],
-        "status": "stable",
+        "status": "tested",
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -869,11 +1082,12 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-05-20T20:46:21.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "metrics": [
             {
-                "values": { "instrum": {"bleedless": 38.06, "fullness": 35.57, "sdr": 16.51} }
+                "values": { "instrumental": {"bleedless": 38.06, "fullness": 35.57, "sdr": 16.51} }
             }
         ],
         "description": [
@@ -908,6 +1122,7 @@
         "authors": ["becruily"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-becruily-guitar",
         "created_at": "2025-05-20T14:26:23.000Z",
         "output": ["guitar"],
         "description": [
@@ -936,6 +1151,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "bs_roformer",
+        "config_id": "bs_roformer-unwa-revive",
         "created_at": "2025-05-12T22:51:13.000Z",
         "output": ["vocals"],
         "metrics": [
@@ -965,6 +1181,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "bs_roformer",
+        "config_id": "bs_roformer-unwa-revive",
         "created_at": "2025-05-11T11:16:21.000Z",
         "output": ["vocals"],
         "metrics": [
@@ -998,6 +1215,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": "mel_roformer-gabox-vocals",
         "created_at": "2025-05-06T05:48:53.000Z",
         "output": ["vocals"],
         "metrics": [
@@ -1039,6 +1257,7 @@
         "authors": ["becruily"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-becruily-karaoke",
         "created_at": "2025-04-15T12:38:16.000Z",
         "output": ["lead_vocals"],
         "resources": [
@@ -1058,6 +1277,7 @@
         "authors": ["amane"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-amane-4_stems_large",
         "created_at": "2025-04-12T21:16:30.000Z",
         "output": ["drums", "bass", "other", "vocals"],
         "resources": [
@@ -1077,11 +1297,12 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-unwa-inst",
         "created_at": "2025-04-04T09:54:03.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "metrics": [
             {
-                "values": { "instrum": {"bleedless": 36.53, "fullness": 37.89, "sdr": 16.65} }
+                "values": { "instrumental": {"bleedless": 36.53, "fullness": 37.89, "sdr": 16.65} }
             }
         ],
         "description": [
@@ -1123,11 +1344,12 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-unwa-inst",
         "created_at": "2025-04-03T16:08:45.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "metrics": [
             {
-                "values": { "instrum": {"bleedless": 38.26, "fullness": 35.31, "sdr": 16.72} }
+                "values": { "instrumental": {"bleedless": 38.26, "fullness": 35.31, "sdr": 16.72} }
             }
         ],
         "description": [
@@ -1169,12 +1391,14 @@
         "authors": ["mesk"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-mesk-metal_preview",
         "created_at": "2025-04-01T10:51:46.000Z",
-        "output": ["instrum"],
-        "status": "beta",
+        "output": ["instrumental"],
         "metrics": [
             {
-                "values": { "instrum": {"bleedless": 48.81, "fullness": 42.85, "sdr": 13.7621} },
+                "values": {
+                    "instrumental": {"bleedless": 48.81, "fullness": 42.85, "sdr": 13.7621}
+                },
                 "source": "private dataset"
             }
         ],
@@ -1205,6 +1429,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-unwa-big_beta6x",
         "created_at": "2025-03-30T10:48:57.000Z",
         "output": ["vocals"],
         "metrics": [
@@ -1238,9 +1463,9 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-03-25T22:18:12.000Z",
-        "output": ["instrum"],
-        "status": "alpha",
+        "output": ["instrumental"],
         "description": [
             { "content": ["noticed too many vocal residues.", "there is no noise"] }
         ],
@@ -1261,9 +1486,9 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-unwa-kim_ft",
         "created_at": "2025-03-12T07:34:42.000Z",
         "output": ["vocals"],
-        "status": "beta",
         "metrics": [
             {
                 "values": { "vocals": {"bleedless": 36.11, "fullness": 16.8, "sdr": 11.05} }
@@ -1289,9 +1514,9 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-03-05T04:24:52.000Z",
-        "output": ["instrum"],
-        "status": "alpha",
+        "output": ["instrumental"],
         "description": [
             {
                 "content": [
@@ -1319,11 +1544,12 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-03-04T02:58:20.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "metrics": [
             {
-                "values": { "instrum": {"bleedless": 41.69, "fullness": 32.13} }
+                "values": { "instrumental": {"bleedless": 41.69, "fullness": 32.13} }
             }
         ],
         "description": [
@@ -1346,8 +1572,9 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-02-28T07:13:33.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -1365,8 +1592,9 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-02-28T03:06:18.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -1384,8 +1612,9 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-02-27T21:40:20.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "description": [
             { "content": ["i hear less noise compared to v1e, but it has worse bleedless metric"] }
         ],
@@ -1406,6 +1635,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-karaoke",
         "created_at": "2025-02-27T21:02:49.000Z",
         "output": ["lead_vocals"],
         "description": [
@@ -1434,9 +1664,9 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-02-27T06:17:17.000Z",
-        "output": ["instrum"],
-        "status": "beta",
+        "output": ["instrumental"],
         "description": [
             {
                 "content": [
@@ -1461,12 +1691,12 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-02-27T06:17:17.000Z",
-        "output": ["instrum"],
-        "status": "beta",
+        "output": ["instrumental"],
         "metrics": [
             {
-                "values": { "instrum": {"bleedless": 34.66, "fullness": 38.96} }
+                "values": { "instrumental": {"bleedless": 34.66, "fullness": 38.96} }
             }
         ],
         "description": [
@@ -1493,12 +1723,12 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-02-26T21:06:06.000Z",
-        "output": ["instrum"],
-        "status": "beta",
+        "output": ["instrumental"],
         "metrics": [
             {
-                "values": { "instrum": {"bleedless": 35.01, "fullness": 38.39} }
+                "values": { "instrumental": {"bleedless": 35.01, "fullness": 38.39} }
             }
         ],
         "description": [
@@ -1526,6 +1756,7 @@
         "authors": ["amane"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-amane-fullnessvocalmodel",
         "created_at": "2025-02-23T11:48:16.000Z",
         "output": ["vocals"],
         "metrics": [
@@ -1558,6 +1789,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": "mel_roformer-gabox-vocals",
         "created_at": "2025-02-17T19:55:35.000Z",
         "output": ["vocals"],
         "metrics": [
@@ -1588,9 +1820,9 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-unwa-big_beta6",
         "created_at": "2025-02-17T07:23:54.000Z",
         "output": ["vocals"],
-        "status": "beta",
         "description": [
             {
                 "content": [
@@ -1619,11 +1851,12 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-02-16T01:38:05.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "metrics": [
             {
-                "values": { "instrum": {"bleedless": 32.63, "fullness": 41.68} },
+                "values": { "instrumental": {"bleedless": 32.63, "fullness": 41.68} },
                 "source": "https://mvsep.com/quality_checker/entry/7915"
             }
         ],
@@ -1653,6 +1886,7 @@
         "authors": ["gabox"],
         "purpose": "denoise",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-02-12T22:05:40.000Z",
         "output": ["denoised"],
         "description": [
@@ -1679,8 +1913,9 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-02-12T01:52:44.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "metrics": [ {"source": "https://mvsep.com/quality_checker/entry/7884"} ],
         "resources": [
             {
@@ -1699,6 +1934,7 @@
         "authors": ["amane"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-amane-small",
         "created_at": "2025-02-11T23:55:13.000Z",
         "output": ["vocals"],
         "resources": [
@@ -1718,6 +1954,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": "mel_roformer-gabox-vocals",
         "created_at": "2025-02-09T08:15:56.000Z",
         "output": ["vocals"],
         "resources": [
@@ -1737,8 +1974,9 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-02-08T02:41:37.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "description": [
             {
                 "content": [
@@ -1764,8 +2002,9 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-02-08T02:32:10.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -1783,6 +2022,7 @@
         "authors": ["anvuew"],
         "purpose": "dereverb",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-anvuew-dereverb",
         "created_at": "2025-02-07T11:18:22.000Z",
         "output": ["dry"],
         "metrics": [
@@ -1815,6 +2055,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-unwa-kim_ft",
         "created_at": "2025-01-29T05:54:23.000Z",
         "output": ["vocals"],
         "metrics": [
@@ -1839,11 +2080,12 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-01-27T22:07:13.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "metrics": [
             {
-                "values": { "instrum": {"fullness": 39.4, "bleedless": 33.49} }
+                "values": { "instrumental": {"fullness": 39.4, "bleedless": 33.49} }
             }
         ],
         "description": [
@@ -1872,6 +2114,7 @@
         "authors": ["SYH99999"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-syh99999-syhftb1",
         "created_at": "2025-01-27T06:51:46.000Z",
         "output": ["vocals"],
         "resources": [
@@ -1891,11 +2134,12 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-gabox-inst",
         "created_at": "2025-01-26T16:20:12.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "metrics": [
             {
-                "values": { "instrum": {"sdr": 16.43, "fullness": 38.71, "bleedless": 35.62} }
+                "values": { "instrumental": {"sdr": 16.43, "fullness": 38.71, "bleedless": 35.62} }
             }
         ],
         "description": [
@@ -1923,8 +2167,9 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "bs_roformer",
+        "config_id": ".bs_roformer-gabox-instrumental",
         "created_at": "2025-01-23T07:19:56.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "description": [
             {
                 "content": [
@@ -1949,6 +2194,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": "mel_roformer-gabox-vocals",
         "created_at": "2025-01-22T03:14:32.000Z",
         "output": ["vocals"],
         "resources": [
@@ -1968,6 +2214,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": "mel_roformer-gabox-vocals",
         "created_at": "2025-01-22T03:14:32.000Z",
         "output": ["vocals"],
         "metrics": [
@@ -1992,6 +2239,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": "mel_roformer-gabox-vocals",
         "created_at": "2025-01-21T09:18:01.000Z",
         "output": ["vocals"],
         "metrics": [
@@ -2016,9 +2264,9 @@
         "authors": ["aufr33"],
         "purpose": "separation",
         "architecture": "bs_roformer",
+        "config_id": ".bs_roformer-sucial-chorus-mf",
         "created_at": "2025-01-08T23:24:27.000Z",
         "output": ["male"],
-        "status": "beta",
         "metrics": [
             {
                 "values": { "male": {"sdr": 7.2889} }
@@ -2040,6 +2288,10 @@
             {
                 "kind": "config_msst",
                 "url": "https://huggingface.co/Sucial/Chorus_Male_Female_BS_Roformer/resolve/main/config_chorus_male_female_bs_roformer.yaml"
+            },
+            {
+                "kind": "other",
+                "url": "https://discord.com/channels/708579735583588363/708580573697933382/1326094679984439296"
             }
         ],
         "model_size": 527119779
@@ -2048,6 +2300,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-unwa-kim_ft",
         "created_at": "2025-01-01T12:11:45.000Z",
         "output": ["vocals"],
         "metrics": [ {"source": "https://mvsep.com/quality_checker/entry/7714"} ],
@@ -2075,11 +2328,14 @@
         "authors": ["becruily"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-becruily-instrumental",
         "created_at": "2024-12-27T13:41:55.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "metrics": [
             {
-                "values": { "instrum": {"sdr": 16.4719, "fullness": 33.9763, "bleedless": 40.4849} }
+                "values": {
+                    "instrumental": {"sdr": 16.4719, "fullness": 33.9763, "bleedless": 40.4849}
+                }
             }
         ],
         "description": [
@@ -2110,6 +2366,7 @@
         "authors": ["becruily"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-becruily-vocals",
         "created_at": "2024-12-27T13:41:23.000Z",
         "output": ["vocals"],
         "metrics": [
@@ -2142,9 +2399,9 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "bs_roformer",
+        "config_id": ".bs_roformer-unwa-inst_exp_value_residual",
         "created_at": "2024-12-26T08:55:53.000Z",
-        "output": ["instrum"],
-        "status": "alpha",
+        "output": ["instrumental"],
         "description": [
             {
                 "content": [
@@ -2189,6 +2446,7 @@
         "authors": ["sucial"],
         "purpose": "separation",
         "architecture": "bs_roformer",
+        "config_id": ".bs_roformer-sucial-chorus-mf",
         "created_at": "2024-12-07T09:12:45.000Z",
         "output": ["male"],
         "description": [
@@ -2221,6 +2479,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-unwa-kim_ft",
         "created_at": "2024-12-06T10:09:16.000Z",
         "output": ["vocals"],
         "metrics": [
@@ -2253,6 +2512,7 @@
         "authors": ["zfturbo"],
         "purpose": "separation",
         "architecture": "bs_roformer",
+        "config_id": ".bs_roformer-zfturbo-musdb18",
         "created_at": "2024-11-28T07:08:31Z",
         "output": ["drums", "bass", "other", "vocals"],
         "resources": [
@@ -2271,9 +2531,9 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-unwa-big_beta5e",
         "created_at": "2024-11-23T14:39:27.000Z",
         "output": ["vocals"],
-        "status": "beta",
         "description": [
             {
                 "content": ["it seems to fix some issues with trumpets in vocal stem"],
@@ -2317,6 +2577,7 @@
         "authors": ["sucial"],
         "purpose": "dereverb",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-sucial-dereverb_echo_fused",
         "created_at": "2024-11-22T10:22:21.000Z",
         "output": ["dry"],
         "description": [
@@ -2346,8 +2607,9 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-unwa-inst",
         "created_at": "2024-11-20T05:33:47.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "description": [
             {
                 "content": [
@@ -2374,11 +2636,12 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-unwa-v2",
         "created_at": "2024-11-04T11:53:53.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "metrics": [
             {
-                "values": { "instrum": {"sdr": 16.845} }
+                "values": { "instrumental": {"sdr": 16.845} }
             }
         ],
         "description": [
@@ -2413,6 +2676,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-unwa-duality",
         "created_at": "2024-10-30T14:55:31.000Z",
         "output": ["vocals", "other"],
         "description": [
@@ -2435,6 +2699,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-unwa-duality",
         "created_at": "2024-10-29T16:46:19.000Z",
         "output": ["vocals", "other"],
         "description": [
@@ -2462,8 +2727,9 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-unwa-inst",
         "created_at": "2024-10-22T08:21:44.000Z",
-        "output": ["instrum"],
+        "output": ["instrumental"],
         "description": [
             {
                 "content": [
@@ -2489,9 +2755,9 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-unwa-big_beta4",
         "created_at": "2024-10-19T11:12:41.000Z",
         "output": ["vocals"],
-        "status": "beta",
         "description": [
             {
                 "content": [
@@ -2524,9 +2790,9 @@
         "authors": ["unwa", "bas curtiz"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-unwa-big_beta3",
         "created_at": "2024-09-30T10:15:02.000Z",
         "output": ["vocals"],
-        "status": "beta",
         "description": [
             {
                 "content": [
@@ -2566,15 +2832,17 @@
         ],
         "model_size": 168852258
     },
-    "bs_roformer-unwa-largev1": {
+    "bs_roformer-unwa-large_v1": {
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "bs_roformer",
+        "config_id": "bs_roformer-unwa-large_v1",
         "created_at": "2024-09-24T14:48:59.000Z",
         "output": ["vocals"],
+        "status": "tested",
         "metrics": [
             {
-                "values": { "instrum": {"sdr": 12.59} }
+                "values": { "instrumental": {"sdr": 12.59} }
             }
         ],
         "description": [
@@ -2602,10 +2870,36 @@
         ],
         "model_size": 740263433
     },
+    "mel_roformer-anvuew-dereverb_less_aggressive": {
+        "authors": ["anvuew"],
+        "purpose": "dereverb",
+        "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-anvuew-dereverb",
+        "created_at": "2024-09-03T12:35:29.000Z",
+        "output": ["dry"],
+        "metrics": [
+            {
+                "values": { "dereverb": {"sdr": 18.805} }
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/anvuew/dereverb_mel_band_roformer/resolve/main/dereverb_mel_band_roformer_less_aggressive_anvuew_sdr_18.8050.ckpt",
+                "digest": "sha256:0db8f1b41c00cead1112e967262a12802fd32e76c0c3a8eb207e772bae25d07b"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/anvuew/dereverb_mel_band_roformer/resolve/main/dereverb_mel_band_roformer_anvuew.yaml"
+            }
+        ],
+        "model_size": 913107578
+    },
     "mel_roformer-anvuew-dereverb": {
         "authors": ["anvuew"],
         "purpose": "dereverb",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-anvuew-dereverb",
         "created_at": "2024-09-03T12:35:29.000Z",
         "output": ["dry"],
         "metrics": [
@@ -2629,7 +2923,7 @@
             },
             {
                 "kind": "config_msst",
-                "url": "https://huggingface.co/anvuew/dereverb_mel_band_roformer/resolve/main/dereverb_mel_band_roformer_anvuew.yaml"
+                "url": "https://huggingface.co/anvuew/dereverb_mel_band_roformer/blob/main/dereverb_mel_band_roformer_anvuew.yaml"
             }
         ],
         "model_size": 913107578
@@ -2662,6 +2956,7 @@
         "authors": ["aufr33", "viperx"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-aufr33-karaoke",
         "created_at": "2024-08-16T13:35:38.000Z",
         "output": ["lead_vocals"],
         "metrics": [
@@ -2686,6 +2981,7 @@
         "authors": ["kimberley jensen"],
         "purpose": "separation",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-kim-vocals",
         "created_at": "2024-08-06T16:13:02.000Z",
         "output": ["vocals"],
         "resources": [
@@ -2705,6 +3001,7 @@
         "authors": ["aufr33"],
         "purpose": "denoise",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-aufr33-denoise",
         "created_at": "2024-08-02T14:47:22.000Z",
         "output": ["denoised"],
         "resources": [
@@ -2724,6 +3021,7 @@
         "authors": ["aufr33"],
         "purpose": "denoise",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-aufr33-denoise",
         "created_at": "2024-08-02T14:47:22.000Z",
         "output": ["denoised"],
         "metrics": [
@@ -2808,25 +3106,6 @@
             }
         ],
         "model_size": 81065078
-    },
-    "bs_roformer-anvuew-dereverb": {
-        "authors": ["anvuew"],
-        "purpose": "dereverb",
-        "architecture": "bs_roformer",
-        "created_at": "2024-07-15T19:50:31.000Z",
-        "output": ["dry"],
-        "resources": [
-            {
-                "kind": "model_ckpt",
-                "url": "https://huggingface.co/anvuew/deverb_bs_roformer/resolve/main/deverb_bs_roformer_8_256dim_8depth.ckpt",
-                "digest": "sha256:ee204fc59fa4111674536d47bd1ef3759acb9f7cf5a759ec4b867a828bb76c64"
-            },
-            {
-                "kind": "config_msst",
-                "url": "https://huggingface.co/anvuew/deverb_bs_roformer/resolve/main/deverb_bs_roformer_8_256dim_8depth.yaml"
-            }
-        ],
-        "model_size": 170770820
     },
     "beat_this-cpjku-small": {
         "authors": ["CPJKU"],
@@ -2928,6 +3207,7 @@
         "authors": ["aufr33", "viperx"],
         "purpose": "decrowd",
         "architecture": "mel_roformer",
+        "config_id": ".mel_roformer-aufr33-decrowd",
         "created_at": "2024-06-07T22:01:24Z",
         "output": ["clean"],
         "metrics": [
@@ -2961,6 +3241,7 @@
         "authors": ["viperx"],
         "purpose": "separation",
         "architecture": "bs_roformer",
+        "config_id": ".bs_roformer-viperx-1053",
         "created_at": "2024-03-29T10:38:08Z",
         "output": ["other"],
         "metrics": [
@@ -2984,6 +3265,7 @@
         "authors": ["viperx"],
         "purpose": "separation",
         "architecture": "bs_roformer",
+        "config_id": ".bs_roformer-viperx-1296",
         "created_at": "2024-03-29T10:36:27Z",
         "output": ["vocals"],
         "metrics": [
@@ -3007,6 +3289,7 @@
         "authors": ["viperx"],
         "purpose": "separation",
         "architecture": "bs_roformer",
+        "config_id": ".bs_roformer-viperx-1297",
         "created_at": "2024-03-29T08:37:31Z",
         "output": ["vocals"],
         "metrics": [

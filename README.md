@@ -123,7 +123,7 @@ There are three steps. You do not need to have Python installed.
     splifft run data/audio/input/3BFTio5296w.flac --model bs_roformer-fruit-sw
     ```
 
-    Alternatively, you can still manage files manually. Go into a new directory and place the [model checkpoint](https://github.com/undef13/splifft/releases/download/v0.0.1/roformer-fp16.pt) and [configuration](https://raw.githubusercontent.com/undef13/splifft/refs/heads/main/data/config/bs_roformer.json) inside it. Assuming your current directory has this structure (doesn't have to be exactly this):
+    Alternatively, you can manage files manually. Go into a new directory and place the [model checkpoint](https://github.com/undef13/splifft/releases/download/v0.0.1/roformer-fp16.pt) and [configuration](https://raw.githubusercontent.com/undef13/splifft/refs/heads/main/data/config/bs_roformer.json) inside it. Assuming your current directory has this structure (doesn't have to be exactly this):
 
     <details>
       <summary>Minimal reproduction: with example audio from YouTube</summary>

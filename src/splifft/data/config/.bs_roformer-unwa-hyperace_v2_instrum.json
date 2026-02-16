@@ -1,0 +1,25 @@
+{
+    "identifier": "bs_roformer-unwa-hyperace_v2_instrum",
+    "model_type": "bs_roformer",
+    "model": {
+        "chunk_size": 960000,
+        "output_stem_names": [
+            "instrument"
+        ],
+        "dim": 256,
+        "depth": 12,
+        "band_config": {
+            "kind": "fixed"
+        },
+        "use_torch_checkpoint": true
+    },
+    "stft": {
+        "hop_length": 441
+    },
+    "inference": {
+        "batch_size": 2
+    },
+    "waveform_chunking": {
+        "overlap_ratio": 0.75
+    }
+}

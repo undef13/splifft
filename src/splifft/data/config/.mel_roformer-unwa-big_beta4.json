@@ -1,0 +1,25 @@
+{
+    "identifier": "mel_roformer-unwa-big_beta4",
+    "model_type": "bs_roformer",
+    "model": {
+        "chunk_size": 485100,
+        "output_stem_names": [
+            "vocals"
+        ],
+        "dim": 384,
+        "depth": 12,
+        "band_config": {
+            "kind": "mel"
+        },
+        "stft_hop_length": 441,
+        "norm_output": true,
+        "mask_estimator_depth": 4
+    },
+    "stft": {
+        "hop_length": 441
+    },
+    "inference": {
+        "batch_size": 1
+    },
+    "waveform_chunking": {}
+}

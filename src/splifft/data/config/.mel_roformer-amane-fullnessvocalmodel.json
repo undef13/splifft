@@ -1,0 +1,27 @@
+{
+    "identifier": "mel_roformer-amane-fullnessvocalmodel",
+    "model_type": "bs_roformer",
+    "model": {
+        "chunk_size": 661500,
+        "output_stem_names": [
+            "vocals"
+        ],
+        "dim": 384,
+        "depth": 6,
+        "band_config": {
+            "kind": "mel"
+        },
+        "stft_hop_length": 441,
+        "norm_output": true,
+        "mask_estimator_depth": 3
+    },
+    "stft": {
+        "hop_length": 441
+    },
+    "inference": {
+        "batch_size": 4
+    },
+    "waveform_chunking": {
+        "overlap_ratio": 0.75
+    }
+}

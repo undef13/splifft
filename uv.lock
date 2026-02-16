@@ -2864,6 +2864,9 @@ inference = [
     { name = "soundfile", marker = "sys_platform == 'Windows'" },
     { name = "torchcodec" },
 ]
+msst-compat = [
+    { name = "pyyaml" },
+]
 networking = [
     { name = "aiolimiter" },
     { name = "httpx", extra = ["http2", "socks", "zstd"] },
@@ -2918,6 +2921,7 @@ requires-dist = [
     { name = "platformdirs", marker = "extra == 'config'", specifier = ">=4.3.6" },
     { name = "polars", marker = "extra == 'analysis'", specifier = ">=1.30.0" },
     { name = "pydantic", marker = "extra == 'config'", specifier = ">=2.11.5" },
+    { name = "pyyaml", marker = "extra == 'msst-compat'", specifier = ">=6.0.3" },
     { name = "rich", marker = "extra == 'inference'", specifier = ">=14.1.0" },
     { name = "sageattention", marker = "extra == 'sageattention'", specifier = ">=1.0.6" },
     { name = "soundfile", marker = "sys_platform == 'Windows' and extra == 'inference'", specifier = ">=0.13.1" },
@@ -2927,7 +2931,7 @@ requires-dist = [
     { name = "torchcodec", marker = "extra == 'inference'", specifier = ">=0.5" },
     { name = "typer", marker = "extra == 'cli'", specifier = ">=0.16.0" },
 ]
-provides-extras = ["config", "inference", "cli", "web", "recommended", "sageattention", "networking", "analysis"]
+provides-extras = ["config", "inference", "cli", "web", "recommended", "sageattention", "networking", "analysis", "msst-compat"]
 
 [package.metadata.requires-dev]
 dev = [

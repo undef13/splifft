@@ -1,13 +1,6 @@
 {
     "identifier": "mel_roformer-gabox-vocals",
     "model_type": "bs_roformer",
-    "stft": {
-        "n_fft": 2048,
-        "hop_length": 441,
-        "win_length": 2048,
-        "normalized": false,
-        "conv_dtype": "float16"
-    },
     "model": {
         "chunk_size": 352800,
         "output_stem_names": [
@@ -18,35 +11,26 @@
         "stereo": true,
         "stft_hop_length": 441,
         "band_config": {
-            "kind": "mel",
-            "num_bands": 60,
-            "sample_rate": 44100,
-            "stft_n_fft": 2048
+            "kind": "mel"
         },
         "mask_estimator_depth": 3,
         "norm_output": true
     },
+    "stft": {
+        "hop_length": 441
+    },
     "inference": {
-        "batch_size": 2,
-        "force_weights_dtype": "float16"
+        "batch_size": 2
     },
     "normalization": {
         "enabled": true
     },
-    "waveform_chunking": {
-        "method": "overlap_add_windowed",
-        "overlap_ratio": 0.5,
-        "window_shape": "hann",
-        "padding_mode": "reflect"
-    },
+    "waveform_chunking": {},
     "derived_stems": {
         "instrumental": {
             "operation": "subtract",
             "stem_name": "mixture",
             "by_stem_name": "vocals"
         }
-    },
-    "output": {
-        "file_format": "flac"
     }
 }

@@ -1,0 +1,23 @@
+{
+    "identifier": "bs_roformer-unwa-inst_exp_value_residual",
+    "model_type": "bs_roformer",
+    "model": {
+        "chunk_size": 485100,
+        "output_stem_names": [
+            "other"
+        ],
+        "dim": 384,
+        "depth": 12,
+        "band_config": {
+            "kind": "fixed"
+        },
+        "stft_hop_length": 441
+    },
+    "stft": {
+        "hop_length": 441
+    },
+    "inference": {
+        "batch_size": 1
+    },
+    "waveform_chunking": {}
+}

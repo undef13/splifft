@@ -1,0 +1,25 @@
+{
+    "identifier": "mel_roformer-kim-vocals",
+    "model_type": "bs_roformer",
+    "model": {
+        "chunk_size": 352800,
+        "output_stem_names": [
+            "vocals"
+        ],
+        "dim": 384,
+        "depth": 6,
+        "band_config": {
+            "kind": "mel"
+        },
+        "stft_hop_length": 441,
+        "norm_output": true,
+        "mask_estimator_depth": 3
+    },
+    "stft": {
+        "hop_length": 441
+    },
+    "inference": {
+        "batch_size": 4
+    },
+    "waveform_chunking": {}
+}

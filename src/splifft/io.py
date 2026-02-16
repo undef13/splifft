@@ -11,6 +11,7 @@ import logging
 import os
 import shutil
 from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable, NoReturn
 
@@ -117,16 +118,27 @@ def is_model_cached(model_id: str) -> bool:
         return False
 
 
-def is_model_supported(model_id: str, registry: Registry) -> bool:
-    """Checks if the model has a default configuration in the package data."""
+class ModelSupportStatus(Enum):
+    MISSING = "missing"
+    UNTESTED = "untested"
+    AVAILABLE = "available"
+
+
+def is_model_supported(model_id: str, registry: Registry) -> ModelSupportStatus:
+    """Return support status based on the presence of a default config in package data."""
     if model_id not in registry:
-        return False
+        return ModelSupportStatus.MISSING
 
-    config_id = registry[model_id].config_id
-    if not config_id:
-        return False
+    if not (config_id := registry[model_id].config_id):
+        return ModelSupportStatus.MISSING
 
-    return (DIR_CONFIG_DEFAULT / f"{config_id}.json").exists()  # TODO dont hardcode
+    if not (DIR_CONFIG_DEFAULT / f"{config_id}.json").exists():  # TODO dont hardcode
+        return ModelSupportStatus.MISSING
+
+    if config_id.startswith("."):
+        return ModelSupportStatus.UNTESTED
+
+    return ModelSupportStatus.AVAILABLE
 
 
 def delete_model_from_cache(model_id: str) -> bool:
@@ -154,10 +166,11 @@ def get_model_paths(
 ) -> LocalModelPaths:
     if model_id not in registry:
         matches = difflib.get_close_matches(model_id, list(registry))
-        suggestion = f" did you mean {', '.join(map(repr, matches))}?" if matches else ""
+        suggestions = "\n".join(map(lambda m: f"- {m!r}", matches))
+        suggestion = f" did you mean:\n{suggestions}\n" if matches else ""
         raise ValueError(
             f"model '{model_id}' not found in registry.{suggestion}\n"
-            "help: use `splifft ls` to see available models in the registry"
+            "help: use `splifft ls` to see downloaded models in the registry"
         )
 
     model_info = registry[model_id]

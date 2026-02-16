@@ -214,6 +214,7 @@ def pull(
 
     model_paths = get_model_paths(
         model_id,
+        fetch_if_missing=True,
         force_overwrite=force_overwrite,
         registry=Registry.from_file(registry_path),
     )
@@ -243,7 +244,7 @@ def ls(
     from rich.text import Text
 
     from .config import Registry
-    from .io import is_model_cached, is_model_supported
+    from .io import ModelSupportStatus, is_model_cached, is_model_supported
 
     registry = Registry.from_file(registry_path)
 
@@ -263,13 +264,16 @@ def ls(
 
     for identifier, model in registry.items():
         is_cached = is_model_cached(identifier)
+        support_status = is_model_supported(identifier, registry)
         if not show_all and not is_cached:
             continue
 
         count_shown += 1
-        ident = Text(identifier)
-        if not is_model_supported(identifier, registry):
+        ident = Text(f"{identifier}")
+        if support_status is ModelSupportStatus.MISSING:
             ident.stylize("dim strike")
+        elif support_status is ModelSupportStatus.UNTESTED:
+            ident.stylize("dim")
         download_indicator = "  "
         if is_cached:
             ident.stylize("green")

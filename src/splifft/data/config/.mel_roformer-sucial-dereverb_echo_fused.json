@@ -1,0 +1,30 @@
+{
+    "identifier": "mel_roformer-sucial-dereverb_echo_fused",
+    "model_type": "bs_roformer",
+    "model": {
+        "chunk_size": 352800,
+        "output_stem_names": [
+            "dry",
+            "other"
+        ],
+        "dim": 256,
+        "depth": 8,
+        "band_config": {
+            "kind": "mel"
+        },
+        "stft_hop_length": 441,
+        "attn_dropout": 0.1,
+        "ff_dropout": 0.1,
+        "norm_output": true,
+        "mask_estimator_depth": 3
+    },
+    "stft": {
+        "hop_length": 441
+    },
+    "inference": {
+        "batch_size": 4
+    },
+    "waveform_chunking": {
+        "overlap_ratio": 0.75
+    }
+}

@@ -277,7 +277,7 @@
           "title": "Stem Names"
         },
         "file_format": {
-          "default": "wav",
+          "default": "flac",
           "enum": [
             "flac",
             "wav",
@@ -315,16 +315,19 @@
       "description": "configuration for the short-time fourier transform.",
       "properties": {
         "n_fft": {
+          "default": 2048,
           "exclusiveMinimum": 0,
           "title": "N Fft",
           "type": "integer"
         },
         "hop_length": {
+          "default": 512,
           "exclusiveMinimum": 0,
           "title": "Hop Length",
           "type": "integer"
         },
         "win_length": {
+          "default": 2048,
           "exclusiveMinimum": 0,
           "title": "Win Length",
           "type": "integer"
@@ -357,11 +360,6 @@
           "title": "Conv Dtype"
         }
       },
-      "required": [
-        "n_fft",
-        "hop_length",
-        "win_length"
-      ],
       "title": "StftConfig",
       "type": "object"
     },

@@ -1,0 +1,23 @@
+{
+    "identifier": "bs_roformer-unwa-inst_fno",
+    "model_type": "bs_roformer",
+    "model": {
+        "chunk_size": 749259,
+        "output_stem_names": [
+            "other"
+        ],
+        "dim": 256,
+        "depth": 12,
+        "band_config": {
+            "kind": "fixed"
+        },
+        "stft_hop_length": 441
+    },
+    "stft": {
+        "hop_length": 441
+    },
+    "inference": {
+        "batch_size": 2
+    },
+    "waveform_chunking": {}
+}

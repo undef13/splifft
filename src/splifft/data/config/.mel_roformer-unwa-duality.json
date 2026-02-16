@@ -1,0 +1,26 @@
+{
+    "identifier": "mel_roformer-unwa-duality_v1",
+    "model_type": "bs_roformer",
+    "model": {
+        "chunk_size": 485100,
+        "output_stem_names": [
+            "vocals",
+            "instrumental"
+        ],
+        "dim": 384,
+        "depth": 6,
+        "band_config": {
+            "kind": "mel"
+        },
+        "stft_hop_length": 441,
+        "norm_output": true,
+        "mask_estimator_depth": 3
+    },
+    "stft": {
+        "hop_length": 441
+    },
+    "inference": {
+        "batch_size": 1
+    },
+    "waveform_chunking": {}
+}

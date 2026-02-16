@@ -1,0 +1,24 @@
+{
+    "identifier": "bs_roformer-viperx-1053",
+    "model_type": "bs_roformer",
+    "model": {
+        "chunk_size": 131584,
+        "output_stem_names": [
+            "no_drum-bass"
+        ],
+        "dim": 384,
+        "depth": 12,
+        "band_config": {
+            "kind": "fixed"
+        },
+        "attn_dropout": 0.1,
+        "ff_dropout": 0.1
+    },
+    "stft": {},
+    "inference": {
+        "batch_size": 1
+    },
+    "waveform_chunking": {
+        "overlap_ratio": 0.75
+    }
+}

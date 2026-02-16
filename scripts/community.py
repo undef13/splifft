@@ -3,6 +3,8 @@ colab notebook, deton25's guide, huggingface hub api: https://huggingface.co/.we
 into our `registry.json`.
 """
 
+from __future__ import annotations
+
 import io
 import json
 import logging
@@ -14,7 +16,9 @@ from itertools import chain
 from pathlib import Path, PurePosixPath
 from typing import (
     IO,
+    TYPE_CHECKING,
     Annotated,
+    Any,
     Generator,
     Iterable,
     Iterator,
@@ -25,6 +29,7 @@ from typing import (
     Sequence,
     TypeAlias,
     TypedDict,
+    cast,
 )
 from urllib.parse import quote, unquote, urlparse
 
@@ -32,8 +37,11 @@ import httpx
 import typer
 from rich.logging import RichHandler
 
-from splifft import PATH_REGISTRY_DEFAULT
+from splifft import DIR_DATA, PATH_REGISTRY_DEFAULT
 from splifft.config import Registry
+
+if TYPE_CHECKING:
+    from splifft.config import Config
 
 PATH_BASE = Path(__file__).parent.parent
 PATH_TMP = PATH_BASE / "scripts" / "tmp"
@@ -542,6 +550,24 @@ def _parse_iso_datetime(value: str | None) -> datetime:
     return parsed.astimezone(timezone.utc)
 
 
+def _write_registry_sorted(registry: Registry, registry_path: Path) -> None:
+    from pydantic import TypeAdapter
+
+    registry = Registry(
+        dict(
+            sorted(
+                registry.items(),
+                key=lambda item: _parse_iso_datetime(item[1].created_at),
+                reverse=True,
+            )
+        )
+    )
+
+    registry_path.write_bytes(
+        TypeAdapter(Registry).dump_json(registry, indent=4, exclude_defaults=True)
+    )
+
+
 @app.command()
 def fix_registry(
     registry_path: Path = PATH_REGISTRY_DEFAULT,
@@ -553,8 +579,6 @@ def fix_registry(
 ) -> None:
     """Checks that URLs in the guide and jarredou's colab are present in the registry,
     caches file metadata from Hugging Face and GitHub releases and ensures dates are correct."""
-    from pydantic import TypeAdapter
-
     registry = Registry.from_file(registry_path)
 
     registry_urls = list(_urls_from_registry(registry))
@@ -650,23 +674,306 @@ def fix_registry(
             if ckpt := next((r for r in model.resources if r.kind == "model_ckpt"), None):
                 ckpt.digest = digest
 
-    registry = Registry(
-        dict(
-            sorted(
-                registry.items(),
-                key=lambda item: _parse_iso_datetime(item[1].created_at),
-                reverse=True,
-            )
-        )
-    )
-
-    registry_path.write_bytes(
-        TypeAdapter(Registry).dump_json(registry, indent=4, exclude_defaults=True)
-    )
+    _write_registry_sorted(registry, registry_path)
     subprocess.run(
         ["pnpm", "run", "fmt:json", str(PATH_REGISTRY_DEFAULT)],
         cwd=PATH_BASE,
         check=True,
+    )
+
+
+def slugify_url(url: str) -> str | None:  # quick and dirty
+    for prefix in [
+        "https://huggingface.co/",
+        "https://raw.githubusercontent.com/",
+        "https://github.com/",
+    ]:
+        if url.startswith(prefix):
+            s1 = url.removeprefix(prefix).removesuffix(".yaml")
+            for kw in [
+                "resolve/",
+                "blob/",
+                "raw/",
+                "main/",
+                "master/",
+                "releases/download/",
+                "refs/heads/",
+            ]:
+                s1 = s1.replace(kw, "")
+            s1.replace("Music-Source-Separation-Training", "msst")
+            return s1.replace("/", "__").replace(".", "__")
+    return None
+
+
+Slug: TypeAlias = str
+
+
+# multiple models can share the same config, we hardcode mappings of MSST slug -> ours model id for now
+SHARED_CONFIG_ID_BY_SLUG: dict[Slug, str] = {
+    "GaboxR67__MelBandRoformers__melbandroformers__instrumental__inst_gabox": "mel_roformer-gabox-inst",
+    "GaboxR67__MelBandRoformers__melbandroformers__vocals__voc_gabox": "mel_roformer-gabox-vocals",
+    "GaboxR67__MelBandRoformers__melbandroformers__karaoke__karaokegabox_1750911344": "mel_roformer-gabox-karaoke",
+    "pcunwa__BS-Roformer-Revive__config": "bs_roformer-unwa-revive",
+    "pcunwa__Mel-Band-Roformer-Inst__config_melbandroformer_inst": "mel_roformer-unwa-inst",
+    "pcunwa__Kim-Mel-Band-Roformer-FT__config_kimmel_unwa_ft": "mel_roformer-unwa-kim_ft",
+    "anvuew__dereverb_mel_band_roformer__dereverb_mel_band_roformer_anvuew": "mel_roformer-anvuew-dereverb",
+    "pcunwa__Mel-Band-Roformer-InstVoc-Duality__config_melbandroformer_instvoc_duality": "mel_roformer-unwa-duality",
+    "jarredou__aufr33_MelBand_Denoise__model_mel_band_roformer_denoise": "mel_roformer-aufr33-denoise",
+    "Sucial__Chorus_Male_Female_BS_Roformer__config_chorus_male_female_bs_roformer": "bs_roformer-sucial-chorus-mf",
+}
+
+
+def _purge_unverified_configs(config_dir: Path) -> None:
+    for path in config_dir.glob(".*"):
+        if path.is_file():
+            path.unlink()
+
+
+def _ensure_msst_yaml(*, client: httpx.Client, dest: Path, url: str, model_id: str) -> None:
+    if dest.exists():
+        return
+    logger.info(f"downloading config for '{model_id}' from {url}")
+    try:
+        response = client.get(url)
+        response.raise_for_status()
+        dest.write_bytes(response.content)
+    except Exception as e:
+        logger.error(f"failed to download {url}: {e}")
+
+
+def _load_msst_yaml(path: Path) -> dict[str, Any] | None:
+    # YAML is feature-gated to avoid requiring pyyaml for the core package.
+    import yaml  # type: ignore
+
+    class CustomYamlLoader(yaml.SafeLoader):  # type: ignore
+        """Custom YAML loader that handles the `!!python/tuple` tag."""
+
+    def _construct_python_tuple(loader: yaml.Loader, node: Any) -> tuple[Any, ...]:
+        return tuple(loader.construct_sequence(node))
+
+    CustomYamlLoader.add_constructor("!!python/tuple", _construct_python_tuple)
+    CustomYamlLoader.add_constructor("tag:yaml.org,2002:python/tuple", _construct_python_tuple)
+
+    with open(path, "r") as f:
+        if not (loaded := yaml.load(f, Loader=CustomYamlLoader)):
+            return None
+        return cast(dict[str, Any], loaded)
+
+
+def convert_msst_yaml_path(path: Path, *, model_id: str) -> Config | None:
+    if not (msst := _load_msst_yaml(path)):
+        return None
+    return convert_msst_config_bs_roformer(msst, model_id=model_id)
+
+
+@app.command()
+def fix_registry_with_msst(
+    registry_path: Path = PATH_REGISTRY_DEFAULT,
+    msst_dir: Path = PATH_TMP / "cache" / "msst_configs",
+) -> None:
+    """Batch process MSST configs and mutate the registry.
+
+    Converted configs are written to package data at data/config as dot-prefixed files
+    (e.g. .{config_id}.json) to mark them as auto-imported and unverified. Any
+    existing dot files are removed first so the conversion always produces fresh
+    auto-imported configs. If a verified config already exists at {config_id}.json,
+    no dot file is written and the registry is pointed at the verified config.
+    For converted models, registry.config_id is updated to the verified config id
+    or the dot-prefixed auto-imported id accordingly.
+    """
+    registry = Registry.from_file(registry_path)
+    msst_dir.mkdir(parents=True, exist_ok=True)
+    config_dir = DIR_DATA / "config"
+    config_dir.mkdir(parents=True, exist_ok=True)
+    _purge_unverified_configs(config_dir)
+
+    slug_to_splifft_config: dict[Slug, Config] = {}
+    slug_to_splifft_model_ids: dict[Slug, list[str]] = {}
+    with httpx.Client(http2=True, follow_redirects=True) as client:
+        for model_id, model in registry.items():
+            for resource in model.resources:
+                if resource.kind != "config_msst":
+                    continue
+                if (slug := slugify_url(resource.url)) is None:
+                    logger.warning(f"skipping unsupported url for '{model_id}': {resource.url}")
+                    continue
+                dest = (msst_dir / slug).with_suffix(".yaml")
+                _ensure_msst_yaml(client=client, dest=dest, url=resource.url, model_id=model_id)
+                if model.architecture not in {"bs_roformer", "mel_roformer"}:
+                    logger.warning(
+                        f"skipping unsupported architecture '{model.architecture}' for '{model_id}'"
+                    )
+                    continue
+                try:
+                    if (result := convert_msst_yaml_path(dest, model_id=model_id)) is None:
+                        continue
+                except Exception as e:
+                    logger.exception(
+                        f"failed to convert MSST config for '{model_id}' ({dest} {resource.url} {slug}): {e}"
+                    )
+                    continue
+                slug_to_splifft_config[slug] = result
+                slug_to_splifft_model_ids.setdefault(slug, []).append(model_id)
+
+    for slug, (config, model_ids) in zip(
+        slug_to_splifft_config.keys(),
+        zip(slug_to_splifft_config.values(), slug_to_splifft_model_ids.values()),
+    ):
+        if len(model_ids) > 1:
+            config_id = SHARED_CONFIG_ID_BY_SLUG.get(slug)
+            assert config_id is not None, f"{slug=} has {model_ids=} but no shared config mapping"
+        else:
+            config_id = model_ids[0]
+        verified_path = (config_dir / config_id).with_suffix(".json")
+        if verified_path.exists():
+            registry_config_id = config_id
+        else:
+            registry_config_id = f".{config_id}"
+            (config_dir / registry_config_id).with_suffix(".json").write_text(
+                config.model_dump_json(indent=4, exclude_defaults=True)
+            )
+        for model_id in model_ids:
+            if model_id in registry:
+                registry[model_id].config_id = registry_config_id
+
+    _write_registry_sorted(registry, registry_path)
+
+
+def snake_case(name: str) -> str:
+    return name.lower().replace(" ", "_")
+
+
+def remove_missing(d: dict[str, Any]) -> dict[str, Any]:
+    from pydantic.experimental.missing_sentinel import MISSING
+
+    return {k: v for k, v in d.items() if v is not MISSING}
+
+
+def convert_msst_config_bs_roformer(
+    msst: dict[str, Any],
+    model_id: str = "custom-model",
+) -> Config | None:
+    """Convert an MSST YAML configuration file to a splifft JSON configuration."""
+    # right now we only support bs/mel roformer.
+    from pydantic import TypeAdapter
+    from pydantic.experimental.missing_sentinel import MISSING
+
+    from splifft import types as t
+    from splifft.config import Config, TorchDtype
+    from splifft.models.bs_roformer import BSRoformerParams
+
+    audio = msst.get("audio", {})
+    model = msst.get("model", {})
+    training = msst.get("training", {})
+    inference = msst.get("inference", {})
+
+    assert not isinstance(model, str), "possible htdemucs!"
+
+    is_mel = "num_bands" in model
+    band_config: dict[str, Any]
+    if is_mel:
+        band_config = remove_missing(
+            {
+                "kind": "mel",
+                "num_bands": model.get("num_bands", MISSING),
+                "sample_rate": model.get("sample_rate") or audio.get("sample_rate", MISSING),
+                "stft_n_fft": model.get("stft_n_fft", MISSING),
+            }
+        )
+    else:
+        band_config = remove_missing(
+            {
+                "kind": "fixed",
+                "freqs_per_bands": model.get("freqs_per_bands", MISSING),
+            }
+        )
+
+    msst_depth = model.get("mask_estimator_depth", 2)
+    splifft_mask_depth = msst_depth + 1 if is_mel else msst_depth
+
+    # see utils/model_utils.py::prefer_target_instrument
+    stems = list(map(snake_case, training.get("instruments", [])))
+    target = training.get("target_instrument")
+    output_stems = [snake_case(target)] if target else stems if stems else MISSING
+
+    model_params = remove_missing(
+        {
+            "chunk_size": audio.get("chunk_size", MISSING),
+            "output_stem_names": output_stems,
+            "dim": model.get("dim", MISSING),
+            "depth": model.get("depth", MISSING),
+            "stft_hop_length": model.get("stft_hop_length") or audio.get("hop_length", MISSING),
+            "stereo": model.get("stereo", MISSING),
+            "time_transformer_depth": model.get("time_transformer_depth", MISSING),
+            "freq_transformer_depth": model.get("freq_transformer_depth", MISSING),
+            "linear_transformer_depth": model.get("linear_transformer_depth", MISSING),
+            "band_config": band_config,
+            "dim_head": model.get("dim_head", MISSING),
+            "heads": model.get("heads", MISSING),
+            "attn_dropout": model.get("attn_dropout", MISSING),
+            "ff_dropout": model.get("ff_dropout", MISSING),
+            "ff_mult": model.get(
+                "mlp_expansion_factor", MISSING
+            ),  # map mlp_expansion_factor to ff_mult?
+            "flash_attn": model.get("flash_attn", MISSING),
+            "norm_output": is_mel,  # msst inherits bug lucidrains
+            "mask_estimator_depth": splifft_mask_depth,
+            "mlp_expansion_factor": model.get("mlp_expansion_factor", MISSING),
+            "use_torch_checkpoint": model.get("use_torch_checkpoint", MISSING),
+            "skip_connection": model.get("skip_connection", MISSING),
+        }
+    )
+    # this hack is required to flush away defaults in the concrete config, which is
+    # then force casted back into the lazy config
+    ta = TypeAdapter(BSRoformerParams)
+    ta.rebuild(_types_namespace={"TorchDtype": TorchDtype, "t": t})
+    model_params_lazy = ta.dump_python(ta.validate_python(model_params), exclude_defaults=True)
+
+    stft_params = remove_missing(
+        {
+            "n_fft": model.get("nfft") or audio.get("n_fft", MISSING),
+            "hop_length": model.get("hop_size") or audio.get("hop_length", MISSING),
+            "win_length": model.get("win_size") or model.get("stft_n_fft", MISSING),
+            "normalized": model.get("normalized", MISSING),
+        }
+    )
+
+    audio_io_params = remove_missing(
+        {
+            "target_sample_rate": audio.get("sample_rate", MISSING),
+            "force_channels": audio.get("num_channels", MISSING),
+        }
+    )
+
+    inference_params = remove_missing(
+        {
+            "batch_size": inference.get("batch_size", MISSING),
+        }
+    )
+
+    chunking_params = {}
+    if (num_overlap := inference.get("num_overlap")) is not None:
+        chunking_params["overlap_ratio"] = 1.0 - 1.0 / num_overlap
+
+    # normalization is tricky. MSST has `inference.normalize` or `training.normalize`.
+    normalize_enabled = inference.get("normalize", training.get("normalize", MISSING))
+    normalization_params = {}
+    if normalize_enabled is not MISSING:
+        normalization_params["enabled"] = normalize_enabled
+
+    return Config.model_validate(
+        {
+            "identifier": model_id,
+            "model_type": "bs_roformer",
+            "model": model_params_lazy,
+            "stft": stft_params,
+            "audio_io": audio_io_params,
+            "inference": inference_params,
+            "waveform_chunking": chunking_params,
+            "normalization": normalization_params,
+            "masking": {},  # empty defaults
+            "output": {"stem_names": "all"},
+        }
     )
 
 

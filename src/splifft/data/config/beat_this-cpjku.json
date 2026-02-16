@@ -1,38 +1,37 @@
 {
-  "identifier": "beat_this-cpjku-final",
-  "model_type": "beat_this",
-  "audio_io": {
-    "target_sample_rate": 22050,
-    "force_channels": 1
-  },
-  "log_mel": {
-    "n_fft": 1024,
-    "hop_length": 441,
-    "n_mels": 128,
-    "sample_rate": 22050,
-    "f_min": 30.0,
-    "f_max": 11000.0
-  },
-  "model": {
-    "chunk_size": 661500,
-    "output_stem_names": [
-      "beat",
-      "downbeat"
-    ]
-  },
-  "inference": {
-    "batch_size": 1,
-    "force_weights_dtype": "float32"
-  },
-  "normalization": {
-    "enabled": false
-  },
-  "logmel_chunking": {
-    "trim_margin": 6,
-    "overlap_mode": "keep_first",
-    "avoid_short_end": true
-  },
-  "output": {
-    "file_format": "npy"
-  }
+    "identifier": "beat_this-cpjku-final",
+    "model_type": "beat_this",
+    "model": {
+        "chunk_size": 661500,
+        "output_stem_names": [
+            "beat",
+            "downbeat"
+        ]
+    },
+    "audio_io": {
+        "target_sample_rate": 22050,
+        "force_channels": 1
+    },
+    "log_mel": {
+        "n_fft": 1024,
+        "hop_length": 441,
+        "n_mels": 128,
+        "sample_rate": 22050,
+        "f_min": 30.0,
+        "f_max": 11000.0
+    },
+    "inference": {
+        "batch_size": 1
+    },
+    "normalization": {
+        "enabled": false
+    },
+    "logmel_chunking": {
+        "trim_margin": 6,
+        "overlap_mode": "keep_first",
+        "avoid_short_end": true
+    },
+    "output": {
+        "file_format": "npy"
+    }
 }

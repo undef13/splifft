@@ -1,12 +1,6 @@
 {
     "identifier": "bs_roformer-unwa-revive",
     "model_type": "bs_roformer",
-    "stft": {
-        "n_fft": 2048,
-        "hop_length": 441,
-        "win_length": 2048,
-        "conv_dtype": "float16"
-    },
     "model": {
         "chunk_size": 485100,
         "output_stem_names": [
@@ -14,36 +8,27 @@
         ],
         "dim": 512,
         "depth": 12,
-        "stft_hop_length": 441,
         "band_config": {
             "kind": "fixed"
-        }
+        },
+        "stft_hop_length": 441
+    },
+    "stft": {
+        "hop_length": 441
     },
     "inference": {
-        "batch_size": 2,
-        "force_weights_dtype": "float16"
+        "batch_size": 4,
+        "use_autocast_dtype": "float16"
     },
     "normalization": {
         "enabled": true
     },
-    "waveform_chunking": {
-        "method": "overlap_add_windowed",
-        "overlap_ratio": 0.5,
-        "window_shape": "hann",
-        "padding_mode": "reflect"
-    },
-    "masking": {
-        "add_sub_dtype": "float32",
-        "out_dtype": "float16"
-    },
+    "waveform_chunking": {},
     "derived_stems": {
         "other": {
             "operation": "subtract",
             "stem_name": "mixture",
             "by_stem_name": "vocals"
         }
-    },
-    "output": {
-        "file_format": "flac"
     }
 }

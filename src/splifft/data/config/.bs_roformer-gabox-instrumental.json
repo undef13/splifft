@@ -1,0 +1,27 @@
+{
+    "identifier": "bs_roformer-gabox-instrumental",
+    "model_type": "bs_roformer",
+    "model": {
+        "chunk_size": 352800,
+        "output_stem_names": [
+            "vocals"
+        ],
+        "dim": 512,
+        "depth": 12,
+        "band_config": {
+            "kind": "fixed"
+        },
+        "stft_hop_length": 441,
+        "attn_dropout": 0.1,
+        "ff_dropout": 0.1
+    },
+    "stft": {
+        "hop_length": 441
+    },
+    "inference": {
+        "batch_size": 1
+    },
+    "waveform_chunking": {
+        "overlap_ratio": 0.75
+    }
+}
