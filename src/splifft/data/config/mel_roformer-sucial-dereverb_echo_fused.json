@@ -1,17 +1,20 @@
 {
-    "identifier": "mel_roformer-amane-fullnessvocalmodel",
+    "identifier": "mel_roformer-sucial-dereverb_echo_fused",
     "model_type": "bs_roformer",
     "model": {
-        "chunk_size": 661500,
+        "chunk_size": 352800,
         "output_stem_names": [
-            "vocals"
+            "dry",
+            "other"
         ],
-        "dim": 384,
-        "depth": 6,
+        "dim": 256,
+        "depth": 8,
         "band_config": {
             "kind": "mel"
         },
         "stft_hop_length": 441,
+        "attn_dropout": 0.1,
+        "ff_dropout": 0.1,
         "norm_output": true,
         "mask_estimator_depth": 3
     },
@@ -19,7 +22,7 @@
         "hop_length": 441
     },
     "inference": {
-        "batch_size": 4
+        "batch_size": 1
     },
     "waveform_chunking": {
         "overlap_ratio": 0.75

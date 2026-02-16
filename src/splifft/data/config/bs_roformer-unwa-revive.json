@@ -25,7 +25,7 @@
     },
     "waveform_chunking": {},
     "derived_stems": {
-        "other": {
+        "instrumental": {
             "operation": "subtract",
             "stem_name": "mixture",
             "by_stem_name": "vocals"

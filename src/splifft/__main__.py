@@ -201,9 +201,24 @@ def pull(
     force_overwrite: Annotated[
         bool,
         typer.Option(
+            "--force-overwrite",
             "--force",
             "-f",
-            help="Force overwrite existing configuration or model checkpoint if already present",
+            help="Force overwrite both existing configuration and model checkpoint if already present",
+        ),
+    ] = False,
+    force_overwrite_config: Annotated[
+        bool,
+        typer.Option(
+            "--force-overwrite-config",
+            help="Force overwrite existing configuration if already present",
+        ),
+    ] = False,
+    force_overwrite_model: Annotated[
+        bool,
+        typer.Option(
+            "--force-overwrite-model",
+            help="Force overwrite existing model checkpoint if already present",
         ),
     ] = False,
     registry_path: RegistryPath = PATH_REGISTRY_DEFAULT,
@@ -215,7 +230,8 @@ def pull(
     model_paths = get_model_paths(
         model_id,
         fetch_if_missing=True,
-        force_overwrite=force_overwrite,
+        force_overwrite_config=force_overwrite or force_overwrite_config,
+        force_overwrite_model=force_overwrite or force_overwrite_model,
         registry=Registry.from_file(registry_path),
     )
     if (p_ckpt := model_paths.path_checkpoint).exists():
@@ -253,11 +269,11 @@ def ls(
         pad_edge=False,
         box=None,
     )
-    table.add_column("id", no_wrap=True)
+    table.add_column("model_id", no_wrap=True)
     table.add_column("size", no_wrap=True, justify="right")
     table.add_column("created_at", no_wrap=True, justify="right")
     table.add_column("purpose", no_wrap=True)
-    table.add_column("outputs", overflow="fold")
+    table.add_column("target_instruments", overflow="fold")
 
     count_shown = 0
     count_total = len(registry)

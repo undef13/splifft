@@ -1,30 +1,25 @@
 {
-    "identifier": "mel_roformer-amane-small",
+    "identifier": "mel_roformer-unwa-v2",
     "model_type": "bs_roformer",
     "model": {
         "chunk_size": 485100,
         "output_stem_names": [
-            "instrumental",
-            "vocals"
+            "instrumental"
         ],
         "dim": 384,
-        "depth": 6,
+        "depth": 12,
         "band_config": {
             "kind": "mel"
         },
         "stft_hop_length": 441,
-        "ff_mult": 1,
         "norm_output": true,
-        "mask_estimator_depth": 3,
-        "mlp_expansion_factor": 1
+        "mask_estimator_depth": 4
     },
     "stft": {
         "hop_length": 441
     },
     "inference": {
-        "batch_size": 2
+        "batch_size": 1
     },
-    "waveform_chunking": {
-        "overlap_ratio": 0.75
-    }
+    "waveform_chunking": {}
 }

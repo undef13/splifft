@@ -4,20 +4,22 @@
     "model": {
         "chunk_size": 960000,
         "output_stem_names": [
-            "instrument"
+            "instrumental"
         ],
         "dim": 256,
         "depth": 12,
         "band_config": {
             "kind": "fixed"
         },
-        "use_torch_checkpoint": true
+        "use_torch_checkpoint": true,
+        "stft_hop_length": 441
     },
     "stft": {
         "hop_length": 441
     },
     "inference": {
-        "batch_size": 2
+        "batch_size": 4,
+        "use_autocast_dtype": "float16"
     },
     "waveform_chunking": {
         "overlap_ratio": 0.75

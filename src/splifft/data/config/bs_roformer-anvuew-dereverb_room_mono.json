@@ -76,6 +76,7 @@
                 64
             ]
         },
+        "stft_hop_length": 441,
         "stereo": false,
         "dim_head": 16,
         "mask_estimator_depth": 3,

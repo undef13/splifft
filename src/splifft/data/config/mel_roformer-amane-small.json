@@ -1,28 +1,28 @@
 {
-    "identifier": "mel_roformer-sucial-dereverb_echo_fused",
+    "identifier": "mel_roformer-amane-small",
     "model_type": "bs_roformer",
     "model": {
-        "chunk_size": 352800,
+        "chunk_size": 485100,
         "output_stem_names": [
-            "dry",
-            "other"
+            "instrumental",
+            "vocals"
         ],
-        "dim": 256,
-        "depth": 8,
+        "dim": 384,
+        "depth": 6,
         "band_config": {
             "kind": "mel"
         },
         "stft_hop_length": 441,
-        "attn_dropout": 0.1,
-        "ff_dropout": 0.1,
+        "ff_mult": 4,
         "norm_output": true,
-        "mask_estimator_depth": 3
+        "mask_estimator_depth": 3,
+        "mlp_expansion_factor": 1
     },
     "stft": {
         "hop_length": 441
     },
     "inference": {
-        "batch_size": 4
+        "batch_size": 1
     },
     "waveform_chunking": {
         "overlap_ratio": 0.75

@@ -1,30 +1,26 @@
 {
-    "identifier": "bs_roformer-zfturbo-musdb18",
+    "identifier": "mel_roformer-unwa-big_beta7",
     "model_type": "bs_roformer",
     "model": {
-        "chunk_size": 485100,
+        "chunk_size": 676935,
         "output_stem_names": [
-            "drums",
-            "bass",
-            "other",
             "vocals"
         ],
         "dim": 384,
         "depth": 8,
         "band_config": {
-            "kind": "fixed"
+            "kind": "mel"
         },
         "stft_hop_length": 441,
-        "attn_dropout": 0.1,
-        "ff_dropout": 0.1,
-        "ff_mult": 2,
-        "mlp_expansion_factor": 2
+        "norm_output": true,
+        "mask_estimator_depth": 3
     },
     "stft": {
         "hop_length": 441
     },
     "inference": {
-        "batch_size": 2
+        "batch_size": 4,
+        "use_autocast_dtype": "float16"
     },
     "waveform_chunking": {}
 }

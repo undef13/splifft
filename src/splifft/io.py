@@ -161,7 +161,8 @@ def get_model_paths(
     model_id: str,
     *,
     fetch_if_missing: bool = False,
-    force_overwrite: bool = False,
+    force_overwrite_config: bool = False,
+    force_overwrite_model: bool = False,
     registry: Registry,
 ) -> LocalModelPaths:
     if model_id not in registry:
@@ -181,7 +182,7 @@ def get_model_paths(
     is_config_present = cached_config.exists()
     is_ckpt_present = cached_ckpt.exists()
 
-    if force_overwrite or not is_config_present:
+    if force_overwrite_config or not is_config_present:
         if not model_info.config_id:
             raise ValueError(
                 f"model '{model_id}' does not specify a default configuration identifier.\n"
@@ -198,7 +199,7 @@ def get_model_paths(
         shutil.copy2(source_config, cached_config)
         logger.info(f"wrote config for '{model_id}' at {cached_config}")
 
-    if force_overwrite or (not is_ckpt_present and fetch_if_missing):
+    if force_overwrite_model or (not is_ckpt_present and fetch_if_missing):
         # only download the first? or try the second if not?
         if not (
             ckpt_resource := next((r for r in model_info.resources if r.kind == "model_ckpt"), None)

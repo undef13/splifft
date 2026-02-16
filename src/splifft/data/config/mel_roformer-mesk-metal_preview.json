@@ -1,13 +1,13 @@
 {
-    "identifier": "mel_roformer-unwa-v1",
+    "identifier": "mel_roformer-mesk-metal_preview",
     "model_type": "bs_roformer",
     "model": {
-        "chunk_size": 485100,
+        "chunk_size": 881559,
         "output_stem_names": [
-            "other"
+            "instrumental"
         ],
         "dim": 384,
-        "depth": 6,
+        "depth": 8,
         "band_config": {
             "kind": "mel"
         },
@@ -19,7 +19,10 @@
         "hop_length": 441
     },
     "inference": {
-        "batch_size": 1
+        "batch_size": 1,
+        "use_autocast_dtype": "float16"
     },
-    "waveform_chunking": {}
+    "waveform_chunking": {
+        "overlap_ratio": 0.8
+    }
 }

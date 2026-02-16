@@ -1,22 +1,26 @@
 {
-    "identifier": "bs_roformer-anvuew-dereverb",
+    "identifier": "bs_roformer-anvuew-karaoke",
     "model_type": "bs_roformer",
     "model": {
-        "chunk_size": 448000,
+        "chunk_size": 640000,
         "output_stem_names": [
-            "noreverb"
+            "vocals"
         ],
         "dim": 256,
         "depth": 12,
         "band_config": {
             "kind": "fixed"
-        }
+        },
+        "stft_hop_length": 441,
+        "use_torch_checkpoint": true
     },
     "stft": {
         "hop_length": 441
     },
     "inference": {
-        "batch_size": 2
+        "batch_size": 1
     },
-    "waveform_chunking": {}
+    "waveform_chunking": {
+        "overlap_ratio": 0.75
+    }
 }

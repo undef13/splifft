@@ -1,25 +1,23 @@
 {
-    "identifier": "bs_roformer-viperx-1297",
+    "identifier": "bs_roformer-anvuew-dereverb",
     "model_type": "bs_roformer",
     "model": {
-        "chunk_size": 352800,
+        "chunk_size": 448000,
         "output_stem_names": [
-            "vocals"
+            "noreverb"
         ],
-        "dim": 512,
+        "dim": 256,
         "depth": 12,
         "band_config": {
             "kind": "fixed"
         },
-        "stft_hop_length": 441,
-        "attn_dropout": 0.1,
-        "ff_dropout": 0.1
+        "stft_hop_length": 441
     },
     "stft": {
         "hop_length": 441
     },
     "inference": {
-        "batch_size": 4
+        "batch_size": 1
     },
     "waveform_chunking": {}
 }

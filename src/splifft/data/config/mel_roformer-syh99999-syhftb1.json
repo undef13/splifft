@@ -1,23 +1,25 @@
 {
-    "identifier": "bs_roformer-anvuew-karaoke",
+    "identifier": "mel_roformer-syh99999-syhftb1",
     "model_type": "bs_roformer",
     "model": {
-        "chunk_size": 640000,
+        "chunk_size": 485100,
         "output_stem_names": [
             "vocals"
         ],
-        "dim": 256,
-        "depth": 12,
+        "dim": 384,
+        "depth": 6,
         "band_config": {
-            "kind": "fixed"
+            "kind": "mel"
         },
-        "use_torch_checkpoint": true
+        "stft_hop_length": 441,
+        "norm_output": true,
+        "mask_estimator_depth": 3
     },
     "stft": {
         "hop_length": 441
     },
     "inference": {
-        "batch_size": 2
+        "batch_size": 1
     },
     "waveform_chunking": {
         "overlap_ratio": 0.75

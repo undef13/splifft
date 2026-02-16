@@ -166,7 +166,8 @@ class InferenceEngine:
         *,
         device: torch.device | str | None = None,
         fetch_if_missing: bool = True,
-        force_overwrite: bool = False,
+        force_overwrite_config: bool = False,
+        force_overwrite_model: bool = False,
         registry_path: Path = PATH_REGISTRY_DEFAULT,
     ) -> InferenceEngine:
         from .config import Registry
@@ -175,7 +176,8 @@ class InferenceEngine:
         model_paths = get_model_paths(
             model_id,
             fetch_if_missing=fetch_if_missing,
-            force_overwrite=force_overwrite,
+            force_overwrite_config=force_overwrite_config,
+            force_overwrite_model=force_overwrite_model,
             registry=Registry.from_file(registry_path),
         )
         return cls.from_pretrained(

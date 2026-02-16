@@ -1,25 +1,27 @@
 {
-    "identifier": "mel_roformer-unwa-big_beta6x",
+    "identifier": "mel_roformer-mesk-rifforge",
     "model_type": "bs_roformer",
     "model": {
-        "chunk_size": 529200,
+        "chunk_size": 733824,
         "output_stem_names": [
-            "vocals"
+            "instrumental"
         ],
         "dim": 512,
-        "depth": 12,
+        "depth": 24,
         "band_config": {
             "kind": "mel"
         },
         "stft_hop_length": 441,
         "norm_output": true,
-        "mask_estimator_depth": 3
+        "mask_estimator_depth": 3,
+        "use_torch_checkpoint": true
     },
     "stft": {
         "hop_length": 441
     },
     "inference": {
-        "batch_size": 2
+        "batch_size": 1,
+        "use_autocast_dtype": "float16"
     },
     "waveform_chunking": {}
 }

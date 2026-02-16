@@ -3,7 +3,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-unwa-big_beta7",
+        "config_id": "mel_roformer-unwa-big_beta7",
         "created_at": "2026-02-13T15:39:51.000Z",
         "output": ["vocals"],
         "metrics": [ {"source": "https://mvsep.com/quality_checker/entry/9633"} ],
@@ -24,7 +24,7 @@
         "authors": ["anvuew"],
         "purpose": "dereverb",
         "architecture": "bs_roformer",
-        "config_id": ".bs_roformer-anvuew-dereverb",
+        "config_id": "bs_roformer-anvuew-dereverb",
         "created_at": "2026-02-13T07:01:55.000Z",
         "output": ["dereverb"],
         "resources": [
@@ -78,7 +78,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-voc_fv7",
+        "config_id": "mel_roformer-gabox-voc_fv7",
         "created_at": "2026-01-27T03:17:48.000Z",
         "output": ["vocals"],
         "resources": [
@@ -98,7 +98,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-unwa-large_v2_inst",
+        "config_id": "mel_roformer-unwa-large_v2_inst",
         "created_at": "2026-01-25T11:36:07.000Z",
         "output": ["vocals", "instrumental"],
         "metrics": [ {"source": "https://mvsep.com/quality_checker/entry/9580"} ],
@@ -129,7 +129,7 @@
         "authors": ["chencfd"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-chencfd-guitar",
+        "config_id": "mel_roformer-chencfd-guitar",
         "created_at": "2026-01-23T09:57:32Z",
         "output": ["guitar"],
         "metrics": [
@@ -218,7 +218,7 @@
         "authors": ["becruily"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-becruily-deux",
+        "config_id": "mel_roformer-becruily-deux",
         "created_at": "2025-12-29T17:15:41.000Z",
         "output": ["vocals", "instrumental"],
         "metrics": [
@@ -246,7 +246,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-12-23T19:27:31.000Z",
         "output": ["instrumental"],
         "metrics": [
@@ -343,7 +343,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-11-22T06:46:24.000Z",
         "output": ["instrumental"],
         "metrics": [
@@ -418,7 +418,7 @@
         "authors": ["mesk"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-mesk-rifforge",
+        "config_id": "mel_roformer-mesk-rifforge",
         "created_at": "2025-10-26T15:50:53.000Z",
         "output": ["instrumental"],
         "resources": [
@@ -458,7 +458,7 @@
         "authors": ["anvuew"],
         "purpose": "separation",
         "architecture": "bs_roformer",
-        "config_id": ".bs_roformer-anvuew-karaoke",
+        "config_id": "bs_roformer-anvuew-karaoke",
         "created_at": "2025-10-17T07:36:23.000Z",
         "output": ["lead_vocals"],
         "resources": [
@@ -478,7 +478,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-10-05T18:40:31.000Z",
         "output": ["instrumental"],
         "resources": [
@@ -498,7 +498,7 @@
         "authors": ["neoculture"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-neoculture-inst_vfx",
+        "config_id": "mel_roformer-neoculture-inst_vfx",
         "created_at": "2025-10-05T09:14:38.000Z",
         "output": ["instrumental"],
         "resources": [
@@ -518,7 +518,7 @@
         "authors": ["anvuew"],
         "purpose": "dereverb",
         "architecture": "bs_roformer",
-        "config_id": ".bs_roformer-anvuew-dereverb_room_mono",
+        "config_id": "bs_roformer-anvuew-dereverb_room_mono",
         "created_at": "2025-09-10T03:15:05.000Z",
         "output": ["dry"],
         "metrics": [
@@ -578,7 +578,7 @@
         "authors": ["mesk"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-mesk-rifforge_beta",
+        "config_id": "mel_roformer-mesk-rifforge_beta",
         "created_at": "2025-08-15T16:55:16.000Z",
         "output": ["instrumental"],
         "description": [
@@ -715,7 +715,7 @@
         "authors": ["gabox"],
         "purpose": "dereverb",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-karaoke",
+        "config_id": "mel_roformer-gabox-karaoke",
         "created_at": "2025-07-31T06:23:28.000Z",
         "output": ["vocals_dry"],
         "description": [
@@ -750,7 +750,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-karaoke",
+        "config_id": "mel_roformer-gabox-karaoke",
         "created_at": "2025-07-31T06:21:50.000Z",
         "output": ["lead"],
         "metrics": [
@@ -901,7 +901,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-06-20T07:55:32.000Z",
         "output": ["instrumental"],
         "metrics": [
@@ -933,7 +933,7 @@
         "authors": ["unwa", "97chris"],
         "purpose": "debleed",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-unwa-bleed_suppressor_v1",
+        "config_id": "mel_roformer-unwa-bleed_suppressor_v1",
         "created_at": "2025-06-03T17:54:14.000Z",
         "output": ["instrumental"],
         "resources": [
@@ -953,7 +953,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-06-02T21:03:00.000Z",
         "output": ["instrumental"],
         "metrics": [
@@ -1040,7 +1040,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-05-31T06:03:10.000Z",
         "output": ["instrumental"],
         "metrics": [
@@ -1082,7 +1082,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-05-20T20:46:21.000Z",
         "output": ["instrumental"],
         "metrics": [
@@ -1122,7 +1122,7 @@
         "authors": ["becruily"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-becruily-guitar",
+        "config_id": "mel_roformer-becruily-guitar",
         "created_at": "2025-05-20T14:26:23.000Z",
         "output": ["guitar"],
         "description": [
@@ -1257,7 +1257,7 @@
         "authors": ["becruily"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-becruily-karaoke",
+        "config_id": "mel_roformer-becruily-karaoke",
         "created_at": "2025-04-15T12:38:16.000Z",
         "output": ["lead_vocals"],
         "resources": [
@@ -1277,7 +1277,7 @@
         "authors": ["amane"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-amane-4_stems_large",
+        "config_id": "mel_roformer-amane-4_stems_large",
         "created_at": "2025-04-12T21:16:30.000Z",
         "output": ["drums", "bass", "other", "vocals"],
         "resources": [
@@ -1297,7 +1297,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-unwa-inst",
+        "config_id": "mel_roformer-unwa-inst",
         "created_at": "2025-04-04T09:54:03.000Z",
         "output": ["instrumental"],
         "metrics": [
@@ -1344,7 +1344,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-unwa-inst",
+        "config_id": "mel_roformer-unwa-inst",
         "created_at": "2025-04-03T16:08:45.000Z",
         "output": ["instrumental"],
         "metrics": [
@@ -1391,7 +1391,7 @@
         "authors": ["mesk"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-mesk-metal_preview",
+        "config_id": "mel_roformer-mesk-metal_preview",
         "created_at": "2025-04-01T10:51:46.000Z",
         "output": ["instrumental"],
         "metrics": [
@@ -1429,7 +1429,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-unwa-big_beta6x",
+        "config_id": "mel_roformer-unwa-big_beta6x",
         "created_at": "2025-03-30T10:48:57.000Z",
         "output": ["vocals"],
         "metrics": [
@@ -1463,7 +1463,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-03-25T22:18:12.000Z",
         "output": ["instrumental"],
         "description": [
@@ -1486,7 +1486,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-unwa-kim_ft",
+        "config_id": "mel_roformer-unwa-kim_ft",
         "created_at": "2025-03-12T07:34:42.000Z",
         "output": ["vocals"],
         "metrics": [
@@ -1514,7 +1514,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-03-05T04:24:52.000Z",
         "output": ["instrumental"],
         "description": [
@@ -1544,7 +1544,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-03-04T02:58:20.000Z",
         "output": ["instrumental"],
         "metrics": [
@@ -1572,7 +1572,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-28T07:13:33.000Z",
         "output": ["instrumental"],
         "resources": [
@@ -1592,7 +1592,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-28T03:06:18.000Z",
         "output": ["instrumental"],
         "resources": [
@@ -1612,7 +1612,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-27T21:40:20.000Z",
         "output": ["instrumental"],
         "description": [
@@ -1635,7 +1635,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-karaoke",
+        "config_id": "mel_roformer-gabox-karaoke",
         "created_at": "2025-02-27T21:02:49.000Z",
         "output": ["lead_vocals"],
         "description": [
@@ -1664,7 +1664,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-27T06:17:17.000Z",
         "output": ["instrumental"],
         "description": [
@@ -1691,7 +1691,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-27T06:17:17.000Z",
         "output": ["instrumental"],
         "metrics": [
@@ -1723,7 +1723,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-26T21:06:06.000Z",
         "output": ["instrumental"],
         "metrics": [
@@ -1756,7 +1756,7 @@
         "authors": ["amane"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-amane-fullnessvocalmodel",
+        "config_id": "mel_roformer-amane-fullnessvocalmodel",
         "created_at": "2025-02-23T11:48:16.000Z",
         "output": ["vocals"],
         "metrics": [
@@ -1820,7 +1820,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-unwa-big_beta6",
+        "config_id": "mel_roformer-unwa-big_beta6",
         "created_at": "2025-02-17T07:23:54.000Z",
         "output": ["vocals"],
         "description": [
@@ -1851,7 +1851,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-16T01:38:05.000Z",
         "output": ["instrumental"],
         "metrics": [
@@ -1886,7 +1886,7 @@
         "authors": ["gabox"],
         "purpose": "denoise",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-12T22:05:40.000Z",
         "output": ["denoised"],
         "description": [
@@ -1913,7 +1913,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-12T01:52:44.000Z",
         "output": ["instrumental"],
         "metrics": [ {"source": "https://mvsep.com/quality_checker/entry/7884"} ],
@@ -1934,7 +1934,7 @@
         "authors": ["amane"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-amane-small",
+        "config_id": "mel_roformer-amane-small",
         "created_at": "2025-02-11T23:55:13.000Z",
         "output": ["vocals"],
         "resources": [
@@ -1974,7 +1974,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-08T02:41:37.000Z",
         "output": ["instrumental"],
         "description": [
@@ -2002,7 +2002,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-08T02:32:10.000Z",
         "output": ["instrumental"],
         "resources": [
@@ -2022,7 +2022,7 @@
         "authors": ["anvuew"],
         "purpose": "dereverb",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-anvuew-dereverb",
+        "config_id": "mel_roformer-anvuew-dereverb",
         "created_at": "2025-02-07T11:18:22.000Z",
         "output": ["dry"],
         "metrics": [
@@ -2055,7 +2055,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-unwa-kim_ft",
+        "config_id": "mel_roformer-unwa-kim_ft",
         "created_at": "2025-01-29T05:54:23.000Z",
         "output": ["vocals"],
         "metrics": [
@@ -2080,7 +2080,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-01-27T22:07:13.000Z",
         "output": ["instrumental"],
         "metrics": [
@@ -2114,7 +2114,7 @@
         "authors": ["SYH99999"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-syh99999-syhftb1",
+        "config_id": "mel_roformer-syh99999-syhftb1",
         "created_at": "2025-01-27T06:51:46.000Z",
         "output": ["vocals"],
         "resources": [
@@ -2134,7 +2134,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-inst",
+        "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-01-26T16:20:12.000Z",
         "output": ["instrumental"],
         "metrics": [
@@ -2167,7 +2167,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "bs_roformer",
-        "config_id": ".bs_roformer-gabox-instrumental",
+        "config_id": "bs_roformer-gabox-instrumental",
         "created_at": "2025-01-23T07:19:56.000Z",
         "output": ["instrumental"],
         "description": [
@@ -2264,7 +2264,7 @@
         "authors": ["aufr33"],
         "purpose": "separation",
         "architecture": "bs_roformer",
-        "config_id": ".bs_roformer-sucial-chorus-mf",
+        "config_id": "bs_roformer-sucial-chorus-mf",
         "created_at": "2025-01-08T23:24:27.000Z",
         "output": ["male"],
         "metrics": [
@@ -2300,7 +2300,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-unwa-kim_ft",
+        "config_id": "mel_roformer-unwa-kim_ft",
         "created_at": "2025-01-01T12:11:45.000Z",
         "output": ["vocals"],
         "metrics": [ {"source": "https://mvsep.com/quality_checker/entry/7714"} ],
@@ -2328,7 +2328,7 @@
         "authors": ["becruily"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-becruily-instrumental",
+        "config_id": "mel_roformer-becruily-instrumental",
         "created_at": "2024-12-27T13:41:55.000Z",
         "output": ["instrumental"],
         "metrics": [
@@ -2366,7 +2366,7 @@
         "authors": ["becruily"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-becruily-vocals",
+        "config_id": "mel_roformer-becruily-vocals",
         "created_at": "2024-12-27T13:41:23.000Z",
         "output": ["vocals"],
         "metrics": [
@@ -2446,7 +2446,7 @@
         "authors": ["sucial"],
         "purpose": "separation",
         "architecture": "bs_roformer",
-        "config_id": ".bs_roformer-sucial-chorus-mf",
+        "config_id": "bs_roformer-sucial-chorus-mf",
         "created_at": "2024-12-07T09:12:45.000Z",
         "output": ["male"],
         "description": [
@@ -2479,7 +2479,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-unwa-kim_ft",
+        "config_id": "mel_roformer-unwa-kim_ft",
         "created_at": "2024-12-06T10:09:16.000Z",
         "output": ["vocals"],
         "metrics": [
@@ -2512,7 +2512,7 @@
         "authors": ["zfturbo"],
         "purpose": "separation",
         "architecture": "bs_roformer",
-        "config_id": ".bs_roformer-zfturbo-musdb18",
+        "config_id": "bs_roformer-zfturbo-musdb18",
         "created_at": "2024-11-28T07:08:31Z",
         "output": ["drums", "bass", "other", "vocals"],
         "resources": [
@@ -2531,7 +2531,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-unwa-big_beta5e",
+        "config_id": "mel_roformer-unwa-big_beta5e",
         "created_at": "2024-11-23T14:39:27.000Z",
         "output": ["vocals"],
         "description": [
@@ -2577,7 +2577,7 @@
         "authors": ["sucial"],
         "purpose": "dereverb",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-sucial-dereverb_echo_fused",
+        "config_id": "mel_roformer-sucial-dereverb_echo_fused",
         "created_at": "2024-11-22T10:22:21.000Z",
         "output": ["dry"],
         "description": [
@@ -2607,7 +2607,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-unwa-inst",
+        "config_id": "mel_roformer-unwa-inst",
         "created_at": "2024-11-20T05:33:47.000Z",
         "output": ["instrumental"],
         "description": [
@@ -2636,7 +2636,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-unwa-v2",
+        "config_id": "mel_roformer-unwa-v2",
         "created_at": "2024-11-04T11:53:53.000Z",
         "output": ["instrumental"],
         "metrics": [
@@ -2676,7 +2676,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-unwa-duality",
+        "config_id": "mel_roformer-unwa-duality",
         "created_at": "2024-10-30T14:55:31.000Z",
         "output": ["vocals", "other"],
         "description": [
@@ -2699,7 +2699,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-unwa-duality",
+        "config_id": "mel_roformer-unwa-duality",
         "created_at": "2024-10-29T16:46:19.000Z",
         "output": ["vocals", "other"],
         "description": [
@@ -2727,7 +2727,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-unwa-inst",
+        "config_id": "mel_roformer-unwa-inst",
         "created_at": "2024-10-22T08:21:44.000Z",
         "output": ["instrumental"],
         "description": [
@@ -2755,7 +2755,7 @@
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-unwa-big_beta4",
+        "config_id": "mel_roformer-unwa-big_beta4",
         "created_at": "2024-10-19T11:12:41.000Z",
         "output": ["vocals"],
         "description": [
@@ -2790,7 +2790,7 @@
         "authors": ["unwa", "bas curtiz"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-unwa-big_beta3",
+        "config_id": "mel_roformer-unwa-big_beta3",
         "created_at": "2024-09-30T10:15:02.000Z",
         "output": ["vocals"],
         "description": [
@@ -2874,7 +2874,7 @@
         "authors": ["anvuew"],
         "purpose": "dereverb",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-anvuew-dereverb",
+        "config_id": "mel_roformer-anvuew-dereverb",
         "created_at": "2024-09-03T12:35:29.000Z",
         "output": ["dry"],
         "metrics": [
@@ -2899,7 +2899,7 @@
         "authors": ["anvuew"],
         "purpose": "dereverb",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-anvuew-dereverb",
+        "config_id": "mel_roformer-anvuew-dereverb",
         "created_at": "2024-09-03T12:35:29.000Z",
         "output": ["dry"],
         "metrics": [
@@ -2956,7 +2956,7 @@
         "authors": ["aufr33", "viperx"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-aufr33-karaoke",
+        "config_id": "mel_roformer-aufr33-karaoke",
         "created_at": "2024-08-16T13:35:38.000Z",
         "output": ["lead_vocals"],
         "metrics": [
@@ -2981,7 +2981,7 @@
         "authors": ["kimberley jensen"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-kim-vocals",
+        "config_id": "mel_roformer-kim-vocals",
         "created_at": "2024-08-06T16:13:02.000Z",
         "output": ["vocals"],
         "resources": [
@@ -3001,7 +3001,7 @@
         "authors": ["aufr33"],
         "purpose": "denoise",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-aufr33-denoise",
+        "config_id": "mel_roformer-aufr33-denoise",
         "created_at": "2024-08-02T14:47:22.000Z",
         "output": ["denoised"],
         "resources": [
@@ -3021,7 +3021,7 @@
         "authors": ["aufr33"],
         "purpose": "denoise",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-aufr33-denoise",
+        "config_id": "mel_roformer-aufr33-denoise",
         "created_at": "2024-08-02T14:47:22.000Z",
         "output": ["denoised"],
         "metrics": [
@@ -3207,7 +3207,7 @@
         "authors": ["aufr33", "viperx"],
         "purpose": "decrowd",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-aufr33-decrowd",
+        "config_id": "mel_roformer-aufr33-decrowd",
         "created_at": "2024-06-07T22:01:24Z",
         "output": ["clean"],
         "metrics": [
@@ -3241,7 +3241,7 @@
         "authors": ["viperx"],
         "purpose": "separation",
         "architecture": "bs_roformer",
-        "config_id": ".bs_roformer-viperx-1053",
+        "config_id": "bs_roformer-viperx-1053",
         "created_at": "2024-03-29T10:38:08Z",
         "output": ["other"],
         "metrics": [
@@ -3265,7 +3265,7 @@
         "authors": ["viperx"],
         "purpose": "separation",
         "architecture": "bs_roformer",
-        "config_id": ".bs_roformer-viperx-1296",
+        "config_id": "bs_roformer-viperx-1296",
         "created_at": "2024-03-29T10:36:27Z",
         "output": ["vocals"],
         "metrics": [
@@ -3289,7 +3289,7 @@
         "authors": ["viperx"],
         "purpose": "separation",
         "architecture": "bs_roformer",
-        "config_id": ".bs_roformer-viperx-1297",
+        "config_id": "bs_roformer-viperx-1297",
         "created_at": "2024-03-29T08:37:31Z",
         "output": ["vocals"],
         "metrics": [

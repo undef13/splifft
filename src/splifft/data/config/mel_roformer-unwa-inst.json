@@ -1,10 +1,10 @@
 {
-    "identifier": "mel_roformer-mesk-rifforge_beta",
+    "identifier": "mel_roformer-unwa-v1",
     "model_type": "bs_roformer",
     "model": {
-        "chunk_size": 734706,
+        "chunk_size": 485100,
         "output_stem_names": [
-            "other"
+            "instrumental"
         ],
         "dim": 384,
         "depth": 6,
@@ -13,8 +13,7 @@
         },
         "stft_hop_length": 441,
         "norm_output": true,
-        "mask_estimator_depth": 3,
-        "use_torch_checkpoint": true
+        "mask_estimator_depth": 3
     },
     "stft": {
         "hop_length": 441

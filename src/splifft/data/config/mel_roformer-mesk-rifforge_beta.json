@@ -1,27 +1,27 @@
 {
-    "identifier": "mel_roformer-becruily-guitar",
+    "identifier": "mel_roformer-mesk-rifforge_beta",
     "model_type": "bs_roformer",
     "model": {
-        "chunk_size": 485100,
+        "chunk_size": 734706,
         "output_stem_names": [
-            "guitar"
+            "instrumental"
         ],
-        "dim": 256,
-        "depth": 4,
+        "dim": 384,
+        "depth": 6,
         "band_config": {
             "kind": "mel"
         },
         "stft_hop_length": 441,
-        "ff_mult": 1,
         "norm_output": true,
         "mask_estimator_depth": 3,
-        "mlp_expansion_factor": 1
+        "use_torch_checkpoint": true
     },
     "stft": {
         "hop_length": 441
     },
     "inference": {
-        "batch_size": 1
+        "batch_size": 1,
+        "use_autocast_dtype": "float16"
     },
     "waveform_chunking": {}
 }
