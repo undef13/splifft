@@ -117,7 +117,14 @@ def run(
     """Run inference on an audio file to get its constituent stems or logits."""
     import numpy as np
     import torch
-    from rich.progress import BarColumn, Progress, TaskProgressColumn, TextColumn, TimeElapsedColumn
+    from rich.progress import (
+        BarColumn,
+        Progress,
+        SpinnerColumn,
+        TaskProgressColumn,
+        TextColumn,
+        TimeRemainingColumn,
+    )
     from torchcodec.encoders import AudioEncoder
 
     from .inference import ChunkProcessed, InferenceEngine, InferenceOutput
@@ -144,32 +151,67 @@ def run(
     else:
         raise typer.BadParameter("must specify either --model OR both --config and --checkpoint")
 
+    requested_dtype = (
+        engine.config.inference.use_autocast_dtype
+        or engine.config.inference.force_weights_dtype
+        or next(engine.model.parameters()).dtype
+    )
+    runtime_dtype = (
+        torch.bfloat16
+        if device.type == "cpu" and requested_dtype == torch.float16
+        else requested_dtype
+    )
+    runtime_dtype_name = str(runtime_dtype).removeprefix("torch.")
+    progress_details = (
+        f"(bs={engine.config.inference.batch_size} • {device.type} • {runtime_dtype_name})"
+    )
+
     mixture_paths = mixture_path.glob("*") if mixture_path.is_dir() else [mixture_path]
     for mixture_path in mixture_paths:
         logger.info(f"processing audio file: {mixture_path=}")
         output_results = None
         sample_rate = None
         with Progress(
+            SpinnerColumn(spinner_name="dots"),
             TextColumn("[progress.description]{task.description}"),
             BarColumn(),
             TaskProgressColumn(),
-            TimeElapsedColumn(),
+            TimeRemainingColumn(),
+            TextColumn("[dim]{task.fields[details]}"),
             transient=True,
         ) as progress:
-            task_id = progress.add_task("inference", total=None)
+            task_id = progress.add_task(
+                "starting inference...", total=None, details=progress_details
+            )
             for event in engine.stream(mixture_path):
                 if isinstance(event, ChunkProcessed):
                     progress.update(
                         task_id,
-                        description="inference",
+                        description=f"chunk {event.batch_index}/{event.total_batches}",
                         total=event.total_batches,
                         completed=event.batch_index,
                     )
                 elif isinstance(event, InferenceOutput):
                     output_results = event.outputs
                     sample_rate = event.sample_rate
+                elif hasattr(event, "stage"):
+                    stage_description = f"{event.stage.replace('_', ' ')}..."
+                    if hasattr(event, "total_batches") and event.total_batches is not None:
+                        progress.update(
+                            task_id,
+                            description=stage_description,
+                            total=event.total_batches,
+                            completed=0,
+                        )
+                    else:
+                        progress.update(
+                            task_id,
+                            description=stage_description,
+                            total=None,
+                            completed=0,
+                        )
                 else:
-                    progress.update(task_id, description=event.stage)
+                    progress.update(task_id, description="inference...")
         if output_results is None:
             raise RuntimeError("inference finished without outputs")
         curr_output_dir = output_dir or Path("./data/audio/output") / mixture_path.stem
