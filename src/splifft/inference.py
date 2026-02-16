@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 SUPPORTED_MODELS: dict[str, tuple[str, str]] = {
     "bs_roformer": ("splifft.models.bs_roformer", "BSRoformer"),
     "mel_roformer": ("splifft.models.bs_roformer", "BSRoformer"),
+    "mdx23c": ("splifft.models.mdx23c", "MDX23C"),
     "beat_this": ("splifft.models.beat_this", "BeatThis"),
 }
 

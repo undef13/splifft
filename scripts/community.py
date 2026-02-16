@@ -682,6 +682,11 @@ def fix_registry(
     )
 
 
+#
+# msst -> splifft config parsing
+#
+
+
 def slugify_url(url: str) -> str | None:  # quick and dirty
     for prefix in [
         "https://huggingface.co/",
@@ -763,6 +768,13 @@ def _load_msst_yaml(path: Path) -> dict[str, Any] | None:
 def convert_msst_yaml_path(path: Path, *, model_id: str) -> Config | None:
     if not (msst := _load_msst_yaml(path)):
         return None
+    model = msst.get("model", {})
+    if not isinstance(model, dict):
+        return None
+
+    if "num_scales" in model and "num_subbands" in model:
+        return convert_msst_config_mdx23c(msst, model_id=model_id)
+
     return convert_msst_config_bs_roformer(msst, model_id=model_id)
 
 
@@ -799,7 +811,7 @@ def fix_registry_with_msst(
                     continue
                 dest = (msst_dir / slug).with_suffix(".yaml")
                 _ensure_msst_yaml(client=client, dest=dest, url=resource.url, model_id=model_id)
-                if model.architecture not in {"bs_roformer", "mel_roformer"}:
+                if model.architecture not in {"bs_roformer", "mel_roformer", "mdx23c"}:
                     logger.warning(
                         f"skipping unsupported architecture '{model.architecture}' for '{model_id}'"
                     )
@@ -849,85 +861,214 @@ def remove_missing(d: dict[str, Any]) -> dict[str, Any]:
     return {k: v for k, v in d.items() if v is not MISSING}
 
 
-def convert_msst_config_bs_roformer(
-    msst: dict[str, Any],
-    model_id: str = "custom-model",
-) -> Config | None:
-    """Convert an MSST YAML configuration file to a splifft JSON configuration."""
-    # right now we only support bs/mel roformer.
-    from pydantic import TypeAdapter
-    from pydantic.experimental.missing_sentinel import MISSING
+def _resolve_output_stems(training: dict[str, Any], *, missing: Any) -> Any:
+    # see MSST utils/model_utils.py::prefer_target_instrument
+    stems = list(map(snake_case, training.get("instruments", [])))
+    target = training.get("target_instrument")
+    return [snake_case(target)] if target else stems if stems else missing
 
+
+def _build_model_params_lazy(
+    *,
+    params_type: type[Any],
+    model_params: dict[str, Any],
+    types_namespace: dict[str, Any],
+) -> dict[str, Any]:
+    # this hack is required to flush away defaults in the concrete config, which is
+    # then force casted back into the lazy config
+    from pydantic import TypeAdapter
+
+    ta = TypeAdapter(params_type)
+    ta.rebuild(_types_namespace=types_namespace)
+    return cast(
+        dict[str, Any], ta.dump_python(ta.validate_python(model_params), exclude_defaults=True)
+    )
+
+
+def _build_common_runtime_params(
+    *,
+    audio: dict[str, Any],
+    training: dict[str, Any],
+    inference: dict[str, Any],
+    missing: Any,
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
+    audio_io_params = remove_missing(
+        {
+            "target_sample_rate": audio.get("sample_rate", missing),
+            "force_channels": audio.get("num_channels", missing),
+        }
+    )
+
+    inference_params = remove_missing(
+        {
+            "batch_size": inference.get("batch_size", missing),
+        }
+    )
+
+    chunking_params: dict[str, Any] = {}
+    if (num_overlap := inference.get("num_overlap")) is not None:
+        chunking_params["overlap_ratio"] = 1.0 - 1.0 / num_overlap
+
+    normalize_enabled = inference.get("normalize", training.get("normalize", missing))
+    normalization_params: dict[str, Any] = {}
+    if normalize_enabled is not missing:
+        normalization_params["enabled"] = normalize_enabled
+
+    return audio_io_params, inference_params, chunking_params, normalization_params
+
+
+def _build_config(
+    *,
+    model_id: str,
+    model_type: Literal["bs_roformer", "mdx23c"],
+    model_params_lazy: dict[str, Any],
+    stft_params: dict[str, Any],
+    audio_io_params: dict[str, Any],
+    inference_params: dict[str, Any],
+    chunking_params: dict[str, Any],
+    normalization_params: dict[str, Any],
+) -> Config:
+    from splifft.config import Config
+
+    return Config.model_validate(
+        {
+            "identifier": model_id,
+            "model_type": model_type,
+            "model": model_params_lazy,
+            "stft": stft_params,
+            "audio_io": audio_io_params,
+            "inference": inference_params,
+            "waveform_chunking": chunking_params,
+            "normalization": normalization_params,
+            "masking": {},
+            "output": {"stem_names": "all"},
+        }
+    )
+
+
+def _build_bs_roformer_model_params_lazy(
+    *,
+    audio: dict[str, Any],
+    model: dict[str, Any],
+    training: dict[str, Any],
+    missing: Any,
+) -> dict[str, Any]:
     from splifft import types as t
-    from splifft.config import Config, TorchDtype
+    from splifft.config import TorchDtype
     from splifft.models.bs_roformer import BSRoformerParams
 
-    audio = msst.get("audio", {})
-    model = msst.get("model", {})
-    training = msst.get("training", {})
-    inference = msst.get("inference", {})
-
-    assert not isinstance(model, str), "possible htdemucs!"
-
     is_mel = "num_bands" in model
-    band_config: dict[str, Any]
     if is_mel:
         band_config = remove_missing(
             {
                 "kind": "mel",
-                "num_bands": model.get("num_bands", MISSING),
-                "sample_rate": model.get("sample_rate") or audio.get("sample_rate", MISSING),
-                "stft_n_fft": model.get("stft_n_fft", MISSING),
+                "num_bands": model.get("num_bands", missing),
+                "sample_rate": model.get("sample_rate") or audio.get("sample_rate", missing),
+                "stft_n_fft": model.get("stft_n_fft", missing),
             }
         )
     else:
         band_config = remove_missing(
             {
                 "kind": "fixed",
-                "freqs_per_bands": model.get("freqs_per_bands", MISSING),
+                "freqs_per_bands": model.get("freqs_per_bands", missing),
             }
         )
 
     msst_depth = model.get("mask_estimator_depth", 2)
     splifft_mask_depth = msst_depth + 1 if is_mel else msst_depth
 
-    # see utils/model_utils.py::prefer_target_instrument
-    stems = list(map(snake_case, training.get("instruments", [])))
-    target = training.get("target_instrument")
-    output_stems = [snake_case(target)] if target else stems if stems else MISSING
+    model_params = remove_missing(
+        {
+            "chunk_size": audio.get("chunk_size", missing),
+            "output_stem_names": _resolve_output_stems(training, missing=missing),
+            "dim": model.get("dim", missing),
+            "depth": model.get("depth", missing),
+            "stft_hop_length": model.get("stft_hop_length") or audio.get("hop_length", missing),
+            "stereo": model.get("stereo", missing),
+            "time_transformer_depth": model.get("time_transformer_depth", missing),
+            "freq_transformer_depth": model.get("freq_transformer_depth", missing),
+            "linear_transformer_depth": model.get("linear_transformer_depth", missing),
+            "band_config": band_config,
+            "dim_head": model.get("dim_head", missing),
+            "heads": model.get("heads", missing),
+            "attn_dropout": model.get("attn_dropout", missing),
+            "ff_dropout": model.get("ff_dropout", missing),
+            "ff_mult": model.get(
+                "mlp_expansion_factor", missing
+            ),  # TODO: verify this is the case, there are many bugs with this
+            "flash_attn": model.get("flash_attn", missing),
+            "norm_output": is_mel,  # NOTE: msst inherits the bug introduced from lucidrain's impl
+            "mask_estimator_depth": splifft_mask_depth,
+            "mlp_expansion_factor": model.get("mlp_expansion_factor", missing),
+            "use_torch_checkpoint": model.get("use_torch_checkpoint", missing),
+            "skip_connection": model.get("skip_connection", missing),
+        }
+    )
+
+    return _build_model_params_lazy(
+        params_type=BSRoformerParams,
+        model_params=model_params,
+        types_namespace={"TorchDtype": TorchDtype, "t": t},
+    )
+
+
+def _build_mdx23c_model_params_lazy(
+    *,
+    audio: dict[str, Any],
+    model: dict[str, Any],
+    training: dict[str, Any],
+    missing: Any,
+) -> dict[str, Any]:
+    from splifft import types as t
+    from splifft.config import TorchDtype
+    from splifft.models.mdx23c import MDX23CParams
 
     model_params = remove_missing(
         {
-            "chunk_size": audio.get("chunk_size", MISSING),
-            "output_stem_names": output_stems,
-            "dim": model.get("dim", MISSING),
-            "depth": model.get("depth", MISSING),
-            "stft_hop_length": model.get("stft_hop_length") or audio.get("hop_length", MISSING),
-            "stereo": model.get("stereo", MISSING),
-            "time_transformer_depth": model.get("time_transformer_depth", MISSING),
-            "freq_transformer_depth": model.get("freq_transformer_depth", MISSING),
-            "linear_transformer_depth": model.get("linear_transformer_depth", MISSING),
-            "band_config": band_config,
-            "dim_head": model.get("dim_head", MISSING),
-            "heads": model.get("heads", MISSING),
-            "attn_dropout": model.get("attn_dropout", MISSING),
-            "ff_dropout": model.get("ff_dropout", MISSING),
-            "ff_mult": model.get(
-                "mlp_expansion_factor", MISSING
-            ),  # map mlp_expansion_factor to ff_mult?
-            "flash_attn": model.get("flash_attn", MISSING),
-            "norm_output": is_mel,  # msst inherits bug lucidrains
-            "mask_estimator_depth": splifft_mask_depth,
-            "mlp_expansion_factor": model.get("mlp_expansion_factor", MISSING),
-            "use_torch_checkpoint": model.get("use_torch_checkpoint", MISSING),
-            "skip_connection": model.get("skip_connection", MISSING),
+            "chunk_size": audio.get("chunk_size", missing),
+            "output_stem_names": _resolve_output_stems(training, missing=missing),
+            "dim_f": audio.get("dim_f", missing),
+            "num_subbands": model.get("num_subbands", missing),
+            "num_scales": model.get("num_scales", missing),
+            "scale": tuple(model.get("scale", [])) if "scale" in model else missing,
+            "num_blocks_per_scale": model.get("num_blocks_per_scale", missing),
+            "hidden_channels": model.get("num_channels", missing),
+            "growth": model.get("growth", missing),
+            "bottleneck_factor": model.get("bottleneck_factor", missing),
+            "norm_type": model.get("norm", missing),
+            "act_type": model.get("act", missing),
+            "stereo": audio.get("num_channels", 2) == 2,
         }
     )
-    # this hack is required to flush away defaults in the concrete config, which is
-    # then force casted back into the lazy config
-    ta = TypeAdapter(BSRoformerParams)
-    ta.rebuild(_types_namespace={"TorchDtype": TorchDtype, "t": t})
-    model_params_lazy = ta.dump_python(ta.validate_python(model_params), exclude_defaults=True)
+
+    return _build_model_params_lazy(
+        params_type=MDX23CParams,
+        model_params=model_params,
+        types_namespace={"TorchDtype": TorchDtype, "t": t},
+    )
+
+
+def convert_msst_config_bs_roformer(
+    msst: dict[str, Any],
+    model_id: str = "custom-model",
+) -> Config | None:
+    """Convert an MSST YAML configuration file to a splifft JSON configuration."""
+    from pydantic.experimental.missing_sentinel import MISSING
+
+    audio = cast(dict[str, Any], msst.get("audio", {}))
+    model = cast(dict[str, Any], msst.get("model", {}))
+    training = cast(dict[str, Any], msst.get("training", {}))
+    inference = cast(dict[str, Any], msst.get("inference", {}))
+
+    assert not isinstance(model, str), "possible htdemucs!"
+
+    model_params_lazy = _build_bs_roformer_model_params_lazy(
+        audio=audio,
+        model=model,
+        training=training,
+        missing=MISSING,
+    )
 
     stft_params = remove_missing(
         {
@@ -938,42 +1079,72 @@ def convert_msst_config_bs_roformer(
         }
     )
 
-    audio_io_params = remove_missing(
+    audio_io_params, inference_params, chunking_params, normalization_params = (
+        _build_common_runtime_params(
+            audio=audio,
+            training=training,
+            inference=inference,
+            missing=MISSING,
+        )
+    )
+
+    return _build_config(
+        model_id=model_id,
+        model_type="bs_roformer",
+        model_params_lazy=model_params_lazy,
+        stft_params=stft_params,
+        audio_io_params=audio_io_params,
+        inference_params=inference_params,
+        chunking_params=chunking_params,
+        normalization_params=normalization_params,
+    )
+
+
+def convert_msst_config_mdx23c(
+    msst: dict[str, Any],
+    model_id: str = "custom-model",
+) -> Config | None:
+    from pydantic.experimental.missing_sentinel import MISSING
+
+    audio = cast(dict[str, Any], msst.get("audio", {}))
+    model = cast(dict[str, Any], msst.get("model", {}))
+    training = cast(dict[str, Any], msst.get("training", {}))
+    inference = cast(dict[str, Any], msst.get("inference", {}))
+
+    model_params_lazy = _build_mdx23c_model_params_lazy(
+        audio=audio,
+        model=model,
+        training=training,
+        missing=MISSING,
+    )
+
+    stft_params = remove_missing(
         {
-            "target_sample_rate": audio.get("sample_rate", MISSING),
-            "force_channels": audio.get("num_channels", MISSING),
+            "n_fft": audio.get("n_fft", MISSING),
+            "hop_length": audio.get("hop_length", MISSING),
+            "win_length": audio.get("n_fft", MISSING),  # hann window length is n_fft
+            "normalized": False,
         }
     )
 
-    inference_params = remove_missing(
-        {
-            "batch_size": inference.get("batch_size", MISSING),
-        }
+    audio_io_params, inference_params, chunking_params, normalization_params = (
+        _build_common_runtime_params(
+            audio=audio,
+            training=training,
+            inference=inference,
+            missing=MISSING,
+        )
     )
 
-    chunking_params = {}
-    if (num_overlap := inference.get("num_overlap")) is not None:
-        chunking_params["overlap_ratio"] = 1.0 - 1.0 / num_overlap
-
-    # normalization is tricky. MSST has `inference.normalize` or `training.normalize`.
-    normalize_enabled = inference.get("normalize", training.get("normalize", MISSING))
-    normalization_params = {}
-    if normalize_enabled is not MISSING:
-        normalization_params["enabled"] = normalize_enabled
-
-    return Config.model_validate(
-        {
-            "identifier": model_id,
-            "model_type": "bs_roformer",
-            "model": model_params_lazy,
-            "stft": stft_params,
-            "audio_io": audio_io_params,
-            "inference": inference_params,
-            "waveform_chunking": chunking_params,
-            "normalization": normalization_params,
-            "masking": {},  # empty defaults
-            "output": {"stem_names": "all"},
-        }
+    return _build_config(
+        model_id=model_id,
+        model_type="mdx23c",
+        model_params_lazy=model_params_lazy,
+        stft_params=stft_params,
+        audio_io_params=audio_io_params,
+        inference_params=inference_params,
+        chunking_params=chunking_params,
+        normalization_params=normalization_params,
     )
 
 
