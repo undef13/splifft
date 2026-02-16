@@ -1,7 +1,6 @@
-"""MDX23C TFC-TDF Network.
+"""MDX23C.
 
-- Architecture: TFC-TDF v3 (Time-Frequency Convolution with Time-Distributed Fully-connected)
-- Original: https://github.com/kuielab/sdx23
+See: <https://arxiv.org/pdf/2306.09382>
 """
 
 from __future__ import annotations
@@ -15,6 +14,7 @@ from einops import rearrange
 from torch import Tensor
 
 from . import ModelParamsLike
+from .utils.tfc_tdf import TfcTdf
 
 if TYPE_CHECKING:
     from .. import types as t
@@ -79,6 +79,26 @@ def get_act(act_type: str) -> nn.Module:
     raise ValueError(f"unknown activation: {act_type}")
 
 
+def build_tfc_tdf(
+    in_c: int,
+    c: int,
+    blocks_per_scale: int,
+    f: int,
+    bn: int,
+    norm_type: str,
+    act_type: str,
+) -> TfcTdf:
+    return TfcTdf(
+        in_channels=in_c,
+        out_channels=c,
+        num_blocks=blocks_per_scale,
+        f_bins=f,
+        bottleneck_factor=bn,
+        norm_factory=lambda channels: get_norm(norm_type, channels),
+        act_factory=lambda: get_act(act_type),
+    )
+
+
 class Upscale(nn.Module):
     def __init__(
         self,
@@ -131,71 +151,6 @@ class Downscale(nn.Module):
         return self.conv(x)  # type: ignore
 
 
-class TFC_TDF_Block(nn.Module):
-    def __init__(
-        self,
-        in_c: int,
-        c: int,
-        f: int,
-        bn: int,
-        norm_type: str,
-        act_type: str,
-    ):
-        super().__init__()
-        self.tfc1 = nn.Sequential(
-            get_norm(norm_type, in_c),
-            get_act(act_type),
-            nn.Conv2d(in_c, c, 3, 1, 1, bias=False),
-        )
-        self.tdf = nn.Sequential(
-            get_norm(norm_type, c),
-            get_act(act_type),
-            nn.Linear(f, f // bn, bias=False),
-            get_norm(norm_type, c),
-            get_act(act_type),
-            nn.Linear(f // bn, f, bias=False),
-        )
-        self.tfc2 = nn.Sequential(
-            get_norm(norm_type, c),
-            get_act(act_type),
-            nn.Conv2d(c, c, 3, 1, 1, bias=False),
-        )
-        self.shortcut = nn.Conv2d(in_c, c, 1, 1, 0, bias=False)
-
-    def forward(self, x: Tensor) -> Tensor:
-        s = self.shortcut(x)
-        x = self.tfc1(x)
-        x = x + self.tdf(x)
-        x = self.tfc2(x)
-        x = x + s
-        return x
-
-
-class TFC_TDF(nn.Module):
-    def __init__(
-        self,
-        in_c: int,
-        c: int,
-        blocks_per_scale: int,
-        f: int,
-        bn: int,
-        norm_type: str,
-        act_type: str,
-    ):
-        super().__init__()
-        self.blocks = nn.ModuleList(
-            [
-                TFC_TDF_Block(in_c if i == 0 else c, c, f, bn, norm_type, act_type)
-                for i in range(blocks_per_scale)
-            ]
-        )
-
-    def forward(self, x: Tensor) -> Tensor:
-        for block in self.blocks:
-            x = block(x)
-        return x
-
-
 class MDX23C(nn.Module):
     def __init__(self, cfg: MDX23CParams):
         super().__init__()
@@ -220,13 +175,17 @@ class MDX23C(nn.Module):
         self.encoder_blocks = nn.ModuleList()
         for _ in range(n):
             block = nn.Module()
-            block.tfc_tdf = TFC_TDF(c, c, blocks_per_scale, f, bn, cfg.norm_type, cfg.act_type)
+            block.tfc_tdf = build_tfc_tdf(
+                c, c, blocks_per_scale, f, bn, cfg.norm_type, cfg.act_type
+            )
             block.downscale = Downscale(c, c + g, scale_2d, cfg.norm_type, cfg.act_type)
             f = f // scale_2d[1]
             c += g
             self.encoder_blocks.append(block)
 
-        self.bottleneck_block = TFC_TDF(c, c, blocks_per_scale, f, bn, cfg.norm_type, cfg.act_type)
+        self.bottleneck_block = build_tfc_tdf(
+            c, c, blocks_per_scale, f, bn, cfg.norm_type, cfg.act_type
+        )
 
         self.decoder_blocks = nn.ModuleList()
         for _ in range(n):
@@ -234,7 +193,9 @@ class MDX23C(nn.Module):
             block.upscale = Upscale(c, c - g, scale_2d, cfg.norm_type, cfg.act_type)
             f = f * scale_2d[1]
             c -= g
-            block.tfc_tdf = TFC_TDF(2 * c, c, blocks_per_scale, f, bn, cfg.norm_type, cfg.act_type)
+            block.tfc_tdf = build_tfc_tdf(
+                2 * c, c, blocks_per_scale, f, bn, cfg.norm_type, cfg.act_type
+            )
             self.decoder_blocks.append(block)
 
         self.final_conv = nn.Sequential(

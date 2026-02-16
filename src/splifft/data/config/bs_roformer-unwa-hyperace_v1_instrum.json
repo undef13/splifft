@@ -1,5 +1,5 @@
 {
-    "identifier": "mel_roformer-unwa-large_v2_inst",
+    "identifier": "bs_roformer-unwa-hyperace_v1_instrum",
     "model_type": "bs_roformer",
     "model": {
         "chunk_size": 960000,
@@ -12,13 +12,13 @@
             "kind": "fixed"
         },
         "use_torch_checkpoint": true,
-        "stft_hop_length": 441
+        "mask_estimator": {
+            "kind": "hyperace_residual_v1"
+        }
     },
-    "stft": {
-        "hop_length": 441
-    },
+    "stft": {},
     "inference": {
-        "batch_size": 4,
+        "batch_size": 2,
         "use_autocast_dtype": "float16"
     },
     "waveform_chunking": {

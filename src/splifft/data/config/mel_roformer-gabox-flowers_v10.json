@@ -17,10 +17,11 @@
         "use_torch_checkpoint": true
     },
     "stft": {
-        "hop_length": 441
+        "hop_length": 441,
+        "normalized": true
     },
     "inference": {
-        "batch_size": 1
+        "batch_size": 2
     },
     "waveform_chunking": {}
 }

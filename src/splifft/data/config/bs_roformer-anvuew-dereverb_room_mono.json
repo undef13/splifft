@@ -4,7 +4,7 @@
     "model": {
         "chunk_size": 384000,
         "output_stem_names": [
-            "noreverb"
+            "dry"
         ],
         "dim": 128,
         "depth": 16,
@@ -76,15 +76,12 @@
                 64
             ]
         },
-        "stft_hop_length": 441,
         "stereo": false,
         "dim_head": 16,
         "mask_estimator_depth": 3,
         "use_torch_checkpoint": true
     },
-    "stft": {
-        "hop_length": 441
-    },
+    "stft": {},
     "audio_io": {
         "force_channels": 1
     },

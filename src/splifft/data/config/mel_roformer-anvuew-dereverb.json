@@ -4,7 +4,7 @@
     "model": {
         "chunk_size": 352800,
         "output_stem_names": [
-            "noreverb"
+            "dry"
         ],
         "dim": 384,
         "depth": 6,

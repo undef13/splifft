@@ -26,7 +26,7 @@
         "architecture": "bs_roformer",
         "config_id": "bs_roformer-anvuew-dereverb",
         "created_at": "2026-02-13T07:01:55.000Z",
-        "output": ["dereverb"],
+        "output": ["dry"],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -94,13 +94,13 @@
         ],
         "model_size": 489571079
     },
-    "mel_roformer-unwa-large_v2_inst": {
+    "mel_roformer-unwa-large_inst_v2": {
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": "mel_roformer-unwa-large_v2_inst",
+        "config_id": "mel_roformer-unwa-large_inst_v2",
         "created_at": "2026-01-25T11:36:07.000Z",
-        "output": ["vocals", "instrumental"],
+        "output": ["instrumental"],
         "metrics": [ {"source": "https://mvsep.com/quality_checker/entry/9580"} ],
         "description": [
             {
@@ -180,7 +180,7 @@
         "authors": ["gabox"],
         "purpose": "separation",
         "architecture": "mel_roformer",
-        "config_id": ".mel_roformer-gabox-flowers_v10",
+        "config_id": "mel_roformer-gabox-flowers_v10",
         "created_at": "2026-01-04T22:58:53.000Z",
         "output": ["instrumental"],
         "metrics": [
@@ -268,47 +268,12 @@
         ],
         "model_size": 913091027
     },
-    "bs_roformer-unwa-hyperace_v2_vocals": {
-        "authors": ["unwa"],
-        "purpose": "separation",
-        "architecture": "bs_roformer",
-        "config_id": ".bs_roformer-unwa-hyperace_v2_vocals",
-        "created_at": "2025-12-20T10:31:44.000Z",
-        "output": ["vocals"],
-        "metrics": [
-            {
-                "values": { "vocals": {"bleedless": 34.08, "fullness": 19.1, "sdr": 11.39} }
-            }
-        ],
-        "description": [
-            {
-                "content": [
-                    "Aims to outperform Big Beta 6X overall.",
-                    "Uses a frequency-domain downsampling backbone module.",
-                    "More noisy during quiet parts compared to Big Beta 6X but scores higher across the board."
-                ],
-                "author": "rainboomdash"
-            }
-        ],
-        "resources": [
-            {
-                "kind": "model_ckpt",
-                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_voc/bs_roformer_inst_hyperacev2.ckpt",
-                "digest": "sha256:54cf516f621f2f460bf660ed137e244b8931bf7a2ce85ddceecff816dbc4d668"
-            },
-            {
-                "kind": "config_msst",
-                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_voc/config.yaml"
-            }
-        ],
-        "model_size": 288725646
-    },
     "bs_roformer-unwa-hyperace_v2_instrum": {
         "authors": ["unwa"],
         "purpose": "separation",
         "architecture": "bs_roformer",
-        "config_id": ".bs_roformer-unwa-hyperace_v2_instrum",
-        "created_at": "2025-12-18T14:27:44.000Z",
+        "config_id": "bs_roformer-unwa-hyperace_v2_instrum",
+        "created_at": "2025-12-20T10:31:44.000Z",
         "output": ["instrumental"],
         "metrics": [
             {
@@ -329,12 +294,48 @@
         "resources": [
             {
                 "kind": "model_ckpt",
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_inst/bs_roformer_inst_hyperacev2.ckpt",
+                "digest": "sha256:4d61178ef966d2b4e9ad456ffbbc6fd5b2828df07a7af32931142c1a5ff1fe6f"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_inst/config.yaml"
+            }
+        ],
+        "model_size": 288725646
+    },
+    "bs_roformer-unwa-hyperace_v2_vocals": {
+        "authors": ["unwa"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "config_id": "bs_roformer-unwa-hyperace_v2_vocals",
+        "created_at": "2025-12-18T14:27:44.000Z",
+        "output": ["vocals"],
+        "metrics": [
+            {
+                "values": { "vocals": {"bleedless": 34.08, "fullness": 19.1, "sdr": 11.39} },
+                "source": "https://mvsep.com/quality_checker/entry/9475"
+            }
+        ],
+        "description": [
+            {
+                "content": [
+                    "Aims to outperform Big Beta 6X overall.",
+                    "Uses a frequency-domain downsampling backbone module.",
+                    "More noisy during quiet parts compared to Big Beta 6X but scores higher across the board."
+                ],
+                "author": "rainboomdash"
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
                 "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_voc/bs_roformer_voc_hyperacev2.ckpt",
                 "digest": "sha256:54cf516f621f2f460bf660ed137e244b8931bf7a2ce85ddceecff816dbc4d668"
             },
             {
                 "kind": "config_msst",
-                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_inst/config.yaml"
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_voc/config.yaml"
             }
         ],
         "model_size": 288724430
@@ -394,6 +395,26 @@
         ],
         "model_size": 913030778
     },
+    "bs_roformer-unwa-hyperace_v1_instrum": {
+        "authors": ["unwa"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "config_id": "bs_roformer-unwa-hyperace_v1_instrum",
+        "created_at": "2025-11-21T15:53:05.000Z",
+        "output": ["instrumental"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/bs_hyperace.ckpt",
+                "digest": "sha256:907ac3c899a1ecdfcfa7491bb31936d26a4d472bdb5efb258237fdca666c0d6a"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/config.yaml"
+            }
+        ],
+        "model_size": 274890855
+    },
     "mel_roformer-gabox-voc_fv7_beta2": {
         "authors": ["gabox"],
         "purpose": "separation",
@@ -413,6 +434,26 @@
             }
         ],
         "model_size": 913030778
+    },
+    "bs_roformer-anvuew-instrum": {
+        "authors": ["anvuew"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "config_id": "bs_roformer-anvuew-instrum",
+        "created_at": "2025-11-09T14:17:19.000Z",
+        "output": ["vocals"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/anvuew/BS-RoFormer/resolve/main/bs_roformer_anvuew_sdr_12.45.ckpt",
+                "digest": "sha256:8d0f72ad0ac4154f5f4c3cdf230880bbb9a5bd01dc610241a2abfe787f0d7784"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/anvuew/BS-RoFormer/resolve/main/config.yaml"
+            }
+        ],
+        "model_size": 204485563
     },
     "mel_roformer-mesk-rifforge": {
         "authors": ["mesk"],
@@ -717,7 +758,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-karaoke",
         "created_at": "2025-07-31T06:23:28.000Z",
-        "output": ["vocals_dry"],
+        "output": ["lead_vocals"],
         "description": [
             { "content": ["just use it on the mixture"], "author": "gabox" },
             { "content": ["sounds great"], "author": "rage313" },
@@ -752,7 +793,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-karaoke",
         "created_at": "2025-07-31T06:21:50.000Z",
-        "output": ["lead"],
+        "output": ["lead_vocals"],
         "metrics": [
             {
                 "values": {
@@ -1260,7 +1301,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-becruily-karaoke",
         "created_at": "2025-04-15T12:38:16.000Z",
-        "output": ["lead_vocals"],
+        "output": ["lead_vocals", "back_vocals"],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -1889,7 +1930,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gabox-inst",
         "created_at": "2025-02-12T22:05:40.000Z",
-        "output": ["denoised"],
+        "output": ["instrumental"],
         "description": [
             {
                 "content": [
@@ -1937,7 +1978,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-amane-small",
         "created_at": "2025-02-11T23:55:13.000Z",
-        "output": ["vocals"],
+        "output": ["instrumental", "vocals"],
         "resources": [
             {
                 "kind": "model_ckpt",
@@ -2028,7 +2069,7 @@
         "output": ["dry"],
         "metrics": [
             {
-                "values": { "dereverb": {"sdr": 20.4029} }
+                "values": { "dry": {"sdr": 20.4029} }
             }
         ],
         "description": [
@@ -2170,7 +2211,7 @@
         "architecture": "bs_roformer",
         "config_id": "bs_roformer-gabox-instrumental",
         "created_at": "2025-01-23T07:19:56.000Z",
-        "output": ["instrumental"],
+        "output": ["vocals"],
         "description": [
             {
                 "content": [
@@ -2267,7 +2308,7 @@
         "architecture": "bs_roformer",
         "config_id": "bs_roformer-sucial-chorus-mf",
         "created_at": "2025-01-08T23:24:27.000Z",
-        "output": ["male"],
+        "output": ["male", "female"],
         "metrics": [
             {
                 "values": { "male": {"sdr": 7.2889} }
@@ -2449,7 +2490,7 @@
         "architecture": "bs_roformer",
         "config_id": "bs_roformer-sucial-chorus-mf",
         "created_at": "2024-12-07T09:12:45.000Z",
-        "output": ["male"],
+        "output": ["male", "female"],
         "description": [
             {
                 "content": [
@@ -2580,7 +2621,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-sucial-dereverb_echo_fused",
         "created_at": "2024-11-22T10:22:21.000Z",
-        "output": ["dry"],
+        "output": ["dry", "other"],
         "description": [
             {
                 "content": [
@@ -2679,7 +2720,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-unwa-duality",
         "created_at": "2024-10-30T14:55:31.000Z",
-        "output": ["vocals", "other"],
+        "output": ["vocals", "instrumental"],
         "description": [
             { "content": ["slightly a bit better sdr and fewer residues"] }
         ],
@@ -2702,7 +2743,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-unwa-duality",
         "created_at": "2024-10-29T16:46:19.000Z",
-        "output": ["vocals", "other"],
+        "output": ["vocals", "instrumental"],
         "description": [
             {
                 "content": [
@@ -2880,7 +2921,7 @@
         "output": ["dry"],
         "metrics": [
             {
-                "values": { "dereverb": {"sdr": 18.805} }
+                "values": { "dry": {"sdr": 18.805} }
             }
         ],
         "resources": [
@@ -2935,7 +2976,7 @@
         "architecture": "mdx23c",
         "config_id": "mdx23c-aufr33-dereverb",
         "created_at": "2024-08-27T14:31:17.000Z",
-        "output": ["dry"],
+        "output": ["dry", "other"],
         "metrics": [
             {
                 "values": { "dry": {"sdr": 6.9096} }
@@ -3212,7 +3253,7 @@
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-aufr33-decrowd",
         "created_at": "2024-06-07T22:01:24Z",
-        "output": ["clean"],
+        "output": ["crowd"],
         "metrics": [
             {
                 "values": { "clean": {"sdr": 8.7144} }
@@ -3246,7 +3287,7 @@
         "architecture": "bs_roformer",
         "config_id": "bs_roformer-viperx-1053",
         "created_at": "2024-03-29T10:38:08Z",
-        "output": ["other"],
+        "output": ["no_drum-bass"],
         "metrics": [
             {
                 "values": { "other": {"sdr": 10.5309} }
@@ -3344,7 +3385,7 @@
         "architecture": "mdx23c",
         "config_id": "mdx23c-zfturbo-vocals_hq",
         "created_at": "2023-11-06T17:37:25Z",
-        "output": ["vocals"],
+        "output": ["vocals", "other"],
         "metrics": [
             {
                 "values": { "vocals": {"sdr": 10.17} }

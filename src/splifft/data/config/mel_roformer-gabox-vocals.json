@@ -8,13 +8,12 @@
         ],
         "dim": 384,
         "depth": 6,
-        "stereo": true,
-        "stft_hop_length": 441,
         "band_config": {
             "kind": "mel"
         },
-        "mask_estimator_depth": 3,
-        "norm_output": true
+        "stft_hop_length": 441,
+        "norm_output": true,
+        "mask_estimator_depth": 3
     },
     "stft": {
         "hop_length": 441
@@ -22,15 +21,5 @@
     "inference": {
         "batch_size": 2
     },
-    "normalization": {
-        "enabled": true
-    },
-    "waveform_chunking": {},
-    "derived_stems": {
-        "instrumental": {
-            "operation": "subtract",
-            "stem_name": "mixture",
-            "by_stem_name": "vocals"
-        }
-    }
+    "waveform_chunking": {}
 }

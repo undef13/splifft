@@ -28,7 +28,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from functools import partial
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, cast
 
 import torch
 import torch.nn.functional as F
@@ -71,6 +71,45 @@ class MelBandsConfig:
 
 
 @dataclass
+class BaselineMaskEstimatorConfig:
+    kind: Literal["baseline"] = "baseline"
+
+
+@dataclass
+class AxialRefinerLargeV2MaskEstimatorConfig:
+    """unwa large-v2 head. Adds a small axial transformer refiner inside the mask head."""
+
+    kind: Literal["axial_refiner_large_v2"]
+    axial_refiner_depth: t.Gt0[int] = 4
+
+
+@dataclass
+class HyperAceResidualV1MaskEstimatorConfig:
+    """unwa HyperACE v1 residual head compatibility config."""
+
+    kind: Literal["hyperace_residual_v1"]
+    num_hyperedges: t.Gt0[int] | None = None
+    num_heads: t.Gt0[int] = 8
+
+
+@dataclass
+class HyperAceResidualV2MaskEstimatorConfig:
+    """UNWA HyperACE v2 residual head compatibility config."""
+
+    kind: Literal["hyperace_residual_v2"]
+    num_hyperedges: t.Gt0[int] | None = None
+    num_heads: t.Gt0[int] = 8
+
+
+MaskEstimatorConfig = (
+    BaselineMaskEstimatorConfig
+    | AxialRefinerLargeV2MaskEstimatorConfig
+    | HyperAceResidualV1MaskEstimatorConfig
+    | HyperAceResidualV2MaskEstimatorConfig
+)
+
+
+@dataclass
 class BSRoformerParams(ModelParamsLike):
     chunk_size: t.ChunkSize
     output_stem_names: tuple[t.ModelOutputStemName, ...]
@@ -105,6 +144,7 @@ If you are migrating a mel-band roformer's `zfturbo` configuration, **increment*
 depth by 1.
     """
     mlp_expansion_factor: t.Gt0[int] = 4
+    mask_estimator: MaskEstimatorConfig = field(default_factory=BaselineMaskEstimatorConfig)
     use_torch_checkpoint: bool = False
     sage_attention: bool = False
     use_shared_bias: bool = False  # COMPAT: weights are all zeros anyways, disabling by default
@@ -233,7 +273,7 @@ class FeedForward(Module):
         )
 
     def forward(self, x: Tensor) -> Tensor:
-        return self.net(x)
+        return cast(Tensor, self.net(x))
 
 
 class Attention(Module):
@@ -299,7 +339,7 @@ class Attention(Module):
 
         out = rearrange(out, "b h n d -> b n (h d)")
         out = self.to_out(out)
-        return out
+        return cast(Tensor, out)
 
 
 class LinearAttention(Module):
@@ -353,7 +393,7 @@ class LinearAttention(Module):
 
         out = self.attend(q, k, v)
 
-        return self.to_out(out)
+        return cast(Tensor, self.to_out(out))
 
 
 class Transformer(Module):
@@ -413,7 +453,10 @@ class Transformer(Module):
         self.norm = rms_norm(dim, eps=rms_norm_eps) if norm_output else nn.Identity()
 
     def forward(self, x: Tensor) -> Tensor:
-        for attn, ff in self.layers:  # type: ignore
+        for layer in self.layers:
+            block = cast(ModuleList, layer)
+            attn = block[0]
+            ff = block[1]
             attn_out = attn(x)
             if self.transformer_residual_dtype is not None:
                 x = (
@@ -431,7 +474,7 @@ class Transformer(Module):
                 ).to(x.dtype)
             else:
                 x = ff_out + x
-        return self.norm(x)
+        return cast(Tensor, self.norm(x))
 
 
 # bandsplit module
@@ -448,7 +491,7 @@ class BandSplit(Module):
             self.to_features.append(net)
 
     def forward(self, x: Tensor) -> Tensor:
-        x_split = x.split(self.dim_inputs, dim=-1)
+        x_split = torch.split(x, list(self.dim_inputs), dim=-1)
         outs = []
         for split_input, to_feature_net in zip(x_split, self.to_features):
             split_output = to_feature_net(split_input)
@@ -483,6 +526,25 @@ def mlp(
     return nn.Sequential(*net)
 
 
+def _build_band_to_freq_mlps(
+    *,
+    dim: int,
+    dim_inputs: tuple[int, ...],
+    depth: int,
+    mlp_expansion_factor: int,
+) -> ModuleList:
+    dim_hidden = dim * mlp_expansion_factor
+    to_freqs = ModuleList()
+    for dim_in in dim_inputs:
+        to_freqs.append(
+            nn.Sequential(
+                mlp(dim, dim_in * 2, dim_hidden=dim_hidden, depth=depth),
+                nn.GLU(dim=-1),
+            )
+        )
+    return to_freqs
+
+
 class MaskEstimator(Module):
     def __init__(
         self,
@@ -493,16 +555,12 @@ class MaskEstimator(Module):
     ):
         super().__init__()
         self.dim_inputs = dim_inputs
-        self.to_freqs = ModuleList([])
-        dim_hidden = dim * mlp_expansion_factor
-
-        for dim_in in dim_inputs:
-            self.to_freqs.append(
-                nn.Sequential(
-                    mlp(dim, dim_in * 2, dim_hidden=dim_hidden, depth=depth),
-                    nn.GLU(dim=-1),
-                )
-            )
+        self.to_freqs = _build_band_to_freq_mlps(
+            dim=dim,
+            dim_inputs=dim_inputs,
+            depth=depth,
+            mlp_expansion_factor=mlp_expansion_factor,
+        )
 
     def forward(self, x: Tensor) -> Tensor:
         x_unbound = x.unbind(dim=-2)
@@ -514,6 +572,142 @@ class MaskEstimator(Module):
             outs.append(freq_out)
 
         return torch.cat(outs, dim=-1)
+
+
+class AxialRefinerLargeV2MaskEstimator(Module):
+    def __init__(
+        self,
+        dim: int,
+        dim_inputs: tuple[int, ...],
+        mlp_depth: int,
+        mlp_expansion_factor: int,
+        axial_refiner_depth: int,
+        t_frames: int,
+        num_bands: int,
+        rotary_embed_dtype: torch.dtype | None,
+    ):
+        super().__init__()
+        self.dim_inputs = dim_inputs
+        self.to_freqs = _build_band_to_freq_mlps(
+            dim=dim,
+            dim_inputs=dim_inputs,
+            depth=mlp_depth,
+            mlp_expansion_factor=mlp_expansion_factor,
+        )
+
+        self.layers = ModuleList([])
+
+        heads = 8
+        dim_head = 64
+
+        time_rotary_embed = RotaryEmbedding(
+            seq_len=t_frames,
+            dim_head=dim_head,
+            dtype=rotary_embed_dtype,
+        )
+        freq_rotary_embed = RotaryEmbedding(
+            seq_len=num_bands,
+            dim_head=dim_head,
+            dtype=rotary_embed_dtype,
+        )
+
+        for _ in range(axial_refiner_depth):
+            self.layers.append(
+                nn.ModuleList(
+                    [
+                        Transformer(
+                            dim=dim,
+                            depth=1,
+                            heads=heads,
+                            dim_head=dim_head,
+                            attn_dropout=0.0,
+                            ff_dropout=0.0,
+                            flash_attn=True,
+                            norm_output=False,
+                            rotary_embed=time_rotary_embed,
+                            sage_attention=False,
+                        ),
+                        Transformer(
+                            dim=dim,
+                            depth=1,
+                            heads=heads,
+                            dim_head=dim_head,
+                            attn_dropout=0.0,
+                            ff_dropout=0.0,
+                            flash_attn=True,
+                            norm_output=False,
+                            rotary_embed=freq_rotary_embed,
+                            sage_attention=False,
+                        ),
+                    ]
+                )
+            )
+
+        self.norm = RMSNorm(dim)
+
+    def forward(self, x: Tensor) -> Tensor:
+        for transformer_block in self.layers:
+            block = cast(ModuleList, transformer_block)
+            time_transformer, freq_transformer = block
+
+            x = rearrange(x, "b t f d -> b f t d")
+            x, ps = pack([x], "* t d")
+
+            x = time_transformer(x)
+
+            (x,) = unpack(x, ps, "* t d")
+            x = rearrange(x, "b f t d -> b t f d")
+            x, ps = pack([x], "* f d")
+
+            x = freq_transformer(x)
+
+            (x,) = unpack(x, ps, "* f d")
+
+        x = self.norm(x)
+
+        x_unbound = x.unbind(dim=-2)
+
+        outs = []
+
+        for band_features, mlp_net in zip(x_unbound, self.to_freqs):
+            freq_out = mlp_net(band_features)
+            outs.append(freq_out)
+
+        return torch.cat(outs, dim=-1)
+
+
+class HyperAceResidualMaskEstimator(Module):
+    def __init__(
+        self,
+        dim: int,
+        dim_inputs: tuple[int, ...],
+        depth: int,
+        mlp_expansion_factor: int,
+        segm: nn.Module,
+    ):
+        super().__init__()
+        self.dim_inputs = dim_inputs
+        self.to_freqs = _build_band_to_freq_mlps(
+            dim=dim,
+            dim_inputs=dim_inputs,
+            depth=depth,
+            mlp_expansion_factor=mlp_expansion_factor,
+        )
+
+        self.segm = segm
+
+    def forward(self, x: Tensor) -> Tensor:
+        y = rearrange(x, "b t f c -> b c t f")
+        y = self.segm(y)
+        y = rearrange(y, "b c t f -> b t (f c)")
+
+        x_unbound = x.unbind(dim=-2)
+        outs = []
+        for band_features, mlp_net in zip(x_unbound, self.to_freqs):
+            freq_out = mlp_net(band_features)
+            outs.append(freq_out)
+
+        return cast(Tensor, torch.cat(outs, dim=-1) + y)
 
 
 class BSRoformer(Module):
@@ -636,15 +830,66 @@ class BSRoformer(Module):
 
         self.mask_estimators = nn.ModuleList([])
 
-        for _ in range(len(cfg.output_stem_names)):
-            mask_estimator = MaskEstimator(
-                dim=cfg.dim,
-                dim_inputs=freqs_per_bands_with_complex,
-                depth=cfg.mask_estimator_depth,
-                mlp_expansion_factor=cfg.mlp_expansion_factor,
-            )
+        def build_hyperace(config: MaskEstimatorConfig) -> nn.Module:
+            if isinstance(config, HyperAceResidualV1MaskEstimatorConfig):
+                from .utils.hyperace import SegmModelHyperAceV1
 
-            self.mask_estimators.append(mask_estimator)
+                return SegmModelHyperAceV1(
+                    in_bands=len(freqs_per_bands_with_complex),
+                    in_dim=cfg.dim,
+                    out_bins=sum(freqs_per_bands_with_complex) // 4,
+                    num_hyperedges=config.num_hyperedges or 16,
+                    num_heads=config.num_heads,
+                )
+            if isinstance(config, HyperAceResidualV2MaskEstimatorConfig):
+                from .utils.hyperace import SegmModelHyperAceV2
+
+                return SegmModelHyperAceV2(
+                    in_bands=len(freqs_per_bands_with_complex),
+                    in_dim=cfg.dim,
+                    out_bins=sum(freqs_per_bands_with_complex) // 4,
+                    num_hyperedges=config.num_hyperedges or 32,
+                    num_heads=config.num_heads,
+                )
+            raise TypeError(f"mask estimator is not hyperace-based: {config}")
+
+        def build_mask_estimator(config: MaskEstimatorConfig) -> nn.Module:
+            if isinstance(config, BaselineMaskEstimatorConfig):
+                return MaskEstimator(
+                    dim=cfg.dim,
+                    dim_inputs=freqs_per_bands_with_complex,
+                    depth=cfg.mask_estimator_depth,
+                    mlp_expansion_factor=cfg.mlp_expansion_factor,
+                )
+
+            if isinstance(config, AxialRefinerLargeV2MaskEstimatorConfig):
+                return AxialRefinerLargeV2MaskEstimator(
+                    dim=cfg.dim,
+                    dim_inputs=freqs_per_bands_with_complex,
+                    mlp_depth=cfg.mask_estimator_depth,
+                    mlp_expansion_factor=cfg.mlp_expansion_factor,
+                    axial_refiner_depth=config.axial_refiner_depth,
+                    t_frames=t_frames,
+                    num_bands=num_bands,
+                    rotary_embed_dtype=cfg.rotary_embed_dtype,
+                )
+
+            if isinstance(
+                config,
+                HyperAceResidualV1MaskEstimatorConfig | HyperAceResidualV2MaskEstimatorConfig,
+            ):
+                return HyperAceResidualMaskEstimator(
+                    dim=cfg.dim,
+                    dim_inputs=freqs_per_bands_with_complex,
+                    depth=cfg.mask_estimator_depth,
+                    mlp_expansion_factor=cfg.mlp_expansion_factor,
+                    segm=build_hyperace(config),
+                )
+
+            raise TypeError(f"unknown mask_estimator config: {config}")
+
+        for _ in range(len(cfg.output_stem_names)):
+            self.mask_estimators.append(build_mask_estimator(cfg.mask_estimator))
 
         self.debug = cfg.debug
 
@@ -657,7 +902,7 @@ class BSRoformer(Module):
         device = stft_repr.device
         if self.is_mel:
             batch_arange = torch.arange(batch, device=device)[..., None]
-            x = stft_repr[batch_arange, self.freq_indices]
+            x = stft_repr[batch_arange, cast(Tensor, self.freq_indices)]
             x = rearrange(x, "b f t c -> b t (f c)")
         else:
             x = rearrange(stft_repr, "b f t c -> b t (f c)")
@@ -668,9 +913,9 @@ class BSRoformer(Module):
             )
 
         if self.use_torch_checkpoint:
-            x = checkpoint(self.band_split, x, use_reentrant=False)
+            x = cast(Tensor, checkpoint(self.band_split, x, use_reentrant=False))
         else:
-            x = self.band_split(x)
+            x = cast(Tensor, self.band_split(x))
 
         if self.debug and (torch.isnan(x).any() or torch.isinf(x).any()):
             raise RuntimeError(
@@ -679,10 +924,11 @@ class BSRoformer(Module):
 
         # axial / hierarchical attention
 
-        store = [None] * len(self.layers)
+        store: list[Tensor | None] = [None] * len(self.layers)
         for i, transformer_block in enumerate(self.layers):
-            if len(transformer_block) == 3:
-                linear_transformer, time_transformer, freq_transformer = transformer_block
+            block = cast(ModuleList, transformer_block)
+            if len(block) == 3:
+                linear_transformer, time_transformer, freq_transformer = block
 
                 x, ft_ps = pack([x], "b * d")
                 if self.use_torch_checkpoint:
@@ -691,11 +937,13 @@ class BSRoformer(Module):
                     x = linear_transformer(x)
                 (x,) = unpack(x, ft_ps, "b * d")
             else:
-                time_transformer, freq_transformer = transformer_block
+                time_transformer, freq_transformer = block
 
             if self.skip_connection:
                 for j in range(i):
-                    x = x + store[j]
+                    if store[j] is not None:
+                        assert x is not None
+                        x = x + cast(Tensor, store[j])
 
             x = rearrange(x, "b t f d -> b f t d")
             x, ps = pack([x], "* t d")
@@ -723,7 +971,10 @@ class BSRoformer(Module):
 
         if self.use_torch_checkpoint:
             mask = torch.stack(
-                [checkpoint(fn, x, use_reentrant=False) for fn in self.mask_estimators],
+                [
+                    cast(Tensor, checkpoint(fn, x, use_reentrant=False))
+                    for fn in self.mask_estimators
+                ],
                 dim=1,
             )
         else:
@@ -741,7 +992,7 @@ class BSRoformer(Module):
         masks_per_band_complex = masks_per_band_complex.type(stft_repr_complex.dtype)
 
         scatter_indices = repeat(
-            self.freq_indices,
+            cast(Tensor, self.freq_indices),
             "f -> b n f t",
             b=batch,
             n=self.num_stems,
@@ -753,7 +1004,7 @@ class BSRoformer(Module):
             2, scatter_indices, masks_per_band_complex
         )
 
-        denom = repeat(self.num_bands_per_freq, "f -> (f r) 1", r=self.audio_channels)
+        denom = cast(Tensor, repeat(self.num_bands_per_freq, "f -> (f r) 1", r=self.audio_channels))
         masks_averaged = masks_summed / denom.clamp(min=1e-8)
 
         return torch.view_as_real(masks_averaged).to(stft_repr.dtype)

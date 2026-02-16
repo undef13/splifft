@@ -2,7 +2,7 @@
     "identifier": "bs_roformer-unwa-resurrection_vocals",
     "model_type": "bs_roformer",
     "model": {
-        "chunk_size": 749259,
+        "chunk_size": 785920,
         "output_stem_names": [
             "vocals"
         ],
@@ -10,25 +10,12 @@
         "depth": 12,
         "band_config": {
             "kind": "fixed"
-        },
-        "stft_hop_length": 441
+        }
     },
-    "stft": {
-        "hop_length": 441
-    },
+    "stft": {},
     "inference": {
         "batch_size": 4,
         "use_autocast_dtype": "float16"
     },
-    "normalization": {
-        "enabled": true
-    },
-    "waveform_chunking": {},
-    "derived_stems": {
-        "instrumental": {
-            "operation": "subtract",
-            "stem_name": "mixture",
-            "by_stem_name": "vocals"
-        }
-    }
+    "waveform_chunking": {}
 }

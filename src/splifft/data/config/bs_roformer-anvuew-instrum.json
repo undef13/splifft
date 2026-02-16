@@ -1,10 +1,10 @@
 {
-    "identifier": "bs_roformer-anvuew-karaoke",
+    "identifier": "bs_roformer-anvuew-instrum",
     "model_type": "bs_roformer",
     "model": {
-        "chunk_size": 640000,
+        "chunk_size": 960000,
         "output_stem_names": [
-            "lead_vocals"
+            "vocals"
         ],
         "dim": 256,
         "depth": 12,
@@ -15,7 +15,8 @@
     },
     "stft": {},
     "inference": {
-        "batch_size": 1
+        "batch_size": 4,
+        "use_autocast_dtype": "float16"
     },
     "waveform_chunking": {
         "overlap_ratio": 0.75

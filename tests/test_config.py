@@ -173,7 +173,7 @@ def test_config_stem(derived_stems: dict[str, Any], expected_success: bool) -> N
 def config_roformer() -> Config:
     from splifft import DIR_CONFIG_DEFAULT
 
-    config = Config.from_file(DIR_CONFIG_DEFAULT / "bs_roformer.json")
+    config = Config.from_file(DIR_CONFIG_DEFAULT / "bs_roformer-fruit-sw.json")
     assert isinstance(config.model, LazyModelConfig)
     return config
 

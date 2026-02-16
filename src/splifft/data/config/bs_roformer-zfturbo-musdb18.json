@@ -17,7 +17,6 @@
         "stft_hop_length": 441,
         "attn_dropout": 0.1,
         "ff_dropout": 0.1,
-        "ff_mult": 4,
         "mlp_expansion_factor": 2
     },
     "stft": {

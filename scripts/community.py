@@ -30,6 +30,7 @@ from typing import (
     TypeAlias,
     TypedDict,
     cast,
+    get_args,
 )
 from urllib.parse import quote, unquote, urlparse
 
@@ -38,6 +39,7 @@ import typer
 from rich.logging import RichHandler
 
 from splifft import DIR_DATA, PATH_REGISTRY_DEFAULT
+from splifft import types as t
 from splifft.config import Registry
 
 if TYPE_CHECKING:
@@ -580,6 +582,40 @@ def fix_registry(
     """Checks that URLs in the guide and jarredou's colab are present in the registry,
     caches file metadata from Hugging Face and GitHub releases and ensures dates are correct."""
     registry = Registry.from_file(registry_path)
+    config_dir = DIR_DATA / "config"
+    instrument_names = set(get_args(t.Instrument))
+    stem_names_by_config_id: dict[str, list[t.Instrument] | None] = {}
+
+    def stem_names_from_config_id(config_id: str | None) -> list[t.Instrument] | None:
+        if config_id is None:
+            return None
+        if config_id in stem_names_by_config_id:
+            return stem_names_by_config_id[config_id]
+        config_path = (config_dir / config_id).with_suffix(".json")
+        if not config_path.exists():
+            logger.warning(f"config for {config_id=} not found at {config_path}")
+            stem_names_by_config_id[config_id] = None
+            return None
+        try:
+            from splifft.config import Config
+
+            config = Config.from_file(config_path)
+        except Exception as e:
+            logger.warning(f"failed to read config for {config_id=}: {e}")
+            stem_names_by_config_id[config_id] = None
+            return None
+        stems_raw = list(config.model.output_stem_names)
+        invalid = [stem for stem in stems_raw if stem not in instrument_names]
+        if invalid:
+            logger.warning(
+                f"skipping output sync for {config_id=}: "
+                f"config has stem names not supported by registry Instrument type: {invalid}"
+            )
+            stem_names_by_config_id[config_id] = None
+            return None
+        stems = cast(list[t.Instrument], stems_raw)
+        stem_names_by_config_id[config_id] = stems
+        return stems
 
     registry_urls = list(_urls_from_registry(registry))
     guide_urls = list(_urls_from_guide(guide_path))
@@ -620,6 +656,9 @@ def fix_registry(
         gh_release_assets[release] = _build_github_asset_lookup(release_data)
 
     for model_id, model in registry.items():
+        if (config_stem_names := stem_names_from_config_id(model.config_id)) is not None:
+            model.output = list(config_stem_names)
+
         created_at = None
         model_size = None
         digest = None
@@ -984,7 +1023,12 @@ def _build_bs_roformer_model_params_lazy(
             "output_stem_names": _resolve_output_stems(training, missing=missing),
             "dim": model.get("dim", missing),
             "depth": model.get("depth", missing),
-            "stft_hop_length": model.get("stft_hop_length") or audio.get("hop_length", missing),
+            # in msst `audio.hop_length` is used by the dataset class to chunk audio during training
+            # `model.stft_hop_length` is used by bs_roformer (and its variants) to compute the STFT
+            # inside the forward pass
+            # but we observe that in many configs people dont change audio.hop_length and
+            # thus falling back to it will produce incorrect configs.
+            "stft_hop_length": model.get("stft_hop_length", missing),
             "stereo": model.get("stereo", missing),
             "time_transformer_depth": model.get("time_transformer_depth", missing),
             "freq_transformer_depth": model.get("freq_transformer_depth", missing),
@@ -994,9 +1038,11 @@ def _build_bs_roformer_model_params_lazy(
             "heads": model.get("heads", missing),
             "attn_dropout": model.get("attn_dropout", missing),
             "ff_dropout": model.get("ff_dropout", missing),
-            "ff_mult": model.get(
-                "mlp_expansion_factor", missing
-            ),  # TODO: verify this is the case, there are many bugs with this
+            # in msst, standard bs roformer and mel_band_roformer hardcodes feed foward multiplier to 4
+            # via default argument, ignoring the mlp_expansion_factor for the transformer layers
+            # but they do use mlp_expansion factor for mask estimator mlp.
+            # confusingly ff_mult IS used in some experimental/conformer models
+            "ff_mult": model.get("ff_mult", missing),
             "flash_attn": model.get("flash_attn", missing),
             "norm_output": is_mel,  # NOTE: msst inherits the bug introduced from lucidrain's impl
             "mask_estimator_depth": splifft_mask_depth,
@@ -1070,12 +1116,15 @@ def convert_msst_config_bs_roformer(
         missing=MISSING,
     )
 
+    # NOTE: we don't trust anything inside audio
+    # unless we're doing training
+    nfft = model.get("stft_n_fft") or model.get("nfft", MISSING)
     stft_params = remove_missing(
         {
-            "n_fft": model.get("nfft") or audio.get("n_fft", MISSING),
-            "hop_length": model.get("hop_size") or audio.get("hop_length", MISSING),
-            "win_length": model.get("win_size") or model.get("stft_n_fft", MISSING),
-            "normalized": model.get("normalized", MISSING),
+            "n_fft": nfft,
+            "hop_length": model.get("stft_hop_length") or model.get("hop_size", MISSING),
+            "win_length": model.get("stft_win_length") or model.get("win_size") or nfft,
+            "normalized": model.get("stft_normalized") or model.get("normalized", MISSING),
         }
     )
 
@@ -1118,12 +1167,17 @@ def convert_msst_config_mdx23c(
         missing=MISSING,
     )
 
+    # but for mdx23c (e.g zfturbo vocals) the model.stft_... is missing and
+    # we must get it from audio... wtf
+    nfft = model.get("stft_n_fft") or model.get("nfft") or audio.get("nfft", MISSING)
     stft_params = remove_missing(
         {
-            "n_fft": audio.get("n_fft", MISSING),
-            "hop_length": audio.get("hop_length", MISSING),
-            "win_length": audio.get("n_fft", MISSING),  # hann window length is n_fft
-            "normalized": False,
+            "n_fft": nfft,
+            "hop_length": model.get("stft_hop_length")
+            or model.get("hop_size", MISSING)
+            or audio.get("hop_length", MISSING),
+            "win_length": model.get("stft_win_length") or model.get("win_size") or nfft,
+            "normalized": model.get("stft_normalized") or model.get("normalized", MISSING),
         }
     )
 

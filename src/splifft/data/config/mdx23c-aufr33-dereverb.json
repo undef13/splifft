@@ -19,11 +19,7 @@
         "growth": 128,
         "bottleneck_factor": 4
     },
-    "stft": {
-        "n_fft": 8192,
-        "hop_length": 1024,
-        "win_length": 8192
-    },
+    "stft": {},
     "inference": {
         "batch_size": 2
     },

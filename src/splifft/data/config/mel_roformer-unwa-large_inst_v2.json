@@ -1,23 +1,25 @@
 {
-    "identifier": "bs_roformer-unwa-hyperace_v2_vocals",
+    "identifier": "mel_roformer-unwa-large_inst_v2",
     "model_type": "bs_roformer",
     "model": {
         "chunk_size": 960000,
         "output_stem_names": [
-            "vocals"
+            "instrumental"
         ],
         "dim": 256,
         "depth": 12,
         "band_config": {
             "kind": "fixed"
         },
-        "use_torch_checkpoint": true
+        "use_torch_checkpoint": true,
+        "mask_estimator": {
+            "kind": "axial_refiner_large_v2"
+        }
     },
-    "stft": {
-        "hop_length": 441
-    },
+    "stft": {},
     "inference": {
-        "batch_size": 2
+        "batch_size": 4,
+        "use_autocast_dtype": "float16"
     },
     "waveform_chunking": {
         "overlap_ratio": 0.75

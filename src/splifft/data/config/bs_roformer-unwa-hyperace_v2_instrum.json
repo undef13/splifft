@@ -1,21 +1,25 @@
 {
-    "identifier": "bs_roformer-anvuew-karaoke",
+    "identifier": "bs_roformer-unwa-hyperace_v2_instrum",
     "model_type": "bs_roformer",
     "model": {
-        "chunk_size": 640000,
+        "chunk_size": 960000,
         "output_stem_names": [
-            "lead_vocals"
+            "instrumental"
         ],
         "dim": 256,
         "depth": 12,
         "band_config": {
             "kind": "fixed"
         },
-        "use_torch_checkpoint": true
+        "use_torch_checkpoint": true,
+        "mask_estimator": {
+            "kind": "hyperace_residual_v2"
+        }
     },
     "stft": {},
     "inference": {
-        "batch_size": 1
+        "batch_size": 2,
+        "use_autocast_dtype": "float16"
     },
     "waveform_chunking": {
         "overlap_ratio": 0.75

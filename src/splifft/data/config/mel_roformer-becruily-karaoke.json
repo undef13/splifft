@@ -4,8 +4,8 @@
     "model": {
         "chunk_size": 485100,
         "output_stem_names": [
-            "vocals",
-            "instrumental"
+            "lead_vocals",
+            "back_vocals"
         ],
         "dim": 384,
         "depth": 6,

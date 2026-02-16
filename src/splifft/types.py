@@ -264,10 +264,11 @@ Instrument: TypeAlias = Literal[
     "dry", "reverb",
     "clean", "crowd",
     "denoised", "noise",
-    "vocals_dry", "dereverb",
-    "center",
-    "similarity", "difference", # see: https://github.com/ZFTurbo/Music-Source-Separation-Training/issues/1#issuecomment-2417116936
+    "similarity", "difference", "center", # see: https://github.com/ZFTurbo/Music-Source-Separation-Training/issues/1#issuecomment-2417116936
     "keyboards", "synthesizer", "percussion", "orchestral",
+    # weird
+    "no_drum-bass",  # viperx 1053
+    "karaoke",
     # event detection
     "beat", "downbeat"
 ]
