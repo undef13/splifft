@@ -1,10 +1,16 @@
+import json
 from typing import Any
 
 import pytest
 from pydantic import ValidationError
 
 from splifft import types as t
-from splifft.config import Config, LazyModelConfig
+from splifft.config import (
+    Config,
+    ConfigOverrideError,
+    LazyModelConfig,
+    apply_config_overrides,
+)
 from splifft.models import ModelParamsLike
 
 #
@@ -111,6 +117,106 @@ def test_config_required() -> None:
     }
     config = Config.model_validate(config_data)
     assert isinstance(config, Config)
+
+
+def test_apply_config_overrides_success() -> None:
+    config_data: dict[str, Any] = {
+        "identifier": "test_override",
+        "model_type": "roformer",
+        "model": MODEL_CONFIG_BASE,
+        "inference": {
+            "batch_size": 8,
+            "force_weights_dtype": None,
+            "use_autocast_dtype": None,
+            "compile_model": None,
+        },
+    }
+
+    apply_config_overrides(
+        config_data,
+        [
+            "inference.batch_size=2",
+            'inference.use_autocast_dtype="float16"',
+        ],
+    )
+
+    config = Config.model_validate(config_data)
+    assert config.inference.batch_size == 2
+    assert str(config.inference.use_autocast_dtype) == "torch.float16"
+
+
+def test_apply_config_overrides_missing_optional_field_in_existing_section() -> None:
+    config_data: dict[str, Any] = {
+        "identifier": "test_override_missing_optional",
+        "model_type": "roformer",
+        "model": MODEL_CONFIG_BASE,
+        "inference": {
+            "batch_size": 8,
+            "force_weights_dtype": None,
+            "compile_model": None,
+        },
+    }
+
+    apply_config_overrides(config_data, ['inference.use_autocast_dtype="float16"'])
+    config = Config.model_validate(config_data)
+    assert str(config.inference.use_autocast_dtype) == "torch.float16"
+
+
+def test_apply_config_overrides_creates_nested_structure_and_defers_validation() -> None:
+    config_data: dict[str, Any] = {
+        "identifier": "test_override_nested",
+        "model_type": "roformer",
+        "model": MODEL_CONFIG_BASE,
+    }
+
+    apply_config_overrides(config_data, ['a.b.c.d="e"'])
+    assert config_data["a"]["b"]["c"]["d"] == "e"
+
+    with pytest.raises(ValidationError):
+        Config.model_validate(config_data)
+
+
+def test_apply_config_overrides_rejects_invalid_format() -> None:
+    config_data: dict[str, Any] = {
+        "identifier": "test_override_format_err",
+        "model_type": "roformer",
+        "model": MODEL_CONFIG_BASE,
+    }
+
+    with pytest.raises(ConfigOverrideError, match="expected `<dot.path>=<value>`"):
+        apply_config_overrides(config_data, ["inference.batch_size"])
+
+
+def test_config_from_file_with_overrides(tmp_path: Any) -> None:
+    config_data: dict[str, Any] = {
+        "identifier": "test_from_file_override",
+        "model_type": "roformer",
+        "model": MODEL_CONFIG_BASE,
+        "inference": {
+            "batch_size": 8,
+            "force_weights_dtype": None,
+            "compile_model": None,
+        },
+    }
+    path = tmp_path / "config.json"
+    path.write_text(json.dumps(config_data), encoding="utf-8")
+
+    config = Config.from_file(path, overrides=['inference.use_autocast_dtype="float16"'])
+    assert config.inference.batch_size == 8
+    assert str(config.inference.use_autocast_dtype) == "torch.float16"
+
+
+def test_config_from_file_with_invalid_override_format(tmp_path: Any) -> None:
+    config_data: dict[str, Any] = {
+        "identifier": "test_from_file_override_err",
+        "model_type": "roformer",
+        "model": MODEL_CONFIG_BASE,
+    }
+    path = tmp_path / "config.json"
+    path.write_text(json.dumps(config_data), encoding="utf-8")
+
+    with pytest.raises(ConfigOverrideError, match="expected `<dot.path>=<value>`"):
+        Config.from_file(path, overrides=["inference.batch_size"])
 
 
 #

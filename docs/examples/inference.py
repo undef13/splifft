@@ -4,7 +4,7 @@ PATH_MIXTURE = "data/audio/input/3BFTio5296w.flac"
 from splifft.inference import InferenceEngine
 
 engine = InferenceEngine.from_pretrained(
-    config_path="/path/to/config.json",
+    config="/path/to/config.json",
     checkpoint_path="/path/to/checkpoint.pt",
 )
 result = engine.run(PATH_MIXTURE)

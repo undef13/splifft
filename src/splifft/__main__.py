@@ -110,6 +110,16 @@ def run(
             help="Directory to save the separated audio stems.",
         ),
     ] = None,
+    override_config: Annotated[
+        list[str],
+        typer.Option(
+            "--override-config",
+            help=(
+                "Override config fields before validation. "
+                "Repeatable; format: `<dot.path>=<value>`, e.g. `inference.batch_size=2`."
+            ),
+        ),
+    ] = [],
     cpu: Annotated[
         bool, typer.Option("--cpu", help="Force processing on CPU, even if CUDA is available.")
     ] = False,
@@ -127,7 +137,8 @@ def run(
     )
     from torchcodec.encoders import AudioEncoder
 
-    from .inference import ChunkProcessed, InferenceEngine, InferenceOutput
+    from .config import ConfigOverrideError
+    from .inference import ChunkProcessed, InferenceEngine, InferenceOutput, Stage
 
     use_cuda = not cpu and torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
@@ -137,17 +148,29 @@ def run(
         if config_path is not None or checkpoint_path is not None:
             raise typer.BadParameter("cannot specify --config or --checkpoint when using --model")
         logger.info(f"loading model '{model_id}' from registry")
-        engine = InferenceEngine.from_registry(model_id, device=device)
+        try:
+            engine = InferenceEngine.from_registry(
+                model_id,
+                overrides=override_config,
+                device=device,
+                registry_path=PATH_REGISTRY_DEFAULT,
+            )
+        except ConfigOverrideError as e:
+            raise typer.BadParameter(str(e), param_hint="--override-config") from e
     elif config_path is not None and checkpoint_path is not None:
         logger.info(f"loading inference engine with custom {config_path=} and {checkpoint_path=}")
-        engine = InferenceEngine.from_pretrained(
-            config_path=config_path,
-            checkpoint_path=checkpoint_path,
-            device=device,
-            module_name=module_name,
-            class_name=class_name,
-            package_name=package_name,
-        )
+        try:
+            engine = InferenceEngine.from_pretrained(
+                config=config_path,
+                checkpoint_path=checkpoint_path,
+                overrides=override_config,
+                device=device,
+                module_name=module_name,
+                class_name=class_name,
+                package_name=package_name,
+            )
+        except ConfigOverrideError as e:
+            raise typer.BadParameter(str(e), param_hint="--override-config") from e
     else:
         raise typer.BadParameter("must specify either --model OR both --config and --checkpoint")
 
@@ -194,9 +217,9 @@ def run(
                 elif isinstance(event, InferenceOutput):
                     output_results = event.outputs
                     sample_rate = event.sample_rate
-                elif hasattr(event, "stage"):
+                elif isinstance(event, Stage.Started):
                     stage_description = f"{event.stage.replace('_', ' ')}..."
-                    if hasattr(event, "total_batches") and event.total_batches is not None:
+                    if event.total_batches is not None:
                         progress.update(
                             task_id,
                             description=stage_description,

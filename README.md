@@ -123,7 +123,7 @@ There are three steps. You do not need to have Python installed.
     splifft run data/audio/input/3BFTio5296w.flac --model bs_roformer-fruit-sw
     ```
 
-    Alternatively, you can manage files manually. Go into a new directory and place the [model checkpoint](https://github.com/undef13/splifft/releases/download/v0.0.1/roformer-fp16.pt) and [configuration](https://raw.githubusercontent.com/undef13/splifft/refs/heads/main/data/config/bs_roformer.json) inside it. Assuming your current directory has this structure (doesn't have to be exactly this):
+    Alternatively, for custom models, you can manage files manually. Go into a new directory and place the [model checkpoint](https://github.com/undef13/splifft/releases/download/v0.0.1/roformer-fp16.pt) and [configuration](https://raw.githubusercontent.com/undef13/splifft/refs/heads/main/data/config/bs_roformer.json) inside it. Assuming your current directory has this structure (doesn't have to be exactly this):
 
     <details>
       <summary>Minimal reproduction: with example audio from YouTube</summary>
@@ -185,6 +185,26 @@ There are three steps. You do not need to have Python installed.
     ```sh
     uv tool upgrade splifft --force-reinstall
     ```
+
+## FAQ
+
+> I get the error `OutOfMemoryError: CUDA out of memory. Tried to allocate...`
+
+The default `inference.batch_size` values in the registry are tuned for running **one job at a time** on a ~12GB GPU.
+
+If you hit CUDA out-of-memory, temporarily override the config:
+
+```sh
+# reduce memory pressure by lowering batch size
+splifft run --override-config "inference.batch_size=2"
+
+# if still OOM, also enable mixed precision
+splifft run \
+    --override-config "inference.batch_size=2" \
+    --override-config 'inference.use_autocast_dtype="float16"'
+```
+
+Prefer editing the model `config.json` directly for persistent changes. You can get the config location at `splifft info {model_id}`. `--override-config` is best used for temporary experimentation.
 
 ### Library
 

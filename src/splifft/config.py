@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import copy
+import json
 from typing import (
     Annotated,
     Any,
@@ -266,6 +268,84 @@ class OutputConfig(BaseModel):
     model_config = _PYDANTIC_STRICT_CONFIG
 
 
+class ConfigOverrideError(ValueError):
+    """Raised when one or more override *strings* are syntactically invalid."""
+
+
+def parse_override_value(value: str) -> Any:
+    """Parse a CLI override value into a Python object.
+
+    Shell-like quoting/escaping semantics beyond what your shell and JSON provide
+    are not supported.
+    """
+    try:
+        return json.loads(value)
+    except json.JSONDecodeError:
+        return value
+
+
+def parse_config_override(override: str) -> tuple[tuple[str, ...], Any]:
+    """Parse one override entry of the form `<dot.path>=<value>`. Empty value
+    is interpreted as an empty string.
+
+    Missing `=` or empty path segments like `a..b=1` or `.a=1` are considered syntax errors
+    """
+    key, sep, raw_value = override.partition("=")
+    if sep == "":
+        raise ConfigOverrideError(
+            "invalid override `"
+            f"{override}`: expected `<dot.path>=<value>`, e.g. `inference.batch_size=2`"
+        )
+
+    path = tuple(part.strip() for part in key.split("."))
+    if not path or any(part == "" for part in path):
+        raise ConfigOverrideError(
+            f"invalid override path `{key}` in `{override}`: empty path segment is not allowed"
+        )
+
+    return path, parse_override_value(raw_value)
+
+
+def set_path_value(mut_config_dict: dict[str, Any], path: tuple[str, ...], value: Any) -> None:
+    """Set a nested value in-place, creating missing dictionaries as needed."""
+    current = mut_config_dict
+    for key in path[:-1]:
+        next_node = current.get(key)
+        if not isinstance(next_node, dict):
+            next_node = {}
+            current[key] = next_node
+        current = next_node
+
+    current[path[-1]] = value
+
+
+ConfigOverrides: TypeAlias = Sequence[str]
+"""`<dot.path>=<value>` form, e.g. `inference.batch_size=2`
+
+- automatic creation of missing nested dictionaries while applying overrides
+- validation is performed *after* all overrides are applied
+
+Not supported: list index addressing in paths (e.g. `a.0.b=1` is treated as string keys)
+"""
+
+
+def apply_config_overrides(
+    mut_config_dict: dict[str, Any], overrides: ConfigOverrides
+) -> dict[str, Any]:
+    for override in overrides:
+        path, value = parse_config_override(override)
+        set_path_value(mut_config_dict, path, value)
+    return mut_config_dict
+
+
+def load_config_dict(path: t.StrPath | t.BytesPath) -> dict[str, Any]:
+    with open(path, "rb") as f:
+        data = json.load(f)
+    if not isinstance(data, dict):
+        raise TypeError(f"expected top-level JSON object in config file, got {type(data).__name__}")
+    return data
+
+
 # if we were to implement a model registry (which we shouldn't need)
 # heavily consider https://peps.python.org/pep-0487/#subclass-registration
 
@@ -373,15 +453,48 @@ class Config(BaseModel):
         return archetype
 
     @classmethod
-    def from_file(cls, path: t.StrPath | t.BytesPath) -> Config:
-        with open(path, "rb") as f:
-            return Config.model_validate_json(f.read())
+    def from_file(
+        cls,
+        path: t.StrPath | t.BytesPath,
+        *,
+        overrides: ConfigOverrides = (),
+    ) -> Config:
+        """Load config JSON from disk, optionally applying CLI-style overrides."""
+        config_dict = load_config_dict(path)
+        if overrides:
+            apply_config_overrides(config_dict, overrides)
+        return cls.model_validate(config_dict)
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,  # for .model
         strict=True,
         extra="forbid",
     )
+
+
+IntoConfig: TypeAlias = Config | dict[str, Any] | t.StrPath | t.BytesPath
+
+
+def into_config(config: IntoConfig, *, overrides: ConfigOverrides = ()) -> Config:
+    """Convert various config inputs into a validated [`Config`].
+
+    If `overrides` is non-empty, they are applied before validation.
+    Caller-owned objects are not mutated.
+    """
+    if isinstance(config, Config):
+        if not overrides:
+            return config
+        config_dict = config.model_dump(mode="python")
+        apply_config_overrides(config_dict, overrides)
+        return Config.model_validate(config_dict)
+
+    if isinstance(config, dict):
+        config_dict = copy.deepcopy(config)
+        if overrides:
+            apply_config_overrides(config_dict, overrides)
+        return Config.model_validate(config_dict)
+
+    return Config.from_file(config, overrides=overrides)
 
 
 #

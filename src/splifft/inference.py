@@ -17,7 +17,7 @@ from . import types as t
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from .config import Config, StemName
+    from .config import Config, ConfigOverrides, IntoConfig, StemName
     from .models import ModelParamsLike
 
 
@@ -116,14 +116,15 @@ class InferenceEngine:
     def from_pretrained(
         cls,
         *,
-        config_path: t.StrPath | t.BytesPath,
+        config: IntoConfig,
         checkpoint_path: t.StrPath,
+        overrides: ConfigOverrides = (),
         device: torch.device | str | None = None,
         module_name: str | None = None,
         class_name: str | None = None,
         package_name: str | None = None,
     ) -> InferenceEngine:
-        from .config import Config
+        from .config import into_config
         from .io import load_weights
         from .models import ModelMetadata
 
@@ -131,7 +132,7 @@ class InferenceEngine:
             device = "cuda" if torch.cuda.is_available() else "cpu"
         runtime_device = torch.device(device)
 
-        config = Config.from_file(config_path)
+        config = into_config(config, overrides=overrides)
         resolved_module, resolved_class = resolve_model_entrypoint(
             config.model_type, module_name, class_name
         )
@@ -166,6 +167,7 @@ class InferenceEngine:
         model_id: str,
         *,
         device: torch.device | str | None = None,
+        overrides: ConfigOverrides = (),
         fetch_if_missing: bool = True,
         force_overwrite_config: bool = False,
         force_overwrite_model: bool = False,
@@ -182,8 +184,9 @@ class InferenceEngine:
             registry=Registry.from_file(registry_path),
         )
         return cls.from_pretrained(
-            config_path=model_paths.path_config,
+            config=model_paths.path_config,
             checkpoint_path=model_paths.path_checkpoint,
+            overrides=overrides,
             device=device,
         )
 
