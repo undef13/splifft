@@ -24,7 +24,8 @@
         "conv_dtype": "float16"
     },
     "inference": {
-        "batch_size": 4
+        "batch_size": 8,
+        "force_weights_dtype": "float16"
     },
     "normalization": {
         "enabled": true
