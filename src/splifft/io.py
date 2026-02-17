@@ -64,6 +64,8 @@ def load_weights(
     device: torch.device | str,
     *,
     strict: bool = False,
+    state_dict_transform: Callable[[dict[str, torch.Tensor]], dict[str, torch.Tensor]]
+    | None = None,
 ) -> ModelT:
     """Load the weights from a checkpoint into the given model.
 
@@ -82,6 +84,9 @@ def load_weights(
         else:
             new_state_dict[key] = value
     state_dict = new_state_dict
+
+    if state_dict_transform is not None:
+        state_dict = state_dict_transform(state_dict)
 
     # TODO: DataParallel and `module.` prefix
     model.load_state_dict(state_dict, strict=strict)
@@ -103,7 +108,7 @@ def get_model_cache_dir(model_id: str) -> Path:
         _raise_missing_feature(extra="config", feature="caching")
     from platformdirs import user_cache_dir
 
-    cache_dir = Path(user_cache_dir("splifft")) / model_id
+    cache_dir = Path(user_cache_dir("splifft", appauthor=False)) / model_id
     return cache_dir
 
 

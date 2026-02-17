@@ -34,12 +34,5 @@
     "masking": {
         "add_sub_dtype": "float32",
         "out_dtype": "float16"
-    },
-    "derived_stems": {
-        "instrum": {
-            "operation": "subtract",
-            "stem_name": "mixture",
-            "by_stem_name": "vocals"
-        }
     }
 }

@@ -112,6 +112,7 @@ class LazyModelConfig(BaseModel):
 
     chunk_size: t.ChunkSize
     output_stem_names: NonEmptyUnique[Tuple[ModelOutputStemName]]
+    # NOTE: inference.requested_stems takes precedence if it is configured.
 
     def to_concrete(
         self,
@@ -197,6 +198,17 @@ class TorchCompileConfig(BaseModel):
 
 class InferenceConfig(BaseModel):
     batch_size: t.BatchSize = 8
+    requested_stems: NonEmptyUnique[Tuple[ModelOutputStemName]] | None = None
+    """Optional subset of model output stems to compute and emit.
+
+    When provided, inference only computes/keeps these model outputs in the
+    configured order. Depending on the model architecture, this may allow
+    specific stem-specific weights to be not loaded at all.
+
+    For example, the BS Roformer architecture has a shared backbone followed by
+    multiple MLP heads, so setting this parameter can effectively patch out the
+    unrelated heads.
+    """
     force_weights_dtype: TorchDtype | None = None
     use_autocast_dtype: TorchDtype | None = None
     compile_model: TorchCompileConfig | None = None
@@ -374,7 +386,9 @@ class Config(BaseModel):
     def check_derived_stems(self) -> Self:
         if self.derived_stems is None:
             return self
-        existing_stem_names: list[StemName] = list(self.model.stem_names)
+
+        base_output_stems = tuple(self.inference.requested_stems or self.model.output_stem_names)
+        existing_stem_names: list[StemName] = [*_INPUT_STEM_NAMES, *base_output_stems]
         for derived_stem_name, definition in self.derived_stems.items():
             if derived_stem_name in existing_stem_names:
                 raise PydanticCustomError(
@@ -402,6 +416,26 @@ class Config(BaseModel):
                         },
                     )
             existing_stem_names.append(derived_stem_name)
+        return self
+
+    @model_validator(mode="after")
+    def check_requested_stems(self) -> Self:
+        if self.inference.requested_stems is None:
+            return self
+
+        model_stem_names = set(self.model.output_stem_names)
+        for stem_name in self.inference.requested_stems:
+            if stem_name in model_stem_names:
+                continue
+            raise PydanticCustomError(
+                "invalid_target_stem",
+                "Target stem `{stem_name}` is not found in model output stems: `{model_stem_names}`",
+                {
+                    "stem_name": stem_name,
+                    "model_stem_names": self.model.output_stem_names,
+                },
+            )
+
         return self
 
     def validate_inference_contract(self, model_params: ModelParamsLike) -> t.InferenceArchetype:

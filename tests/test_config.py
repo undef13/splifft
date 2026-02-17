@@ -219,6 +219,49 @@ def test_config_from_file_with_invalid_override_format(tmp_path: Any) -> None:
         Config.from_file(path, overrides=["inference.batch_size"])
 
 
+def test_config_derived_stems_rejects_unknown_stem() -> None:
+    config_data: dict[str, Any] = {
+        "identifier": "test_derived_stems_invalid",
+        "model_type": "roformer",
+        "model": MODEL_CONFIG_BASE,
+        "inference": {
+            "batch_size": 8,
+            "derived_stems": ["vocals", "not_a_stem"],
+            "force_weights_dtype": None,
+            "use_autocast_dtype": None,
+            "compile_model": None,
+        },
+    }
+
+    with pytest.raises(ValidationError, match="invalid_target_stem"):
+        Config.model_validate(config_data)
+
+
+def test_config_derived_stems_rejects_missing_dependency_in_requested_subset() -> None:
+    config_data: dict[str, Any] = {
+        "identifier": "test_derived_requested_subset_missing",
+        "model_type": "roformer",
+        "model": MODEL_CONFIG_BASE,
+        "inference": {
+            "batch_size": 8,
+            "requested_stems": ["bass"],  # we cleared out vocals here so subsequent shouldn't work
+            "force_weights_dtype": None,
+            "use_autocast_dtype": None,
+            "compile_model": None,
+        },
+        "derived_stems": {
+            "instrum": {
+                "operation": "subtract",
+                "stem_name": "mixture",
+                "by_stem_name": "vocals",
+            }
+        },
+    }
+
+    with pytest.raises(ValidationError, match="invalid_derived_stem"):
+        Config.model_validate(config_data)
+
+
 #
 # stems
 #

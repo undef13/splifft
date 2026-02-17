@@ -142,11 +142,33 @@ class InferenceEngine:
             model_type=config.model_type,
             package=package_name,
         )
+
         model_params = config.model.to_concrete(metadata.params)
+        full_output_stems = tuple(config.model.output_stem_names)
+        requested_stems = tuple(config.inference.requested_stems or full_output_stems)
+
+        state_dict_transform = None
+        if requested_stems != full_output_stems:
+            # optional model-level optimization contract: models can choose to
+            # provide a stem-selection plan that may mutate params and checkpoint
+            # loading. if absent, we keep full model outputs and discard
+            # unrelated stems immediately after each forward pass.
+            from .models import SupportsStemSelection
+
+            if isinstance(metadata.model, SupportsStemSelection):
+                plan = metadata.model.__splifft_stem_selection_plan__(model_params, requested_stems)
+                model_params = plan.model_params
+                state_dict_transform = plan.state_dict_transform
+
         model = metadata.model(model_params)
         if (forced_dtype := config.inference.force_weights_dtype) is not None:
             model = model.to(_resolve_runtime_dtype(forced_dtype, device=runtime_device))
-        model = load_weights(model, checkpoint_path, device=runtime_device).eval()
+        model = load_weights(
+            model,
+            checkpoint_path,
+            device=runtime_device,
+            state_dict_transform=state_dict_transform,
+        ).eval()
 
         # maybe we should to an explicit try_compile() method while emitting events but eh.
         # we shuold probably log since it can take extremely long
@@ -189,6 +211,23 @@ class InferenceEngine:
             overrides=overrides,
             device=device,
         )
+
+    def _requested_output_stem_names(self) -> tuple[t.ModelOutputStemName, ...]:
+        return (
+            self.config.model.output_stem_names
+            if self.config.inference.requested_stems is None
+            else self.config.inference.requested_stems
+        )
+
+    def _requested_output_stem_indices(self) -> tuple[int, ...]:
+        requested = self._requested_output_stem_names()
+        runtime_output_stem_names = self.model_params_concrete.output_stem_names
+        missing = tuple(name for name in requested if name not in runtime_output_stem_names)
+        if missing:
+            raise ValueError(
+                f"requested stems {missing!r} are unavailable in runtime output stems {runtime_output_stem_names!r}"
+            )
+        return tuple(runtime_output_stem_names.index(stem_name) for stem_name in requested)
 
     def _autocast_context(self, device: torch.device) -> contextlib.AbstractContextManager[object]:
         if (is_autocast_available := getattr(torch.amp, "is_autocast_available", None)) is None:
@@ -255,19 +294,32 @@ class InferenceEngine:
                 yield s.completed
 
         if archetype == "event_detection":
-            logits = yield from self._stream_event_detection(mixture_data)
+            requested_stems = self._requested_output_stem_names()
+            requested_stem_indices = self._requested_output_stem_indices()
+            logits = yield from self._stream_event_detection(
+                mixture_data,
+                output_indices=requested_stem_indices,
+                num_stems=len(requested_stems),
+            )
             outputs: dict[str, t.LogitsTensor] = {}
-            for i, name in enumerate(self.config.model.output_stem_names):
+            for i, name in enumerate(requested_stems):
                 outputs[name] = t.LogitsTensor(logits[i])
             yield InferenceOutput(outputs=outputs, sample_rate=audio_tensor.sample_rate)
             return
 
-        separated_data = yield from self._stream_waveform_pipeline(mixture_data, archetype)
+        requested_stems = self._requested_output_stem_names()
+        requested_stem_indices = self._requested_output_stem_indices()
+        separated_data = yield from self._stream_waveform_pipeline(
+            mixture_data,
+            archetype,
+            output_indices=requested_stem_indices,
+            num_stems=len(requested_stems),
+        )
 
         denormalized_stems: dict[t.ModelOutputStemName, t.RawAudioTensor] = {}
         with Stage("collect_outputs") as s:
             yield s.started
-            for i, stem_name in enumerate(self.config.model.output_stem_names):
+            for i, stem_name in enumerate(requested_stems):
                 stem_data = separated_data[i, ...]
                 if mixture_stats is not None:
                     stem_data = core.denormalize_audio(
@@ -294,6 +346,9 @@ class InferenceEngine:
         self,
         mixture_data: t.RawAudioTensor | t.NormalizedAudioTensor,
         archetype: Literal["standard_end_to_end", "frequency_masking"],
+        *,
+        output_indices: tuple[int, ...],
+        num_stems: int,
     ) -> Generator[InferenceEvent, None, t.RawSeparatedTensor]:
         if (chunk_cfg := self.config.waveform_chunking) is None:
             raise ValueError("missing `waveform_chunking`")
@@ -336,13 +391,26 @@ class InferenceEngine:
         )
 
         separated_chunks: list[t.SeparatedChunkedTensor] = []
+        selection_index_tensor: torch.Tensor | None = None
         with (
             torch.inference_mode(),
             self._autocast_context(device),
         ):
             batch_idx = 0
             for chunk_batch in chunk_generator:
-                separated_batch = model_w2w(chunk_batch)
+                separated_batch: torch.Tensor = model_w2w(chunk_batch)
+                if (
+                    selection_index_tensor is None
+                    and len(output_indices) != separated_batch.shape[1]
+                ):
+                    selection_index_tensor = torch.tensor(
+                        output_indices, device=separated_batch.device
+                    )
+                if selection_index_tensor is not None:
+                    separated_batch = separated_batch.index_select(
+                        dim=1,
+                        index=selection_index_tensor,
+                    )
                 separated_chunks.append(cast(t.SeparatedChunkedTensor, separated_batch))
                 batch_idx += 1
                 yield ChunkProcessed(batch_index=batch_idx, total_batches=total_batches)
@@ -351,7 +419,7 @@ class InferenceEngine:
             yield s.started
             stitched = core.stitch_chunks(
                 processed_chunks=separated_chunks,
-                num_stems=len(self.config.model.output_stem_names),
+                num_stems=num_stems,
                 chunk_size=chunk_size,
                 hop_size=hop_size,
                 target_num_samples=original_num_samples,
@@ -363,6 +431,9 @@ class InferenceEngine:
     def _stream_event_detection(
         self,
         mixture_data: t.RawAudioTensor | t.NormalizedAudioTensor,
+        *,
+        output_indices: tuple[int, ...],
+        num_stems: int,
     ) -> Generator[InferenceEvent, None, t.LogitsTensor]:
         if (log_mel_cfg := self.config.log_mel) is None:
             raise ValueError("missing `log_mel`")
@@ -411,6 +482,7 @@ class InferenceEngine:
 
         total_batches = math.ceil(len(spect_chunks) / self.config.inference.batch_size)
         logits_chunks: list[t.LogitsTensor] = []
+        selection_index_tensor: torch.Tensor | None = None
         with (
             torch.inference_mode(),
             self._autocast_context(device),
@@ -420,8 +492,12 @@ class InferenceEngine:
                 batch_chunks = spect_chunks[i : i + self.config.inference.batch_size]
                 batch_tensors = [torch.as_tensor(chunk) for chunk in batch_chunks]
                 model_input = torch.stack(batch_tensors, dim=0).transpose(1, 2)
-                logits = self.model(model_input)
+                logits: torch.Tensor = self.model(model_input)
                 logits = logits.permute(1, 0, 2)
+                if selection_index_tensor is None and len(output_indices) != logits.shape[1]:
+                    selection_index_tensor = torch.tensor(output_indices, device=logits.device)
+                if selection_index_tensor is not None:
+                    logits = logits.index_select(dim=1, index=selection_index_tensor)
                 logits_chunks.append(t.LogitsTensor(logits))
                 batch_idx += 1
                 yield ChunkProcessed(batch_index=batch_idx, total_batches=total_batches)
@@ -433,7 +509,7 @@ class InferenceEngine:
                 starts=starts,
                 full_size=full_spect.shape[0],
                 chunk_size=frame_chunk_size,
-                num_stems=len(self.config.model.output_stem_names),
+                num_stems=num_stems,
                 trim_margin=chunk_cfg.trim_margin,
                 overlap_mode=chunk_cfg.overlap_mode,
             )

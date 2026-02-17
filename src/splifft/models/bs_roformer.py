@@ -26,7 +26,8 @@ To avoid dependency bloat, we do not:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+import re
+from dataclasses import dataclass, field, replace
 from functools import partial
 from typing import TYPE_CHECKING, Literal, cast
 
@@ -38,7 +39,7 @@ from torch import Tensor, nn
 from torch.nn import Module, ModuleList
 from torch.utils.checkpoint import checkpoint
 
-from . import ModelParamsLike
+from . import ModelParamsLike, StemSelectionPlan, SupportsStemSelection
 
 if TYPE_CHECKING:
     from .. import types as t
@@ -710,7 +711,7 @@ class HyperAceResidualMaskEstimator(Module):
         return cast(Tensor, torch.cat(outs, dim=-1) + y)
 
 
-class BSRoformer(Module):
+class BSRoformer(Module, SupportsStemSelection[BSRoformerParams]):
     def __init__(self, cfg: BSRoformerParams):
         super().__init__()
         self.stereo = cfg.stereo
@@ -1008,3 +1009,44 @@ class BSRoformer(Module):
         masks_averaged = masks_summed / denom.clamp(min=1e-8)
 
         return torch.view_as_real(masks_averaged).to(stft_repr.dtype)
+
+    @classmethod
+    def __splifft_stem_selection_plan__(
+        cls,
+        model_params: BSRoformerParams,
+        output_stem_names: tuple[t.ModelOutputStemName, ...],
+    ) -> StemSelectionPlan[BSRoformerParams]:
+        """Remap `mask_estimators.{i}.*` state-dict entries to a compact
+        `[0..k)` index range so unrelated per-stem heads are never instantiated
+        or loaded.
+        """
+
+        full_stem_names = tuple(model_params.output_stem_names)
+        requested_stem_names = tuple(output_stem_names)
+        if requested_stem_names == full_stem_names:
+            return StemSelectionPlan(
+                model_params=model_params,
+                output_stem_names=full_stem_names,
+            )
+
+        selected_stem_indices = tuple(full_stem_names.index(name) for name in requested_stem_names)
+        key_re = re.compile(r"^mask_estimators\.(\d+)\.(.+)$")
+        index_remap = {src: dst for dst, src in enumerate(selected_stem_indices)}
+
+        def state_dict_transform(state_dict: dict[str, Tensor]) -> dict[str, Tensor]:
+            remapped: dict[str, Tensor] = {}
+            for key, value in state_dict.items():
+                if (m := key_re.match(key)) is None:
+                    remapped[key] = value
+                    continue
+                if (src_idx := int(m.group(1))) not in index_remap:
+                    continue
+                suffix = m.group(2)
+                remapped[f"mask_estimators.{index_remap[src_idx]}.{suffix}"] = value
+            return remapped
+
+        return StemSelectionPlan(
+            model_params=replace(model_params, output_stem_names=requested_stem_names),
+            output_stem_names=requested_stem_names,
+            state_dict_transform=state_dict_transform,
+        )

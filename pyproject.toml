@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "splifft"
-version = "0.0.4"
+version = "0.0.5"
 description = "Lightweight utilities for music source separation."
 authors = [{ name = "undef13" }]
 requires-python = ">=3.10"

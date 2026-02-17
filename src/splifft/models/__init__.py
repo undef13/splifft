@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import importlib
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Generic, Protocol, TypeVar, runtime_checkable
+from typing import TYPE_CHECKING, Callable, Generic, Protocol, TypeAlias, TypeVar, runtime_checkable
 
-from torch import nn
+from torch import Tensor, nn
 
 if TYPE_CHECKING:
     from .. import types as t
@@ -31,6 +31,35 @@ class ModelParamsLike(Protocol):
 
 ModelT = TypeVar("ModelT", bound=nn.Module)
 ModelParamsLikeT = TypeVar("ModelParamsLikeT", bound=ModelParamsLike)
+
+StateDictTransform: TypeAlias = Callable[[dict[str, Tensor]], dict[str, Tensor]]
+
+
+@dataclass(frozen=True)
+class StemSelectionPlan(Generic[ModelParamsLikeT]):
+    """Optional model-specific plan for selective stem inference.
+
+    Models can provide this plan to:
+    - instantiate a stem-reduced parameter set, and/or
+    - return a checkpoint state-dict transformer that drops/remaps unrelated heads.
+
+    `output_stem_names` defines the output ordering produced by the instantiated
+    model after applying the plan.
+    """
+
+    model_params: ModelParamsLikeT
+    output_stem_names: tuple[t.ModelOutputStemName, ...]
+    state_dict_transform: StateDictTransform | None = None
+
+
+@runtime_checkable
+class SupportsStemSelection(Protocol[ModelParamsLikeT]):
+    @classmethod
+    def __splifft_stem_selection_plan__(
+        cls,
+        model_params: ModelParamsLikeT,
+        output_stem_names: tuple[t.ModelOutputStemName, ...],
+    ) -> StemSelectionPlan[ModelParamsLikeT]: ...
 
 
 @dataclass

@@ -5,7 +5,7 @@ See: <https://arxiv.org/pdf/2306.09382>
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Literal
 
 import torch
@@ -13,7 +13,7 @@ import torch.nn as nn
 from einops import rearrange
 from torch import Tensor
 
-from . import ModelParamsLike
+from . import ModelParamsLike, StemSelectionPlan, SupportsStemSelection
 from .utils.tfc_tdf import TfcTdf
 
 if TYPE_CHECKING:
@@ -151,7 +151,7 @@ class Downscale(nn.Module):
         return self.conv(x)  # type: ignore
 
 
-class MDX23C(nn.Module):
+class MDX23C(nn.Module, SupportsStemSelection[MDX23CParams]):
     def __init__(self, cfg: MDX23CParams):
         super().__init__()
         self.cfg = cfg
@@ -272,3 +272,45 @@ class MDX23C(nn.Module):
         )
 
         return x_in
+
+    @classmethod
+    def __splifft_stem_selection_plan__(
+        cls,
+        model_params: MDX23CParams,
+        output_stem_names: tuple[t.ModelOutputStemName, ...],
+    ) -> StemSelectionPlan[MDX23CParams]:
+        """Slice `final_conv.2` per requested stem."""
+
+        full_stem_names = tuple(model_params.output_stem_names)
+        requested_stem_names = tuple(output_stem_names)
+        if requested_stem_names == full_stem_names:
+            return StemSelectionPlan(
+                model_params=model_params,
+                output_stem_names=full_stem_names,
+            )
+
+        selected_stem_indices = tuple(full_stem_names.index(name) for name in requested_stem_names)
+        dim_c = model_params.num_subbands * (2 if model_params.stereo else 1) * 2
+
+        def state_dict_transform(state_dict: dict[str, Tensor]) -> dict[str, Tensor]:
+            key = "final_conv.2.weight"
+            if key not in state_dict:
+                return state_dict
+
+            transformed = dict(state_dict)
+            weight = transformed[key]
+            grouped = weight.reshape(len(full_stem_names), dim_c, *weight.shape[1:])
+            selected = grouped.index_select(
+                0,
+                torch.tensor(selected_stem_indices, device=weight.device),
+            )
+            transformed[key] = selected.reshape(
+                len(requested_stem_names) * dim_c, *weight.shape[1:]
+            )
+            return transformed
+
+        return StemSelectionPlan(
+            model_params=replace(model_params, output_stem_names=requested_stem_names),
+            output_stem_names=requested_stem_names,
+            state_dict_transform=state_dict_transform,
+        )

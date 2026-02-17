@@ -188,6 +188,22 @@ There are three steps. You do not need to have Python installed.
 
 ## FAQ
 
+> How do I find the config and override parts of it (e.g. change the batch size)?
+
+`splifft` by default stores a list of configs under [`src/splifft/data/config/*.json` of the project directory](https://github.com/undef13/splifft/tree/main/src/splifft/data/config).
+
+When installed as a `uv tool` (or pip library), they will be located under the your site packages directory.
+
+When you do `splifft pull {model_id}`, the configuration will be **copied from your site packages to a default cache directory**:
+
+- Linux: `~/.cache/splifft/{model_id}/config.json`
+- MacOS: `~/Library/Caches/splifft/{model_id}/config.json`
+- Windows: `%LOCALAPPDATA%\splifft\Cache\{model_id}\config.json`
+
+Modify these files to permanently change the configuration.
+
+To setup your IDE intellisense, you can find the JSON Schema under [`src/splifft/data/config.schema.json`](https://github.com/undef13/splifft/blob/main/src/splifft/data/config.schema.json).
+
 > I get the error `OutOfMemoryError: CUDA out of memory. Tried to allocate...`
 
 The default `inference.batch_size` values in the registry are tuned for running **one job at a time** on a ~12GB GPU.
@@ -204,7 +220,20 @@ splifft run \
     --override-config 'inference.use_autocast_dtype="float16"'
 ```
 
-Prefer editing the model `config.json` directly for persistent changes. You can get the config location at `splifft info {model_id}`. `--override-config` is best used for temporary experimentation.
+Remember to commit your changes in your `config.json`.
+
+> The model outputs multiple stems, how do I only output a particular subset of it?
+
+```sh
+splifft run \
+    --model mdx23c-aufr33-drumsep_6stem \
+    --override-config 'inference.requested_stems=["kick", "snare"]' 
+splifft run \
+    --model bs_roformer-fruit-sw \
+    --override-config 'inference.requested_stems=["piano"]' 
+```
+
+Again, remember to commit your changes to your `config.json`.
 
 ### Library
 

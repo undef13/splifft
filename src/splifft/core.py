@@ -555,8 +555,9 @@ def derive_stems(
 
     for derived_name, rule in stem_rules.items():
         if rule.operation == "subtract":
-            minuend = stems.get(rule.stem_name, mixture_input)
-            subtrahend = stems.get(rule.by_stem_name, mixture_input)
+            # pydantic should have already validated that the stem names exist so safe to index directly
+            minuend = stems[rule.stem_name]
+            subtrahend = stems[rule.by_stem_name]
             stems[derived_name] = t.RawAudioTensor(minuend - subtrahend)
         elif rule.operation == "sum":
             to_sum = tuple(stems[s] for s in rule.stem_names)
