@@ -1,0 +1,8 @@
+.md-content__inner svg {
+    width: 100%;
+}
+
+/* for the light mode criminals */
+[data-md-color-scheme="default"] .md-content__inner svg {
+    filter: invert(100%) hue-rotate(180deg);
+}
