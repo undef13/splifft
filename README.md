@@ -39,8 +39,8 @@ Key principles:
 - [x] port additional SOTA models from MSST (e.g. Mel Roformer, SCNet)
     - [x] directly support popular models (e.g. by [@unwa](https://huggingface.co/pcunwa), [gabox](https://huggingface.co/GaboxR67), by [@becruily](https://huggingface.co/becruily))
 - [x] model registry with simple file-based cache
+- [x] proper profiling (MFU, memory...)
 - [ ] evals: SDR, bleedless, fullness, etc.
-- [ ] proper benchmarking (MFU, memory...)
 - [ ] datasets: MUSDB18-HQ, moises
 
 **Medium term**

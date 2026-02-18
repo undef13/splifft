@@ -211,6 +211,23 @@ class InferenceConfig(BaseModel):
     """
     force_weights_dtype: TorchDtype | None = None
     use_autocast_dtype: TorchDtype | None = None
+    model_device: str | None = None
+    """Device used for model forward execution.
+
+    If `None`, runtime auto-selects `cuda` when available, otherwise `cpu`.
+    """
+    io_device: str | None = None
+    """Device for audio IO and non-model tensor ops (chunking/stitching/output/normalization).
+
+    If `None`, runtime auto-selects `cuda` when available, otherwise `cpu`.
+
+    Note that switching `io_device` to CPU is expected to break bit-identical
+    parity vs `io_device="cuda"` even with identical weights/seeds.
+
+    - `core.normalize_audio` output/stat-mean (tiny CPU vs CUDA reduction drift)
+    - `core._get_window_fn` (tiny kernel-level float differences)
+    - `core.generate_chunks` and `core.stitch_chunks` may then differ bitwise
+    """
     compile_model: TorchCompileConfig | None = None
 
     model_config = _PYDANTIC_STRICT_CONFIG

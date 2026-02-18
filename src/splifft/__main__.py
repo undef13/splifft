@@ -120,9 +120,26 @@ def run(
             ),
         ),
     ] = [],
-    cpu: Annotated[
-        bool, typer.Option("--cpu", help="Force processing on CPU, even if CUDA is available.")
-    ] = False,
+    model_device: Annotated[
+        str | None,
+        typer.Option(
+            "--model-device",
+            help=(
+                "Device for model forward execution (e.g. `cuda`, `cuda:0`, `cpu`). "
+                "If omitted, auto-selects `cuda` when available else `cpu`."
+            ),
+        ),
+    ] = None,
+    io_device: Annotated[
+        str | None,
+        typer.Option(
+            "--io-device",
+            help=(
+                "Device for non-forward tensor work (decode/chunking/stitching/output). "
+                "If omitted, auto-selects `cuda` when available else `cpu`."
+            ),
+        ),
+    ] = None,
 ) -> None:
     """Run inference on an audio file to get its constituent stems or logits."""
     import numpy as np
@@ -140,10 +157,6 @@ def run(
     from .config import ConfigOverrideError
     from .inference import ChunkProcessed, InferenceEngine, InferenceOutput, Stage
 
-    use_cuda = not cpu and torch.cuda.is_available()
-    device = torch.device("cuda" if use_cuda else "cpu")
-    logger.info(f"using torch device: {device}")
-
     if model_id is not None:
         if config_path is not None or checkpoint_path is not None:
             raise typer.BadParameter("cannot specify --config or --checkpoint when using --model")
@@ -152,7 +165,8 @@ def run(
             engine = InferenceEngine.from_registry(
                 model_id,
                 overrides=override_config,
-                device=device,
+                model_device=model_device,
+                io_device=io_device,
                 registry_path=PATH_REGISTRY_DEFAULT,
             )
         except ConfigOverrideError as e:
@@ -164,7 +178,8 @@ def run(
                 config=config_path,
                 checkpoint_path=checkpoint_path,
                 overrides=override_config,
-                device=device,
+                model_device=model_device,
+                io_device=io_device,
                 module_name=module_name,
                 class_name=class_name,
                 package_name=package_name,
@@ -181,13 +196,11 @@ def run(
     )
     runtime_dtype = (
         torch.bfloat16
-        if device.type == "cpu" and requested_dtype == torch.float16
+        if engine.model_device.type == "cpu" and requested_dtype == torch.float16
         else requested_dtype
     )
     runtime_dtype_name = str(runtime_dtype).removeprefix("torch.")
-    progress_details = (
-        f"(bs={engine.config.inference.batch_size} • {device.type} • {runtime_dtype_name})"
-    )
+    progress_details = f"(bs={engine.config.inference.batch_size} • model={engine.model_device.type} • io={engine.io_device.type} • {runtime_dtype_name})"
 
     mixture_paths = mixture_path.glob("*") if mixture_path.is_dir() else [mixture_path]
     for mixture_path in mixture_paths:

@@ -219,21 +219,21 @@ def test_config_from_file_with_invalid_override_format(tmp_path: Any) -> None:
         Config.from_file(path, overrides=["inference.batch_size"])
 
 
-def test_config_derived_stems_rejects_unknown_stem() -> None:
+def test_config_requested_stems_rejects_unknown_stem() -> None:
     config_data: dict[str, Any] = {
-        "identifier": "test_derived_stems_invalid",
+        "identifier": "test_requested_stems_invalid",
         "model_type": "roformer",
         "model": MODEL_CONFIG_BASE,
         "inference": {
             "batch_size": 8,
-            "derived_stems": ["vocals", "not_a_stem"],
+            "requested_stems": ["vocals", "not_a_stem"],
             "force_weights_dtype": None,
             "use_autocast_dtype": None,
             "compile_model": None,
         },
     }
 
-    with pytest.raises(ValidationError, match="invalid_target_stem"):
+    with pytest.raises(ValidationError, match="Target stem `not_a_stem` is not found"):
         Config.model_validate(config_data)
 
 

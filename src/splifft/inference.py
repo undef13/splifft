@@ -44,6 +44,19 @@ def _resolve_runtime_dtype(
     return dtype
 
 
+def _default_device() -> torch.device:
+    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
+def _resolve_device(value: torch.device | str | None, *, field_name: str) -> torch.device:
+    if value is None:
+        return _default_device()
+    try:
+        return torch.device(value)
+    except Exception as e:
+        raise ValueError(f"invalid {field_name} value: {value!r}") from e
+
+
 def resolve_model_entrypoint(
     model_type: t.ModelType,
     module_name: str | None,
@@ -111,6 +124,9 @@ class InferenceEngine:
     config: Config
     model: nn.Module
     model_params_concrete: ModelParamsLike
+    model_device: torch.device
+    io_device: torch.device
+    model_input_dtype: torch.dtype | None
 
     @classmethod
     def from_pretrained(
@@ -119,7 +135,8 @@ class InferenceEngine:
         config: IntoConfig,
         checkpoint_path: t.StrPath,
         overrides: ConfigOverrides = (),
-        device: torch.device | str | None = None,
+        model_device: torch.device | str | None = None,
+        io_device: torch.device | str | None = None,
         module_name: str | None = None,
         class_name: str | None = None,
         package_name: str | None = None,
@@ -128,11 +145,16 @@ class InferenceEngine:
         from .io import load_weights
         from .models import ModelMetadata
 
-        if device is None:
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-        runtime_device = torch.device(device)
-
         config = into_config(config, overrides=overrides)
+
+        model_device_resolved = _resolve_device(
+            model_device or config.inference.model_device,
+            field_name="inference.model_device",
+        )
+        io_device_resolved = _resolve_device(
+            io_device or config.inference.io_device,
+            field_name="inference.io_device",
+        )
         resolved_module, resolved_class = resolve_model_entrypoint(
             config.model_type, module_name, class_name
         )
@@ -162,11 +184,11 @@ class InferenceEngine:
 
         model = metadata.model(model_params)
         if (forced_dtype := config.inference.force_weights_dtype) is not None:
-            model = model.to(_resolve_runtime_dtype(forced_dtype, device=runtime_device))
+            model = model.to(_resolve_runtime_dtype(forced_dtype, device=model_device_resolved))
         model = load_weights(
             model,
             checkpoint_path,
-            device=runtime_device,
+            device=model_device_resolved,
             state_dict_transform=state_dict_transform,
         ).eval()
 
@@ -181,14 +203,22 @@ class InferenceEngine:
             )
             model = cast(nn.Module, compiled_model)
 
-        return cls(config=config, model=model, model_params_concrete=model_params)
+        return cls(
+            config=config,
+            model=model,
+            model_params_concrete=model_params,
+            model_device=model_device_resolved,
+            io_device=io_device_resolved,
+            model_input_dtype=core.get_model_floating_dtype(model),
+        )
 
     @classmethod
     def from_registry(
         cls,
         model_id: str,
         *,
-        device: torch.device | str | None = None,
+        model_device: torch.device | str | None = None,
+        io_device: torch.device | str | None = None,
         overrides: ConfigOverrides = (),
         fetch_if_missing: bool = True,
         force_overwrite_config: bool = False,
@@ -209,7 +239,8 @@ class InferenceEngine:
             config=model_paths.path_config,
             checkpoint_path=model_paths.path_checkpoint,
             overrides=overrides,
-            device=device,
+            model_device=model_device,
+            io_device=io_device,
         )
 
     def _requested_output_stem_names(self) -> tuple[t.ModelOutputStemName, ...]:
@@ -258,12 +289,11 @@ class InferenceEngine:
         else:
             from .io import read_audio
 
-            device = next(self.model.parameters()).device
             return read_audio(
                 mixture,  # type: ignore[arg-type]
                 self.config.audio_io.target_sample_rate,
                 self.config.audio_io.force_channels,
-                device=device,
+                device=self.io_device,
             )
 
     def run(
@@ -282,13 +312,16 @@ class InferenceEngine:
         archetype = self.config.validate_inference_contract(self.model_params_concrete)
 
         audio_tensor = self.to_audio_tensor(mixture)
-        mixture_data: t.RawAudioTensor | t.NormalizedAudioTensor = audio_tensor.data
+        raw_mixture_data = t.RawAudioTensor(audio_tensor.data.to(self.io_device))
+        mixture_data: t.RawAudioTensor | t.NormalizedAudioTensor = raw_mixture_data
         mixture_stats: core.NormalizationStats | None = None
 
         if self.config.normalization.enabled:
             with Stage("normalize") as s:
                 yield s.started
-                normalized = core.normalize_audio(audio_tensor)
+                normalized = core.normalize_audio(
+                    core.Audio(data=raw_mixture_data, sample_rate=audio_tensor.sample_rate)
+                )
                 mixture_data = normalized.audio.data
                 mixture_stats = normalized.stats
                 yield s.completed
@@ -335,7 +368,7 @@ class InferenceEngine:
                 yield s.started
                 output_stems = core.derive_stems(
                     denormalized_stems,
-                    audio_tensor.data,
+                    raw_mixture_data,
                     derived_stems_cfg,
                 )
                 yield s.completed
@@ -358,10 +391,10 @@ class InferenceEngine:
             raise ValueError("waveform pipeline cannot run logits models")
 
         stft_cfg = self.config.stft if archetype == "frequency_masking" else None
-        device = mixture_data.device
+        io_device = mixture_data.device
         chunk_size = self.config.model.chunk_size
         hop_size = int(chunk_size * (1 - chunk_cfg.overlap_ratio))
-        window = core._get_window_fn(chunk_cfg.window_shape, chunk_size, device)
+        window = core._get_window_fn(chunk_cfg.window_shape, chunk_size, io_device)
 
         original_num_samples = mixture_data.shape[-1]
         padding = chunk_size - hop_size
@@ -388,13 +421,15 @@ class InferenceEngine:
             num_channels=mixture_data.shape[0],
             chunk_size=chunk_size,
             masking_cfg=self.config.masking,
+            io_device=self.io_device,
+            model_device=self.model_device,
         )
 
         separated_chunks: list[t.SeparatedChunkedTensor] = []
         selection_index_tensor: torch.Tensor | None = None
         with (
             torch.inference_mode(),
-            self._autocast_context(device),
+            self._autocast_context(self.model_device),
         ):
             batch_idx = 0
             for chunk_batch in chunk_generator:
@@ -440,7 +475,7 @@ class InferenceEngine:
         if (chunk_cfg := self.config.logmel_chunking) is None:
             raise ValueError("missing `logmel_chunking`")
 
-        device = mixture_data.device
+        io_device = mixture_data.device
         with Stage("log_mel") as s:
             yield s.started
             mel_preprocessor = core.LogMelSpect(
@@ -454,7 +489,7 @@ class InferenceEngine:
                 normalized=log_mel_cfg.normalized,
                 power=log_mel_cfg.power,
                 log_multiplier=log_mel_cfg.log_multiplier,
-            ).to(device)
+            ).to(io_device)
 
             mixture_mono = (
                 mixture_data.mean(dim=0, keepdim=True)
@@ -463,7 +498,7 @@ class InferenceEngine:
             )
             with (
                 torch.inference_mode(),
-                self._autocast_context(device),
+                self._autocast_context(self.model_device),
             ):
                 full_spect = mel_preprocessor(mixture_mono).squeeze(0).squeeze(0).transpose(0, 1)
             yield s.completed
@@ -485,14 +520,19 @@ class InferenceEngine:
         selection_index_tensor: torch.Tensor | None = None
         with (
             torch.inference_mode(),
-            self._autocast_context(device),
+            self._autocast_context(self.model_device),
         ):
             batch_idx = 0
             for i in range(0, len(spect_chunks), self.config.inference.batch_size):
                 batch_chunks = spect_chunks[i : i + self.config.inference.batch_size]
                 batch_tensors = [torch.as_tensor(chunk) for chunk in batch_chunks]
                 model_input = torch.stack(batch_tensors, dim=0).transpose(1, 2)
-                logits: torch.Tensor = self.model(model_input)
+                model_input = core.to_model_device(
+                    model_input,
+                    model_device=self.model_device,
+                    model_floating_dtype=self.model_input_dtype,
+                )
+                logits: torch.Tensor = self.model(model_input).to(io_device)
                 logits = logits.permute(1, 0, 2)
                 if selection_index_tensor is None and len(output_indices) != logits.shape[1]:
                     selection_index_tensor = torch.tensor(output_indices, device=logits.device)

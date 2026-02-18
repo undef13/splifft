@@ -12,6 +12,7 @@ from typing import (
     Iterator,
     TypeVar,
     assert_never,
+    cast,
 )
 
 import torch
@@ -315,6 +316,26 @@ def apply_mask(
     return t.SeparatedSpectrogramTensor(separated_spec)
 
 
+def get_model_floating_dtype(model: nn.Module) -> torch.dtype | None:
+    """Infer floating input dtype from the model's first floating parameter."""
+    first_param = next(model.parameters(), None)
+    if first_param is None:
+        return None
+    return first_param.dtype if first_param.is_floating_point() else None
+
+
+def to_model_device(
+    tensor: Tensor,
+    *,
+    model_device: torch.device,
+    model_floating_dtype: torch.dtype | None,
+) -> Tensor:
+    """Move tensor to model device while preserving model floating dtype compatibility."""
+    if model_floating_dtype is not None and tensor.is_floating_point():
+        return tensor.to(device=model_device, dtype=model_floating_dtype)
+    return tensor.to(device=model_device)
+
+
 #
 # handle different i/o types
 #
@@ -326,18 +347,38 @@ class ModelWaveformToWaveform(nn.Module):
         model: nn.Module,
         preprocess: t.PreprocessFn,
         postprocess: t.PostprocessFn,
+        *,
+        io_device: torch.device,
+        model_device: torch.device,
     ):
         super().__init__()
         self.model = model
         self.preprocess = preprocess
         self.postprocess = postprocess
+        self.io_device = io_device
+        self.model_device = model_device
+        self.model_input_dtype = get_model_floating_dtype(self.model)
 
     def forward(
         self, waveform_chunk: t.RawAudioTensor | t.NormalizedAudioTensor
     ) -> t.SeparatedChunkedTensor | t.LogitsTensor:
-        preprocessed_input = self.preprocess(waveform_chunk)
+        model_waveform_chunk = cast(
+            t.RawAudioTensor | t.NormalizedAudioTensor,
+            to_model_device(
+                waveform_chunk,
+                model_device=self.model_device,
+                model_floating_dtype=self.model_input_dtype,
+            ),
+        )
+        preprocessed_input = self.preprocess(model_waveform_chunk)
         model_output = self.model(*preprocessed_input)
-        return self.postprocess(model_output, *preprocessed_input)
+        postprocessed = self.postprocess(model_output, *preprocessed_input)
+        if isinstance(postprocessed, Tensor):
+            return cast(
+                t.SeparatedChunkedTensor | t.LogitsTensor,
+                postprocessed.to(self.io_device),
+            )
+        return postprocessed
 
 
 def create_w2w_model(
@@ -348,12 +389,10 @@ def create_w2w_model(
     num_channels: t.Channels,
     chunk_size: t.ChunkSize,
     masking_cfg: MaskingConfig,
+    *,
+    io_device: torch.device,
+    model_device: torch.device,
 ) -> ModelWaveformToWaveform:
-    try:
-        device = next(model.parameters()).device
-    except StopIteration:
-        device = torch.device("cpu")
-
     needs_stft = model_input_type == "spectrogram" or model_input_type == "waveform_and_spectrogram"
     needs_istft = model_output_type == "spectrogram_mask" or model_output_type == "spectrogram"
 
@@ -368,16 +407,16 @@ def create_w2w_model(
     if needs_stft:
         assert stft_cfg is not None
         conv_dtype = stft_cfg.conv_dtype
-        if device.type == "cpu" and conv_dtype == torch.float16:
+        if model_device.type == "cpu" and conv_dtype == torch.float16:
             conv_dtype = torch.float32
 
         stft_module = Stft(
             n_fft=stft_cfg.n_fft,
             hop_length=stft_cfg.hop_length,
             win_length=stft_cfg.win_length,
-            window_fn=lambda win_len: _get_window_fn(stft_cfg.window_shape, win_len, device),
+            window_fn=lambda win_len: _get_window_fn(stft_cfg.window_shape, win_len, model_device),
             conv_dtype=conv_dtype,
-        ).to(device)
+        ).to(model_device)
         if model_input_type == "spectrogram":
             preprocess = _create_stft_preprocessor(stft_module)
         elif model_input_type == "waveform_and_spectrogram":
@@ -391,12 +430,12 @@ def create_w2w_model(
             n_fft=stft_cfg.n_fft,
             hop_length=stft_cfg.hop_length,
             win_length=stft_cfg.win_length,
-            window_fn=lambda win_len: _get_window_fn(stft_cfg.window_shape, win_len, device),
-        ).to(device)
+            window_fn=lambda win_len: _get_window_fn(stft_cfg.window_shape, win_len, model_device),
+        ).to(model_device)
 
         add_sub_dtype = masking_cfg.add_sub_dtype
         out_dtype = masking_cfg.out_dtype
-        if device.type == "cpu":
+        if model_device.type == "cpu":
             if add_sub_dtype == torch.float16:
                 add_sub_dtype = torch.float32
             if out_dtype == torch.float16:
@@ -410,7 +449,13 @@ def create_w2w_model(
             out_dtype,
             model_output_type,
         )
-    return ModelWaveformToWaveform(model, preprocess, postprocess)
+    return ModelWaveformToWaveform(
+        model,
+        preprocess,
+        postprocess,
+        io_device=io_device,
+        model_device=model_device,
+    )
 
 
 def _create_stft_preprocessor(

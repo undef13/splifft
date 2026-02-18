@@ -1,6 +1,8 @@
 # ruff: noqa: E402
 from pathlib import Path
 
+import torch
+
 PATH_CONFIG = Path("data/config/bs_roformer.json")
 PATH_CKPT = Path("data/models/roformer-fp16.pt")
 PATH_MIXTURE = Path("data/audio/input/3BFTio5296w.flac")
@@ -36,6 +38,8 @@ engine = InferenceEngine(
     config=config,
     model=model,
     model_params_concrete=model_params,
+    model_device=next(model.parameters()).device,
+    io_device=torch.device("cpu"),
 )
 result = engine.run(mixture)
 

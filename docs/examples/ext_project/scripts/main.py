@@ -2,6 +2,8 @@
 # --8<-- [start:config]
 from pathlib import Path
 
+import torch
+
 from splifft.config import Config
 
 config = Config.from_file(Path("path/to/my_model_config.json"))
@@ -27,8 +29,10 @@ engine = InferenceEngine(
     config=config,
     model=model,
     model_params_concrete=my_model_params,
+    model_device=next(model.parameters()).device,
+    io_device=torch.device("cpu"),
 )
-stems = engine.run(mixture)
+result = engine.run(mixture)
 
-print(f"{list(stems.keys())=}")
+print(f"{list(result.outputs.keys())=}")
 # --8<-- [end:inference]
