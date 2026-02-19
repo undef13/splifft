@@ -68,7 +68,7 @@ Documentation on the config (amongst other details) can be found [here](https://
 
 There are three steps. You do not need to have Python installed.
 
-1. Install [`uv`](https://docs.astral.sh/uv/getting-started/installation/) if you haven't already. It is an awesome Python package and library manager with pip comptability.
+1. Install [`uv`](https://docs.astral.sh/uv/getting-started/installation/) if you haven't already. It is an awesome Python package and library manager with pip compatibility.
 
     ```sh
     # Linux / MacOS
