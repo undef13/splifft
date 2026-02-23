@@ -13,7 +13,9 @@
         },
         "use_torch_checkpoint": true
     },
-    "stft": {},
+    "transform": {
+        "kind": "stft"
+    },
     "inference": {
         "batch_size": 4,
         "use_autocast_dtype": "float16"

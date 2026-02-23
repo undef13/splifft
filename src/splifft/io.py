@@ -72,10 +72,17 @@ def load_weights(
     Handles standard PyTorch checkpoints and PyTorch Lightning checkpoints (stripping `model.` prefix).
     """
 
-    state_dict = torch.load(checkpoint_file, map_location=device, weights_only=True)
+    loaded_obj: object = torch.load(checkpoint_file, map_location=device, weights_only=True)
+    if isinstance(loaded_obj, dict) and "state_dict" in loaded_obj:
+        loaded_obj = loaded_obj["state_dict"]
+    if not isinstance(loaded_obj, dict):
+        raise TypeError(f"expected checkpoint dict, got {type(loaded_obj).__name__}")
 
-    if "state_dict" in state_dict:
-        state_dict = state_dict["state_dict"]
+    state_dict: dict[str, torch.Tensor] = {}
+    for key, value in loaded_obj.items():
+        if not isinstance(value, torch.Tensor):
+            continue
+        state_dict[key] = value
 
     new_state_dict = {}
     for key, value in state_dict.items():

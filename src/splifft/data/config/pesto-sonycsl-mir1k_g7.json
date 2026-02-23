@@ -1,0 +1,67 @@
+{
+    "identifier": "pesto-sonycsl-mir1k_g7",
+    "model_type": "pesto",
+    "model": {
+        "chunk_size": 441000,
+        "output_stem_names": [
+            "pitch",
+            "confidence",
+            "volume",
+            "activations"
+        ],
+        "reduction": "alwa",
+        "convert_to_freq": true,
+        "crop_freq_bins_bottom": 16,
+        "crop_freq_bins_top": 16,
+        "n_chan_input": 1,
+        "n_chan_layers": [
+            40,
+            30,
+            30,
+            10,
+            3
+        ],
+        "n_prefilt_layers": 3,
+        "prefilt_kernel_size": 39,
+        "residual": true,
+        "n_bins_in": 219,
+        "output_dim": 384,
+        "activation_fn": "leaky",
+        "a_lrelu": 0.3,
+        "p_dropout": 0.2,
+        "bins_per_semitone": 3
+    },
+    "audio_io": {
+        "target_sample_rate": 44100,
+        "force_channels": 1
+    },
+    "transform": {
+        "kind": "cqt",
+        "hop_size_ms": 10.0,
+        "harmonics": [
+            1
+        ],
+        "fmin": 27.5,
+        "fmax": null,
+        "bins_per_semitone": 3,
+        "n_bins": 251,
+        "center_bins": true,
+        "gamma": 7.0,
+        "center": true,
+        "log_epsilon": 1e-8
+    },
+    "inference": {
+        "batch_size": 16
+    },
+    "normalization": {
+        "enabled": false
+    },
+    "sequence_chunking": {
+        "trim_margin": 0,
+        "overlap_mode": "keep_last",
+        "avoid_short_end": false
+    },
+    "output": {
+        "file_format": "npy"
+    }
+}

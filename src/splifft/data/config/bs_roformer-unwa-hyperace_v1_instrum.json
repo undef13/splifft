@@ -16,7 +16,9 @@
             "kind": "hyperace_residual_v1"
         }
     },
-    "stft": {},
+    "transform": {
+        "kind": "stft"
+    },
     "inference": {
         "batch_size": 2,
         "use_autocast_dtype": "float16"

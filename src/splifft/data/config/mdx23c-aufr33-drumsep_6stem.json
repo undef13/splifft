@@ -23,7 +23,9 @@
         "growth": 128,
         "bottleneck_factor": 4
     },
-    "stft": {},
+    "transform": {
+        "kind": "stft"
+    },
     "inference": {
         "batch_size": 8
     },

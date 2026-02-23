@@ -152,6 +152,8 @@ class LazyModelConfig(BaseModel):
 class StftConfig(BaseModel):
     """configuration for the short-time fourier transform."""
 
+    kind: Literal["stft"]
+
     n_fft: t.FftSize = 2048
     hop_length: t.HopSize = 512
     win_length: t.FftSize = 2048
@@ -166,6 +168,8 @@ class StftConfig(BaseModel):
 class LogMelConfig(BaseModel):
     """Configuration for Log-Mel Spectrogram."""
 
+    kind: Literal["mel"]
+
     n_fft: t.FftSize
     hop_length: t.HopSize
     n_mels: t.Gt0[int]
@@ -178,6 +182,34 @@ class LogMelConfig(BaseModel):
     log_multiplier: float = 1000.0
 
     model_config = _PYDANTIC_STRICT_CONFIG
+
+
+class CqtConfig(BaseModel):
+    """Configuration for harmonic CQT feature extraction.
+
+    This intentionally matches PESTO's HCQT preprocessor defaults so we can
+    share checkpoints without adding SciPy or nnAudio.
+    """
+
+    kind: Literal["cqt"]
+    hop_size_ms: float = 10.0
+    harmonics: NonEmptyUnique[Tuple[t.Gt0[int]]] = (1,)
+    fmin: float = 27.5
+    fmax: float | None = None
+    bins_per_semitone: t.Gt0[int] = 3
+    n_bins: t.Gt0[int] = 251
+    center_bins: bool = True
+    gamma: float = 7.0
+    center: bool = True
+    log_epsilon: float = 1e-8
+
+    model_config = _PYDANTIC_STRICT_CONFIG
+
+
+FeatureExtractionConfig: TypeAlias = Annotated[
+    Union[StftConfig, LogMelConfig, CqtConfig],
+    Discriminator("kind"),
+]
 
 
 class AudioIOConfig(BaseModel):
@@ -248,7 +280,7 @@ class WaveformChunkingConfig(BaseModel):
     model_config = _PYDANTIC_STRICT_CONFIG
 
 
-class LogMelChunkingConfig(BaseModel):
+class SequenceChunkingConfig(BaseModel):
     trim_margin: t.TrimMargin = 0
     overlap_mode: t.OverlapMode = "keep_first"
     avoid_short_end: bool = True
@@ -384,21 +416,18 @@ class Config(BaseModel):
     """Unique identifier for this configuration"""
     model_type: t.ModelType
     model: LazyModelConfig
-    stft: StftConfig | None = None
-    log_mel: LogMelConfig | None = None
+    transform: FeatureExtractionConfig | None = None
     audio_io: AudioIOConfig = Field(default_factory=AudioIOConfig)
     inference: InferenceConfig = Field(default_factory=InferenceConfig)
     normalization: NormalizationConfig = Field(default_factory=NormalizationConfig)
     waveform_chunking: WaveformChunkingConfig | None = None
-    logmel_chunking: LogMelChunkingConfig | None = None
+    sequence_chunking: SequenceChunkingConfig | None = None
     masking: MaskingConfig = Field(default_factory=MaskingConfig)
     derived_stems: DerivedStemsConfig | None = None
     output: OutputConfig = Field(default_factory=OutputConfig)
     experimental: dict[str, Any] | None = None
     """Any extra experimental configurations outside of the `splifft` core."""
 
-    # NOTE: stft config can be none for models that operate on raw waveforms
-    # they are checked in the processing step instead.
     @model_validator(mode="after")
     def check_derived_stems(self) -> Self:
         if self.derived_stems is None:
@@ -468,8 +497,10 @@ class Config(BaseModel):
                     f"standard_end_to_end expects waveform model output, got {output_type}"
                 )
         elif archetype == "frequency_masking":
-            if self.stft is None:
-                raise ValueError("`stft` is required for frequency_masking pipeline")
+            if self.transform is None or self.transform.kind != "stft":
+                raise ValueError(
+                    '`transform` with `kind="stft"` is required for frequency_masking pipeline'
+                )
             if self.waveform_chunking is None:
                 raise ValueError("`waveform_chunking` is required for frequency_masking pipeline")
             if input_type not in {"spectrogram", "waveform_and_spectrogram"}:
@@ -480,25 +511,27 @@ class Config(BaseModel):
                 raise ValueError(
                     f"frequency_masking expects spectrogram-like model output, got {output_type}"
                 )
-        elif archetype == "event_detection":
-            if self.log_mel is None:
-                raise ValueError("`log_mel` is required for event_detection pipeline")
-            if self.logmel_chunking is None:
-                raise ValueError("`logmel_chunking` is required for event_detection pipeline")
-            if input_type != "spectrogram":
+        elif archetype == "sequence_labeling":
+            if self.sequence_chunking is None:
+                raise ValueError("`sequence_chunking` is required for sequence_labeling pipeline")
+            if input_type == "spectrogram" and self.transform is None:
+                raise ValueError("spectrogram sequence models require `transform` to be configured")
+            if input_type not in {"spectrogram", "waveform"}:
                 raise ValueError(
-                    f"event_detection expects spectrogram model input, got {input_type}"
+                    f"sequence_labeling expects spectrogram or waveform model input, got {input_type}"
                 )
-            if output_type != "logits":
-                raise ValueError(f"event_detection expects logits model output, got {output_type}")
+            if output_type not in {"logits", "multi_stream"}:
+                raise ValueError(
+                    f"sequence_labeling expects logits or multi_stream model output, got {output_type}"
+                )
         else:
             raise ValueError(f"unknown inference archetype: {archetype}")
 
-        if output_type == "logits" and self.output.file_format != "npy":
+        if output_type in {"logits", "multi_stream"} and self.output.file_format != "npy":
             raise ValueError(
-                f"logits models require output.file_format='npy', got {self.output.file_format!r}"
+                f"sequence models require output.file_format='npy', got {self.output.file_format!r}"
             )
-        if output_type != "logits" and self.output.file_format == "npy":
+        if output_type not in {"logits", "multi_stream"} and self.output.file_format == "npy":
             raise ValueError("waveform/spectrogram models cannot use output.file_format='npy'")
 
         return archetype

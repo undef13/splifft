@@ -12,7 +12,8 @@
         "target_sample_rate": 22050,
         "force_channels": 1
     },
-    "log_mel": {
+    "transform": {
+        "kind": "mel",
         "n_fft": 1024,
         "hop_length": 441,
         "n_mels": 128,
@@ -26,7 +27,7 @@
     "normalization": {
         "enabled": false
     },
-    "logmel_chunking": {
+    "sequence_chunking": {
         "trim_margin": 6,
         "overlap_mode": "keep_first",
         "avoid_short_end": true

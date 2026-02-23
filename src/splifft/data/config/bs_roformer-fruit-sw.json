@@ -20,7 +20,8 @@
         "rotary_embed_dtype": "float16",
         "transformer_residual_dtype": "float32"
     },
-    "stft": {
+    "transform": {
+        "kind": "stft",
         "conv_dtype": "float16"
     },
     "inference": {

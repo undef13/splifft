@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
@@ -10,6 +11,7 @@ from typing import (
     Callable,
     Generic,
     Iterator,
+    Protocol,
     TypeVar,
     assert_never,
     cast,
@@ -29,6 +31,7 @@ if TYPE_CHECKING:
 
     from .config import (
         DerivedStemsConfig,
+        FeatureExtractionConfig,
         MaskingConfig,
         StemName,
         StftConfig,
@@ -251,15 +254,108 @@ def aggregate_logits(
     return t.LogitsTensor(buffer)
 
 
-def split_spectrogram(
-    spect: t.LogMelSpectrogram,
+def aggregate_sequence_chunks(
+    processed_chunks: Sequence[Tensor],
+    starts: Sequence[int],
+    full_size: int,
+    chunk_size: int,
+    *,
+    trim_margin: int = 0,
+    overlap_mode: t.OverlapMode = "keep_first",
+) -> Tensor:
+    """Aggregate generic time-major chunk outputs.
+
+    Each `processed_chunks[i]` must have shape `(chunk_time, ...)` where `...` can
+    contain any additional feature dimensions (for example bins for `activations`).
+    """
+    if not processed_chunks:
+        raise ValueError("expected at least one chunk")
+
+    chunk_len_frames = int(processed_chunks[0].shape[0])
+    if trim_margin * 2 >= chunk_len_frames:
+        raise ValueError(f"{trim_margin=} is too large for {chunk_len_frames=}")
+    if len(starts) != len(processed_chunks):
+        raise ValueError(f"expected {len(processed_chunks)=} starts, got {len(starts)}")
+    if chunk_len_frames != chunk_size:
+        raise ValueError(f"expected {chunk_size=} but got chunk length {chunk_len_frames}")
+
+    tail_shape = tuple(processed_chunks[0].shape[1:])
+    buffer = processed_chunks[0].new_zeros((full_size, *tail_shape))
+
+    if overlap_mode == "keep_first":
+        indices = range(len(processed_chunks) - 1, -1, -1)
+    elif overlap_mode == "keep_last":
+        indices = range(len(processed_chunks))
+    else:
+        assert_never(overlap_mode)
+
+    for i in indices:
+        chunk = processed_chunks[i]
+        if tuple(chunk.shape[1:]) != tail_shape:
+            raise ValueError(
+                f"all stream chunks must have identical non-time dimensions, got {chunk.shape[1:]} and {tail_shape}"
+            )
+
+        chunk_valid = chunk[trim_margin : chunk_len_frames - trim_margin]
+        start = starts[i] + trim_margin
+        end = starts[i] + chunk_size - trim_margin
+
+        clipped_start = max(0, start)
+        clipped_end = min(end, full_size)
+        if clipped_start >= clipped_end:
+            continue
+
+        src_start = clipped_start - start
+        src_end = src_start + (clipped_end - clipped_start)
+        buffer[clipped_start:clipped_end] = chunk_valid[src_start:src_end]
+
+    return buffer
+
+
+def pad_dim(tensor: Tensor, *, dim: int, pad: tuple[int, int], value: float = 0.0) -> Tensor:
+    """Pad an arbitrary tensor on a specific dimension.
+
+    This avoids relying on `F.pad`'s reverse-dimension argument ordering.
+    """
+    left, right = pad
+    if left < 0 or right < 0:
+        raise ValueError(f"expected non-negative pad widths, got left={left}, right={right}")
+    if left == 0 and right == 0:
+        return tensor
+
+    rank = tensor.ndim
+    resolved_dim = dim if dim >= 0 else rank + dim
+    if resolved_dim < 0 or resolved_dim >= rank:
+        raise IndexError(f"dim out of range for rank-{rank} tensor: {dim}")
+
+    pieces: list[Tensor] = []
+    if left:
+        left_shape = list(tensor.shape)
+        left_shape[resolved_dim] = left
+        pieces.append(tensor.new_full(left_shape, fill_value=value))
+
+    pieces.append(tensor)
+
+    if right:
+        right_shape = list(tensor.shape)
+        right_shape[resolved_dim] = right
+        pieces.append(tensor.new_full(right_shape, fill_value=value))
+
+    return torch.cat(pieces, dim=resolved_dim)
+
+
+def split_sequence_tensor(
+    sequence: Tensor,
     chunk_size: int,
     *,
     trim_margin: int = 0,
     avoid_short_end: bool = True,
-) -> tuple[list[t.LogMelSpectrogram], list[int]]:
-    """Splits a (time, bins) spectrogram (split_piece behaviour)."""
-    full_size = spect.shape[0]
+) -> tuple[list[Tensor], list[int]]:
+    """Split a time-major sequence tensor into overlapping chunks.
+
+    `sequence` must be shaped `(time, ...)`, where `...` can be any feature tail.
+    """
+    full_size = sequence.shape[0]
     if (step := chunk_size - 2 * trim_margin) <= 0:
         raise ValueError(
             f"expected chunk_size - 2*trim_margin > 0, got {chunk_size=}, {trim_margin=}"
@@ -269,17 +365,17 @@ def split_spectrogram(
     if avoid_short_end and full_size > step:
         starts[-1] = full_size - (chunk_size - trim_margin)
 
-    chunks: list[t.LogMelSpectrogram] = []
+    chunks: list[Tensor] = []
     for start in starts:
         src_start = max(start, 0)
         src_end = min(start + chunk_size, full_size)
         left = max(0, -start)
-        right = max(0, min(trim_margin, start + chunk_size - full_size))
+        right = max(0, start + chunk_size - full_size)
 
-        chunk = spect[src_start:src_end]
+        chunk = sequence[src_start:src_end]
         if left > 0 or right > 0:
-            chunk = F.pad(chunk, (0, 0, left, right), mode="constant", value=0)
-        chunks.append(t.LogMelSpectrogram(chunk))
+            chunk = pad_dim(chunk, dim=0, pad=(left, right), value=0.0)
+        chunks.append(chunk)
 
     return chunks, starts
 
@@ -564,6 +660,332 @@ class LogMelSpect(nn.Module):
             x = x.unsqueeze(1)
         mel_spec = self.spect_class(x)
         return torch.log1p(self.log_multiplier * mel_spec)  # type: ignore
+
+
+def to_log_magnitude(x: Tensor, *, epsilon: float = 1e-8) -> Tensor:
+    """Convert complex or real spectrogram-like tensors to dB log-magnitude."""
+    if x.shape[-1] == 2:
+        x = torch.sqrt(x[..., 0] ** 2 + x[..., 1] ** 2)
+    else:
+        x = x.abs()
+    return x.clamp_min(epsilon).log10().mul(20)
+
+
+def _cqt_window_values(
+    *,
+    window: str,
+    local_index: Tensor,
+    lengths: Tensor,
+    dtype: torch.dtype,
+) -> Tensor:
+    """Vectorized periodic windows matching SciPy `get_window(..., fftbins=True)` semantics."""
+    local = local_index.to(dtype=dtype)
+    denom = lengths.unsqueeze(1).to(dtype=dtype)
+    phase = 2 * torch.pi * local / denom
+    if window == "hann":
+        return 0.5 - 0.5 * torch.cos(phase)
+    if window == "hamming":
+        return 0.54 - 0.46 * torch.cos(phase)
+    raise ValueError(f"unsupported CQT window={window!r}")
+
+
+def create_cqt_kernels(
+    *,
+    Q: float,
+    fs: int,
+    fmin: float,
+    n_bins: int,
+    bins_per_octave: int,
+    norm: int = 1,
+    window: str = "hann",
+    fmax: float | None = None,
+    gamma: float = 0.0,
+    device: torch.device,
+    dtype: torch.dtype = torch.float32,
+) -> tuple[Tensor, int, Tensor, Tensor]:
+    """Create time-domain CQT kernels using only PyTorch ops.
+
+    This mirrors the nnAudio-style kernel generation used by PESTO but avoids
+    SciPy so `splifft` can keep a minimal dependency surface.
+    """
+    del fmax
+    freq_indices = torch.arange(n_bins, device=device, dtype=dtype)
+    freqs = fmin * (2.0 ** (freq_indices / float(bins_per_octave)))
+
+    alpha = 2.0 ** (1.0 / bins_per_octave) - 1.0
+    lengths = torch.ceil(Q * fs / (freqs + gamma / alpha))
+    max_len = int(lengths.max().item())
+    fft_len = 1 << int(math.ceil(math.log2(max_len)))
+
+    lengths_i = lengths.to(dtype=torch.int64)
+    half_center = torch.full((n_bins,), fft_len / 2.0, device=device, dtype=dtype)
+    starts = torch.ceil(half_center - lengths / 2.0).to(torch.int64) - (lengths_i % 2)
+
+    time_index = torch.arange(fft_len, device=device, dtype=torch.int64).unsqueeze(0)
+    local_index = time_index - starts.unsqueeze(1)
+    valid = (local_index >= 0) & (local_index < lengths_i.unsqueeze(1))
+
+    window_vals = _cqt_window_values(
+        window=window,
+        local_index=local_index,
+        lengths=lengths_i,
+        dtype=dtype,
+    )
+    window_vals = torch.where(valid, window_vals, torch.zeros_like(window_vals))
+
+    neg_half = torch.div(-lengths_i, 2, rounding_mode="floor").unsqueeze(1)
+    centered_n = (local_index + neg_half).to(dtype=dtype)
+    phase = (2 * torch.pi / float(fs)) * freqs.unsqueeze(1) * centered_n
+    signal = window_vals * torch.exp(1j * phase) / lengths.unsqueeze(1)
+    signal = torch.where(valid, signal, torch.zeros_like(signal))
+
+    if norm:
+        denom = torch.linalg.vector_norm(signal, ord=norm, dim=1, keepdim=True).clamp_min(1e-12)
+        signal = signal / denom
+
+    kernels = signal.to(dtype=torch.complex64)
+    return kernels, fft_len, lengths.sqrt().unsqueeze(-1), freqs
+
+
+class SequenceFeatureExtractor(Protocol):
+    """Protocol for sequence feature extractors.
+
+    Required contract:
+    - input: `(B, C, T)`
+    - output: `(B, seq_len, feature_dim)`
+    """
+
+    hop_length_samples: int
+    stage_name: str
+
+    def __call__(self, x: Tensor) -> Tensor: ...
+
+
+def _ensure_btf(x: Tensor, *, source: str) -> Tensor:
+    if x.ndim != 3:
+        raise ValueError(f"{source} must output `(B,T,F)`, got shape={tuple(x.shape)}")
+    return x
+
+
+class IdentitySequenceFeatureExtractor(nn.Module, SequenceFeatureExtractor):
+    hop_length_samples = 1
+    stage_name = "sequence_features"
+
+    def forward(self, x: Tensor) -> Tensor:
+        if x.ndim != 3:
+            raise ValueError(f"expected shape (B,C,T), got {tuple(x.shape)}")
+        if x.shape[1] != 1:
+            raise ValueError(
+                f"identity sequence extractor expects mono input with C=1, got shape={tuple(x.shape)}"
+            )
+        return _ensure_btf(x.transpose(1, 2), source="identity extractor")
+
+
+class LogMelSequenceFeatureExtractor(nn.Module, SequenceFeatureExtractor):
+    stage_name = "mel"
+
+    def __init__(self, mel: LogMelSpect, *, hop_length_samples: int):
+        super().__init__()
+        self.mel = mel
+        self.hop_length_samples = hop_length_samples
+
+    def forward(self, x: Tensor) -> Tensor:
+        if x.ndim != 3:
+            raise ValueError(f"expected shape (B,C,T), got {tuple(x.shape)}")
+        if x.shape[1] != 1:
+            raise ValueError(
+                f"mel extractor expects mono input with C=1, got shape={tuple(x.shape)}"
+            )
+        # TODO dont do this
+        x_mono = x.mean(dim=1, keepdim=True)
+        mel = self.mel(x_mono).squeeze(1)
+        return _ensure_btf(mel.transpose(1, 2), source="mel extractor")
+
+
+class CqtSequenceFeatureExtractor(nn.Module, SequenceFeatureExtractor):
+    stage_name = "cqt"
+
+    def __init__(
+        self,
+        hcqt: HarmonicCQT,
+        *,
+        hop_length_samples: int,
+        log_epsilon: float,
+    ):
+        super().__init__()
+        self.hcqt = hcqt
+        self.hop_length_samples = hop_length_samples
+        self.log_epsilon = log_epsilon
+
+    def forward(self, x: Tensor) -> Tensor:
+        if x.ndim != 3:
+            raise ValueError(f"expected shape (B,C,T), got {tuple(x.shape)}")
+        if x.shape[1] != 1:
+            raise ValueError(
+                f"cqt extractor expects mono input with C=1, got shape={tuple(x.shape)}"
+            )
+        x_mono = x.mean(dim=1)
+        hcqt_output = self.hcqt(x_mono)
+        cqt = to_log_magnitude(hcqt_output, epsilon=self.log_epsilon).permute(0, 3, 1, 2)
+        b, t_len, harmonics, bins = cqt.shape
+        return _ensure_btf(cqt.reshape(b, t_len, harmonics * bins), source="cqt extractor")
+
+
+def create_sequence_feature_extractor(
+    feature_cfg: FeatureExtractionConfig | None,
+    *,
+    sample_rate: t.SampleRate,
+    device: torch.device,
+) -> SequenceFeatureExtractor:
+    if feature_cfg is None:
+        return IdentitySequenceFeatureExtractor()
+
+    if feature_cfg.kind == "mel":
+        mel = LogMelSpect(
+            sample_rate=feature_cfg.sample_rate,
+            n_fft=feature_cfg.n_fft,
+            hop_length=feature_cfg.hop_length,
+            n_mels=feature_cfg.n_mels,
+            f_min=feature_cfg.f_min,
+            f_max=feature_cfg.f_max,
+            mel_scale=feature_cfg.mel_scale,
+            normalized=feature_cfg.normalized,
+            power=feature_cfg.power,
+            log_multiplier=feature_cfg.log_multiplier,
+        ).to(device)
+        return LogMelSequenceFeatureExtractor(mel=mel, hop_length_samples=feature_cfg.hop_length)
+
+    if feature_cfg.kind == "cqt":
+        hop_length_samples = int(round(feature_cfg.hop_size_ms * sample_rate / 1000))
+        hcqt = HarmonicCQT(
+            sr=sample_rate,
+            hop_length=hop_length_samples,
+            harmonics=feature_cfg.harmonics,
+            fmin=feature_cfg.fmin,
+            fmax=feature_cfg.fmax,
+            bins_per_semitone=feature_cfg.bins_per_semitone,
+            n_bins=feature_cfg.n_bins,
+            center_bins=feature_cfg.center_bins,
+            gamma=feature_cfg.gamma,
+            center=feature_cfg.center,
+        ).to(device)
+        return CqtSequenceFeatureExtractor(
+            hcqt=hcqt,
+            hop_length_samples=hop_length_samples,
+            log_epsilon=feature_cfg.log_epsilon,
+        )
+
+    raise ValueError(f"unsupported feature extractor kind: {feature_cfg.kind}")
+
+
+class CQT(nn.Module):
+    """Constant-Q transform layer (complex output) implemented via `Conv1d`."""
+
+    def __init__(
+        self,
+        *,
+        sr: t.SampleRate,
+        hop_length: int,
+        fmin: float,
+        fmax: float | None,
+        n_bins: int,
+        bins_per_octave: int,
+        gamma: float,
+        center: bool,
+        window: str = "hann",
+        norm: int = 1,
+    ):
+        super().__init__()
+        self.n_bins = n_bins
+
+        Q = 1.0 / (2 ** (1 / bins_per_octave) - 1)
+        kernels, kernel_width, sqrt_lengths, _freqs = create_cqt_kernels(
+            Q=Q,
+            fs=sr,
+            fmin=fmin,
+            n_bins=n_bins,
+            bins_per_octave=bins_per_octave,
+            norm=norm,
+            window=window,
+            fmax=fmax,
+            gamma=gamma,
+            device=torch.device("cpu"),
+        )
+
+        self.register_buffer("sqrt_lengths", sqrt_lengths, persistent=False)
+        self.register_buffer("kernel_real_imag", kernels, persistent=False)
+
+        padding = kernel_width // 2 if center else 0
+        self.conv = nn.Conv1d(
+            1,
+            2 * n_bins,
+            kernel_size=kernel_width,
+            stride=hop_length,
+            padding=padding,
+            padding_mode="reflect",
+            bias=False,
+        )
+        self._init_weights()
+
+    @torch.no_grad()
+    def _init_weights(self) -> None:
+        kernels = cast(Tensor, self.kernel_real_imag).to(self.conv.weight.device)
+        weights = torch.cat((kernels.real, -kernels.imag), dim=0).unsqueeze(1)
+        self.conv.weight.copy_(weights)
+        self.conv.weight.requires_grad = False
+
+    def forward(self, x: Tensor) -> Tensor:
+        if x.ndim == 1:
+            x = x.unsqueeze(0)
+        if x.ndim == 2:
+            x = x.unsqueeze(1)
+        if x.ndim != 3:
+            raise ValueError(f"expected shape (batch,time) or (batch,1,time), got {tuple(x.shape)}")
+
+        cqt = self.conv(x).view(x.size(0), 2, self.n_bins, -1)
+        cqt = cqt * self.sqrt_lengths.to(cqt.device)
+        return cast(Tensor, cqt.permute(0, 2, 3, 1))
+
+
+class HarmonicCQT(nn.Module):
+    """Harmonic CQT computed by stacking one CQT per harmonic multiplier."""
+
+    def __init__(
+        self,
+        *,
+        harmonics: Sequence[int],
+        sr: t.SampleRate,
+        hop_length: int,
+        fmin: float,
+        fmax: float | None,
+        bins_per_semitone: int,
+        n_bins: int,
+        center_bins: bool,
+        gamma: float,
+        center: bool,
+    ):
+        super().__init__()
+        if center_bins:
+            fmin = fmin / 2 ** ((bins_per_semitone - 1) / (12 * bins_per_semitone))
+
+        self.cqt_kernels = nn.ModuleList(
+            [
+                CQT(
+                    sr=sr,
+                    hop_length=hop_length,
+                    fmin=h * fmin,
+                    fmax=fmax,
+                    n_bins=n_bins,
+                    bins_per_octave=12 * bins_per_semitone,
+                    gamma=gamma,
+                    center=center,
+                )
+                for h in harmonics
+            ]
+        )
+
+    def forward(self, audio_waveforms: Tensor) -> Tensor:
+        return torch.stack([cqt(audio_waveforms) for cqt in self.cqt_kernels], dim=1)
 
 
 def _get_window_fn(name: str, win_length: int, device: torch.device) -> t.WindowTensor:

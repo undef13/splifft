@@ -20,7 +20,8 @@
         "mask_estimator_depth": 3,
         "skip_connection": true
     },
-    "stft": {
+    "transform": {
+        "kind": "stft",
         "n_fft": 4096,
         "hop_length": 882,
         "win_length": 4096

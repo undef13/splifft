@@ -13,7 +13,8 @@
         },
         "stft_hop_length": 441
     },
-    "stft": {
+    "transform": {
+        "kind": "stft",
         "hop_length": 441
     },
     "inference": {

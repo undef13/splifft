@@ -12,7 +12,9 @@
             "kind": "fixed"
         }
     },
-    "stft": {},
+    "transform": {
+        "kind": "stft"
+    },
     "inference": {
         "batch_size": 1
     },

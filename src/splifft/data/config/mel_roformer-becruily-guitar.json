@@ -16,7 +16,8 @@
         "mask_estimator_depth": 3,
         "mlp_expansion_factor": 1
     },
-    "stft": {
+    "transform": {
+        "kind": "stft",
         "hop_length": 441
     },
     "inference": {

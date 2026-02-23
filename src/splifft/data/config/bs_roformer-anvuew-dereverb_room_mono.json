@@ -81,7 +81,9 @@
         "mask_estimator_depth": 3,
         "use_torch_checkpoint": true
     },
-    "stft": {},
+    "transform": {
+        "kind": "stft"
+    },
     "audio_io": {
         "force_channels": 1
     },

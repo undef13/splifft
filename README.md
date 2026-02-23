@@ -40,6 +40,8 @@ Key principles:
     - [x] directly support popular models (e.g. by [@unwa](https://huggingface.co/pcunwa), [gabox](https://huggingface.co/GaboxR67), by [@becruily](https://huggingface.co/becruily))
 - [x] model registry with simple file-based cache
 - [x] proper profiling (MFU, memory...)
+- [ ] support streaming with ring buffer
+- [ ] JIT and ONNX
 - [ ] evals: SDR, bleedless, fullness, etc.
 - [ ] datasets: MUSDB18-HQ, moises
 

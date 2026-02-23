@@ -344,6 +344,7 @@ def test_lazy_model_config_protocol() -> None:
     from splifft.models import ModelParamsLike
 
     class _ModelParam(LazyModelConfig):
+        input_channels: t.ModelInputChannels
         input_type: t.ModelInputType
         output_type: t.ModelOutputType
         inference_archetype: t.InferenceArchetype

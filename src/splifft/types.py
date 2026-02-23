@@ -22,8 +22,21 @@ Ge0: TypeAlias = Annotated[_T, at.Ge(0)]
 ModelType: TypeAlias = str
 """The type of the model, e.g. `bs_roformer`, `demucs`"""
 
+ModelInputChannels: TypeAlias = Literal["mono", "stereo"]
+"""Required channel layout for model input audio.
+
+- `mono`: model expects a single channel
+- `stereo`: model expects two channels
+"""
+
 ModelInputType: TypeAlias = Literal["waveform", "spectrogram", "waveform_and_spectrogram"]
-ModelOutputType: TypeAlias = Literal["waveform", "spectrogram_mask", "spectrogram", "logits"]
+ModelOutputType: TypeAlias = Literal[
+    "waveform",
+    "spectrogram_mask",
+    "spectrogram",
+    "logits",
+    "multi_stream",
+]
 
 ChunkSize: TypeAlias = Gt0[int]
 """The length of an audio segment, in samples, processed by the model at one time.
@@ -154,13 +167,14 @@ Equivalent to [chunk size][splifft.types.ChunkSize] divided by the [sample rate]
 InferenceArchetype: TypeAlias = Literal[
     "standard_end_to_end",
     "frequency_masking",
-    "event_detection",
+    "sequence_labeling",
 ]
 """Inference pipeline archetype used to route runtime execution.
 
 - `standard_end_to_end`: waveform -> model -> waveform (e.g. demucs)
 - `frequency_masking`: waveform -> STFT -> model -> iSTFT -> waveform (e.g. bs-roformer)
-- `event_detection`: waveform -> log-mel -> model -> logits (e.g. beat_this)
+- `sequence_labeling`: waveform -> optional feature extraction -> model -> sequence outputs
+  (e.g. beat tracking, pitch estimation)
 """
 
 OverlapRatio: TypeAlias = Annotated[float, at.Ge(0), at.Lt(1)]
@@ -270,7 +284,9 @@ Instrument: TypeAlias = Literal[
     "no_drum-bass",  # viperx 1053
     "karaoke",
     # event detection
-    "beat", "downbeat"
+    "beat", "downbeat",
+    # MIR sequence labeling / pitch
+    "pitch", "confidence", "volume", "activations"
 ]
 # fmt: on
 Metric: TypeAlias = Literal[

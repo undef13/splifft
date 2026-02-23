@@ -47,13 +47,17 @@ class BeatThisParams(ModelParamsLike):
     partial_transformers: bool = True
     rotary_embed_dtype: TorchDtype | None = None
     transformer_residual_dtype: TorchDtype | None = None
-    log_mel_hop_length: int = 441
+    log_mel_hop_length: t.HopSize = 441
     """The hop length of the log mel spectrogram.
 
     !!! warning
         This **must** match the `hop_length` in the `LogMelConfig` to ensure the rotary embeddings
         are sized correctly for the sequence length.
     """
+
+    @property
+    def input_channels(self) -> t.ModelInputChannels:
+        return "mono"
 
     @property
     def input_type(self) -> t.ModelInputType:
@@ -65,7 +69,7 @@ class BeatThisParams(ModelParamsLike):
 
     @property
     def inference_archetype(self) -> t.InferenceArchetype:
-        return "event_detection"
+        return "sequence_labeling"
 
 
 class PartialFTTransformer(nn.Module):
@@ -139,6 +143,7 @@ class Head(nn.Module):
 class BeatThis(nn.Module):
     def __init__(self, cfg: BeatThisParams):
         super().__init__()
+        self.spect_dim = cfg.spect_dim
 
         max_frames = cfg.chunk_size // cfg.log_mel_hop_length
         rotary_embed_t = RotaryEmbedding(
@@ -236,9 +241,17 @@ class BeatThis(nn.Module):
 
     def forward(self, x: Tensor) -> Tensor:
         """
-        :param x: Input spectrogram (B, F, T)
+        :param x: Input spectrogram (B, T, F)
         :return: Logits (2, B, T) -> [Beats, Downbeats]
         """
+        if x.ndim != 3:
+            raise ValueError(f"expected 3D spectrogram input, got shape={tuple(x.shape)}")
+        if x.shape[-1] != self.spect_dim:
+            raise ValueError(
+                f"expected beat_this input shape `(B,T,{self.spect_dim})`, got {tuple(x.shape)}"
+            )
+
+        x = x.transpose(1, 2)
         x = self.frontend(x)
         x = self.transformer_blocks(x)
         x = self.task_heads(x)

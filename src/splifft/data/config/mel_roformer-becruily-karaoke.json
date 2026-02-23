@@ -16,7 +16,8 @@
         "norm_output": true,
         "mask_estimator_depth": 3
     },
-    "stft": {
+    "transform": {
+        "kind": "stft",
         "hop_length": 441
     },
     "inference": {

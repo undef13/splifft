@@ -3167,6 +3167,21 @@
         ],
         "model_size": 8451101
     },
+    "pesto-sonycsl-mir1k_g7": {
+        "authors": ["SonyCSLParis"],
+        "purpose": "pitch_estimation",
+        "architecture": "pesto",
+        "config_id": "pesto-sonycsl-mir1k_g7",
+        "created_at": "2026-02-19",
+        "output": ["pitch", "confidence", "volume", "activations"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/undef13/splifft/resolve/main/pesto-sonycsl-mir1k_g7.ckpt",
+                "digest": "sha256:3eca1615bf382c434537c26d4689cf28b11134a5d46dd5eae84cb7d975ca1bf9"
+            }
+        ]
+    },
     "scnet-starrytong-musdb18": {
         "authors": ["starrytong"],
         "purpose": "separation",

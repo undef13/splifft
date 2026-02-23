@@ -16,7 +16,8 @@
         "mask_estimator_depth": 3,
         "use_torch_checkpoint": true
     },
-    "stft": {
+    "transform": {
+        "kind": "stft",
         "hop_length": 441,
         "normalized": true
     },

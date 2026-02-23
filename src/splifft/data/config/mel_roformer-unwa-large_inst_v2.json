@@ -16,7 +16,9 @@
             "kind": "axial_refiner_large_v2"
         }
     },
-    "stft": {},
+    "transform": {
+        "kind": "stft"
+    },
     "inference": {
         "batch_size": 4,
         "use_autocast_dtype": "float16"

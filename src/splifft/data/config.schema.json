@@ -26,6 +26,89 @@
       "title": "AudioIOConfig",
       "type": "object"
     },
+    "CqtConfig": {
+      "additionalProperties": false,
+      "description": "Configuration for harmonic CQT feature extraction.\n\nThis intentionally matches PESTO's HCQT preprocessor defaults so we can\nshare checkpoints without adding SciPy or nnAudio.",
+      "properties": {
+        "kind": {
+          "const": "cqt",
+          "title": "Kind",
+          "type": "string"
+        },
+        "hop_size_ms": {
+          "default": 10.0,
+          "title": "Hop Size Ms",
+          "type": "number"
+        },
+        "harmonics": {
+          "default": [
+            1
+          ],
+          "items": {
+            "exclusiveMinimum": 0,
+            "type": "integer"
+          },
+          "minLength": 1,
+          "title": "Harmonics",
+          "type": "array",
+          "unique_items": true
+        },
+        "fmin": {
+          "default": 27.5,
+          "title": "Fmin",
+          "type": "number"
+        },
+        "fmax": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fmax"
+        },
+        "bins_per_semitone": {
+          "default": 3,
+          "exclusiveMinimum": 0,
+          "title": "Bins Per Semitone",
+          "type": "integer"
+        },
+        "n_bins": {
+          "default": 251,
+          "exclusiveMinimum": 0,
+          "title": "N Bins",
+          "type": "integer"
+        },
+        "center_bins": {
+          "default": true,
+          "title": "Center Bins",
+          "type": "boolean"
+        },
+        "gamma": {
+          "default": 7.0,
+          "title": "Gamma",
+          "type": "number"
+        },
+        "center": {
+          "default": true,
+          "title": "Center",
+          "type": "boolean"
+        },
+        "log_epsilon": {
+          "default": 1e-08,
+          "title": "Log Epsilon",
+          "type": "number"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "CqtConfig",
+      "type": "object"
+    },
     "InferenceConfig": {
       "additionalProperties": false,
       "properties": {
@@ -34,6 +117,24 @@
           "exclusiveMinimum": 0,
           "title": "Batch Size",
           "type": "integer"
+        },
+        "requested_stems": {
+          "anyOf": [
+            {
+              "items": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "minLength": 1,
+              "type": "array",
+              "unique_items": true
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requested Stems"
         },
         "force_weights_dtype": {
           "anyOf": [
@@ -58,6 +159,30 @@
           ],
           "default": null,
           "title": "Use Autocast Dtype"
+        },
+        "model_device": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model Device"
+        },
+        "io_device": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Io Device"
         },
         "compile_model": {
           "anyOf": [
@@ -101,37 +226,15 @@
       "title": "LazyModelConfig",
       "type": "object"
     },
-    "LogMelChunkingConfig": {
-      "additionalProperties": false,
-      "properties": {
-        "trim_margin": {
-          "default": 0,
-          "minimum": 0,
-          "title": "Trim Margin",
-          "type": "integer"
-        },
-        "overlap_mode": {
-          "default": "keep_first",
-          "enum": [
-            "keep_first",
-            "keep_last"
-          ],
-          "title": "Overlap Mode",
-          "type": "string"
-        },
-        "avoid_short_end": {
-          "default": true,
-          "title": "Avoid Short End",
-          "type": "boolean"
-        }
-      },
-      "title": "LogMelChunkingConfig",
-      "type": "object"
-    },
     "LogMelConfig": {
       "additionalProperties": false,
       "description": "Configuration for Log-Mel Spectrogram.",
       "properties": {
+        "kind": {
+          "const": "mel",
+          "title": "Kind",
+          "type": "string"
+        },
         "n_fft": {
           "exclusiveMinimum": 0,
           "title": "N Fft",
@@ -203,6 +306,7 @@
         }
       },
       "required": [
+        "kind",
         "n_fft",
         "hop_length",
         "n_mels",
@@ -310,10 +414,42 @@
       "title": "OutputConfig",
       "type": "object"
     },
+    "SequenceChunkingConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "trim_margin": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Trim Margin",
+          "type": "integer"
+        },
+        "overlap_mode": {
+          "default": "keep_first",
+          "enum": [
+            "keep_first",
+            "keep_last"
+          ],
+          "title": "Overlap Mode",
+          "type": "string"
+        },
+        "avoid_short_end": {
+          "default": true,
+          "title": "Avoid Short End",
+          "type": "boolean"
+        }
+      },
+      "title": "SequenceChunkingConfig",
+      "type": "object"
+    },
     "StftConfig": {
       "additionalProperties": false,
       "description": "configuration for the short-time fourier transform.",
       "properties": {
+        "kind": {
+          "const": "stft",
+          "title": "Kind",
+          "type": "string"
+        },
         "n_fft": {
           "default": 2048,
           "exclusiveMinimum": 0,
@@ -360,6 +496,9 @@
           "title": "Conv Dtype"
         }
       },
+      "required": [
+        "kind"
+      ],
       "title": "StftConfig",
       "type": "object"
     },
@@ -497,27 +636,35 @@
     "model": {
       "$ref": "#/$defs/LazyModelConfig"
     },
-    "stft": {
+    "transform": {
       "anyOf": [
         {
-          "$ref": "#/$defs/StftConfig"
+          "discriminator": {
+            "mapping": {
+              "cqt": "#/$defs/CqtConfig",
+              "mel": "#/$defs/LogMelConfig",
+              "stft": "#/$defs/StftConfig"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/StftConfig"
+            },
+            {
+              "$ref": "#/$defs/LogMelConfig"
+            },
+            {
+              "$ref": "#/$defs/CqtConfig"
+            }
+          ]
         },
         {
           "type": "null"
         }
       ],
-      "default": null
-    },
-    "log_mel": {
-      "anyOf": [
-        {
-          "$ref": "#/$defs/LogMelConfig"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null
+      "default": null,
+      "title": "Transform"
     },
     "audio_io": {
       "$ref": "#/$defs/AudioIOConfig"
@@ -539,10 +686,10 @@
       ],
       "default": null
     },
-    "logmel_chunking": {
+    "sequence_chunking": {
       "anyOf": [
         {
-          "$ref": "#/$defs/LogMelChunkingConfig"
+          "$ref": "#/$defs/SequenceChunkingConfig"
         },
         {
           "type": "null"

@@ -19,7 +19,8 @@
         "ff_dropout": 0.1,
         "mlp_expansion_factor": 2
     },
-    "stft": {
+    "transform": {
+        "kind": "stft",
         "hop_length": 441
     },
     "inference": {

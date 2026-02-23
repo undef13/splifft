@@ -157,6 +157,10 @@ depth by 1.
     """Whether to check for nan/inf in model outputs. Keep it off for [torch.compile][]."""
 
     @property
+    def input_channels(self) -> t.ModelInputChannels:
+        return "stereo" if self.stereo else "mono"
+
+    @property
     def input_type(self) -> t.ModelInputType:
         return "spectrogram"
 

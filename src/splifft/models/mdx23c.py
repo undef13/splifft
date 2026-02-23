@@ -42,6 +42,10 @@ class MDX23CParams(ModelParamsLike):
     stereo: bool = True
 
     @property
+    def input_channels(self) -> t.ModelInputChannels:
+        return "stereo" if self.stereo else "mono"
+
+    @property
     def input_type(self) -> t.ModelInputType:
         return "spectrogram"
 

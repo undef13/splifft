@@ -16,7 +16,9 @@
         "norm_output": true,
         "mask_estimator_depth": 3
     },
-    "stft": {},
+    "transform": {
+        "kind": "stft"
+    },
     "inference": {
         "batch_size": 1
     },

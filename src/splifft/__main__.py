@@ -254,10 +254,10 @@ def run(
         curr_output_dir.mkdir(parents=True, exist_ok=True)
 
         for key, data in output_results.items():
-            if engine.model_params_concrete.output_type == "logits":
+            if engine.model_params_concrete.output_type in {"logits", "multi_stream"}:
                 output_file = (curr_output_dir / key).with_suffix(".npy")
                 np.save(output_file, data.cpu().float().numpy())
-                logger.info(f"wrote logits '{key}' to {output_file}")
+                logger.info(f"wrote sequence output '{key}' to {output_file}")
             else:
                 if (
                     engine.config.output.stem_names != "all"

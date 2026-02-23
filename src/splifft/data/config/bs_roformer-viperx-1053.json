@@ -14,7 +14,9 @@
         "attn_dropout": 0.1,
         "ff_dropout": 0.1
     },
-    "stft": {},
+    "transform": {
+        "kind": "stft"
+    },
     "inference": {
         "batch_size": 1
     },
