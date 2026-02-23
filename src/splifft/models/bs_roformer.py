@@ -4,7 +4,7 @@
 - Mel-RoFormer: https://arxiv.org/abs/2409.04702
 
 This implementation merges the two versions found in
-[`lucidrains`'s implementation](https://github.com/lucidrains/BS-RoFormer)
+[`lucidrains`'s implementation](https://codeberg.org/lucidrains/BS-RoFormer)
 However, there are several inconsistencies:
 
 - `MLP` was defined differently in each file, one that has `depth - 1` hidden layers and one that
@@ -14,8 +14,8 @@ However, there are several inconsistencies:
   freq_transformer, etc.) and has no final normalization layer.
 
 Since fixing the three inconsistencies upstream is too big of a breaking change, we inherit them to
-maintain compatability with community-trained models.
-See: https://github.com/lucidrains/BS-RoFormer/issues/48.
+maintain compatibility with community-trained models.
+See: https://web.archive.org/web/20260112010548/https://github.com/lucidrains/BS-RoFormer/issues/48.
 
 To avoid dependency bloat, we do not:
 

@@ -104,7 +104,10 @@
               "pitch",
               "confidence",
               "volume",
-              "activations"
+              "activations",
+              "onset",
+              "note",
+              "contour"
             ]
           },
           "title": "Values",
@@ -256,7 +259,10 @@
               "pitch",
               "confidence",
               "volume",
-              "activations"
+              "activations",
+              "onset",
+              "note",
+              "contour"
             ],
             "type": "string"
           },

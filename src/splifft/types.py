@@ -283,10 +283,13 @@ Instrument: TypeAlias = Literal[
     # weird
     "no_drum-bass",  # viperx 1053
     "karaoke",
+    # TODO: maybe we want to isolate non-separation stems to a new literal but eh
     # event detection
     "beat", "downbeat",
-    # MIR sequence labeling / pitch
-    "pitch", "confidence", "volume", "activations"
+    # pesto (mono)
+    "pitch", "confidence", "volume", "activations",
+    # basic pitch (poly)
+    "onset", "note", "contour"
 ]
 # fmt: on
 Metric: TypeAlias = Literal[

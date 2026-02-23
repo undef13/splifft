@@ -577,7 +577,11 @@ def fix_registry(
     jarredou_path: Path = PATH_JARREDOU_MSST_JSON,
     output_path: Path = PATH_TMP / "cache",
     warn_missing: bool = False,  # off by default since some are htdemucs / unsupported architecture
-    skip_overwrite_created_at: tuple[str] = ("bs_roformer-fruit-sw",),
+    skip_overwrite_created_at: list[str] = [
+        "bs_roformer-fruit-sw",
+        "basic_pitch-spotify-icassp2022",
+        "pesto-sonycsl-mir1k_g7",
+    ],
 ) -> None:
     """Checks that URLs in the guide and jarredou's colab are present in the registry,
     caches file metadata from Hugging Face and GitHub releases and ensures dates are correct."""

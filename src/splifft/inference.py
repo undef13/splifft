@@ -27,6 +27,7 @@ SUPPORTED_MODELS: dict[str, tuple[str, str]] = {
     "mdx23c": ("splifft.models.mdx23c", "MDX23C"),
     "beat_this": ("splifft.models.beat_this", "BeatThis"),
     "pesto": ("splifft.models.pesto", "Pesto"),
+    "basic_pitch": ("splifft.models.basic_pitch", "BasicPitch"),
 }
 
 

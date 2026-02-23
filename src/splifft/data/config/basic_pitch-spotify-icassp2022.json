@@ -1,36 +1,34 @@
 {
-    "identifier": "pesto-sonycsl-mir1k_g7",
-    "model_type": "pesto",
+    "identifier": "basic_pitch-gudgud96-icassp_2022",
+    "model_type": "basic_pitch",
     "model": {
-        "chunk_size": 441000,
+        "chunk_size": 43844,
         "output_stem_names": [
-            "pitch",
-            "confidence",
-            "volume",
-            "activations"
+            "onset",
+            "note",
+            "contour"
         ]
     },
     "audio_io": {
-        "target_sample_rate": 44100,
-        "force_channels": 1
+        "target_sample_rate": 22050
     },
     "transform": {
         "kind": "cqt",
-        "hop_size_ms": 10.0,
+        "hop_size_ms": 11.609977324263039,
         "harmonics": [
             1
         ],
         "fmin": 27.5,
         "fmax": null,
         "bins_per_semitone": 3,
-        "n_bins": 251,
-        "center_bins": true,
-        "gamma": 7.0,
+        "n_bins": 372,
+        "center_bins": false,
+        "gamma": 0.0,
         "center": true,
         "log_epsilon": 1e-8
     },
     "inference": {
-        "batch_size": 16
+        "batch_size": 8
     },
     "normalization": {
         "enabled": false
