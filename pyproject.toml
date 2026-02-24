@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "splifft"
-version = "0.0.5"
+version = "0.0.6"
 description = "Lightweight utilities for music source separation."
 authors = [{ name = "undef13" }]
 requires-python = ">=3.10"
@@ -41,11 +41,6 @@ dependencies = [
     "torchaudio>=2.7.0",      # for melband roformers, we should probably put this as optional but eh...
 ]
 
-[project.urls]
-Documentation = "https://undef13.github.io/splifft/"
-Repository = "https://github.com/undef13/splifft"
-Releases = "https://github.com/undef13/splifft/releases"
-
 [project.optional-dependencies]
 config = ["pydantic>=2.11.5", "platformdirs>=4.3.6"]
 inference = [
@@ -55,7 +50,6 @@ inference = [
 ]
 cli = ["typer>=0.16.0"]
 web = ["httpx[http2]>=0.28.1"]
-recommended = ["splifft[config,inference,cli,web]"] # experimental!
 sageattention = ["sageattention>=1.0.6"]
 # the following are experimental, used only in scripts
 networking = [
@@ -65,6 +59,12 @@ networking = [
 ]
 analysis = ["matplotlib>=3.10.3", "polars>=1.30.0"]
 msst-compat = ["pyyaml>=6.0.3"]
+
+[project.urls]
+Documentation = "https://undef13.github.io/splifft/"
+Repository = "https://github.com/undef13/splifft"
+Releases = "https://github.com/undef13/splifft/releases"
+
 
 [project.scripts]
 splifft = "splifft.__main__:app"

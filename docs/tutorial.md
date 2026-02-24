@@ -1,3 +1,8 @@
+This page targets two audiences:
+
+- Users shipping features: use the high-level engine and keep config-driven behavior.
+- Researchers/developers: drop to low-level APIs when you need full control over tensors, transforms, and post-processing.
+
 ## Basic inference
 
 Use the [`splifft.inference.InferenceEngine.from_pretrained`][] for a convenient high level API.
@@ -76,8 +81,6 @@ This outputs [`splifft.inference.InferenceOutput`][], containing:
 - the [sample rate][splifft.types.SampleRate] of the input tensor (so you can save the audio)
 
 ## Low level inference
-
-This gives you more control:
 
 ```py title="inference_low_level.py"
 --8<-- "docs/examples/inference_low_level.py"

@@ -6,65 +6,30 @@
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![MkDocs](https://shields.io/badge/MkDocs-documentation-informational)](https://undef13.github.io/splifft/)
 
-Lightweight utilities for music source separation.
+Lightweight utilities for music source separation and transcription.
 
-This library is a ground-up rewrite of the [zfturbo's MSST repo](https://github.com/ZFTurbo/Music-Source-Separation-Training), with a strong focus on robustness, simplicity and extensibility. While it is a fantastic collection of models and training scripts, this rewrite adopts a different architecture to address common pain points in research code.
+This library is a ground-up rewrite of the [zfturbo's MSST repo](https://github.com/ZFTurbo/Music-Source-Separation-Training), with a strong focus on robustness, simplicity and extensibility. We keep third-party dependencies to an absolute minimum to ease installation.
 
-Key principles:
+⚠️ This is pre-alpha software, expect significant breaking changes before v0.1.
 
-- **Configuration as code**: pydantic models are used instead of untyped dictionaries or `ConfigDict`. this provides static type safety, runtime data validation, IDE autocompletion, and a single, clear source of truth for all parameters.
-- **Data-oriented and functional core**: complex class hierarchies and inheritance are avoided. the codebase is built on plain data structures (like `dataclasses`) and pure, stateless functions.
-- **Semantic typing as documentation**: we leverage Python's type system to convey intent. types like `RawAudioTensor` vs. `NormalizedAudioTensor` make function signatures self-documenting, reducing the need for verbose comments and ensuring correctness.
-- **Extensibility without modification**: new models can be integrated from external packages without altering the core library. the dynamic model loading system allows easy plug-and-play adhering to the open/closed principle.
+## Supported Models
 
-⚠️ This is pre-alpha software, expect significant breaking changes.
+- [BS-Roformer](https://arxiv.org/abs/2309.02612) (including unwa's [HyperACE v1 and v2](https://huggingface.co/pcunwa/BS-Roformer-HyperACE), [Large Inst](https://huggingface.co/pcunwa/BS-Roformer-Large-Inst) modifications)
+- [Mel-Roformer](https://arxiv.org/abs/2409.04702)
+- [MDX23C TFC-TDF v3](https://arxiv.org/pdf/2306.09382)
+- [beat this!](https://arxiv.org/abs/2407.21658) for beat tracking without DBN postprocessing
+- [PESTO](https://arxiv.org/abs/2508.01488) for monophonic pitch estimation
+- [basic pitch](https://arxiv.org/abs/2203.09893) for polyphonic pitch estimation (only frame-level onset, multipitch and posteriorgrams, no MIDI postprocessing)
 
-## Features and Roadmap
-
-**Short term (high priority)**
-
-- [x] a robust, typed JSON configuration system powered by `pydantic`
-- [x] inferencing:
-    - [x] normalization and denormalization
-    - [x] chunk generation: vectorized with `unfold`
-    - [x] chunk stitching: vectorized overlap-add with `fold`
-    - [x] flexible ruleset for stem deriving: add/subtract model outputs or any intermediate output (e.g., creating an `instrumental` track by subtracting `vocals` from the `mixture`).
-- [x] web-based docs: generated with `mkdocs` with excellent crossrefs.
-- [x] simple CLI for inferencing on a directory of audio files
-- [ ] `BS-Roformer`: ensure bit-for-bit equivalence in pytorch and strive for max perf.
-    - [x] initial fp16 support
-    - [ ] support `coremltools` and `torch.compile`
-        - [x] handroll complex multiplication implementation
-        - [x] handroll stft in forward pass
-- [x] port additional SOTA models from MSST (e.g. Mel Roformer, SCNet)
-    - [x] directly support popular models (e.g. by [@unwa](https://huggingface.co/pcunwa), [gabox](https://huggingface.co/GaboxR67), by [@becruily](https://huggingface.co/becruily))
-- [x] model registry with simple file-based cache
-- [x] proper profiling (MFU, memory...)
-- [ ] support streaming with ring buffer
-- [ ] JIT and ONNX
-- [ ] evals: SDR, bleedless, fullness, etc.
-- [ ] datasets: MUSDB18-HQ, moises
-
-**Medium term**
-
-- [ ] simple web-based GUI with FastAPI and SolidJS.
-- [ ] Jupyter notebook
-
-**Long term (low priority)**
-
-- [ ] data augmentation
-- [ ] implement a complete, configurable training loop
-- [ ] [`max` kernels](#mojo)
-
-**Contributing**: PRs are very welcome!
+Our default registry supports 110+ community-trained separation models.
 
 ## Installation & Usage
 
-- [I just want to run it](#cli)
-- [I want to add it as a library to my Python project](#library)
-- [I want to hack around](#development)
+- [I just want to run it »](#cli)
+- [I want to add it as a library to my Python project »](#library)
+- [I want to contribute »](#development)
 
-Documentation on the config (amongst other details) can be found [here](https://undef13.github.io/splifft/config/)
+More information about models and config can be found on the [documentation](https://undef13.github.io/splifft/).
 
 ### CLI
 
@@ -107,7 +72,7 @@ There are three steps. You do not need to have Python installed.
 
     </details>
 
-3. We recommend using our built-in registry-based workflow to manage model config and weights:
+3. We recommend using our built-in registry to manage model config and weights:
 
     ```sh
     # list all available models, including those not yet available locally
@@ -190,52 +155,89 @@ There are three steps. You do not need to have Python installed.
 
 ## FAQ
 
-> How do I find the config and override parts of it (e.g. change the batch size)?
+> Where is my `config.json`, and which one is actually used?
 
-`splifft` by default stores a list of configs under [`src/splifft/data/config/*.json` of the project directory](https://github.com/undef13/splifft/tree/main/src/splifft/data/config).
+Think of two locations:
 
-When installed as a `uv tool` (or pip library), they will be located under the your site packages directory.
+1. **Built-in templates** bundled in the installed package ([`src/splifft/data/config/*.json`](https://github.com/undef13/splifft/tree/main/src/splifft/data/config) in this repo)
+2. **Your editable copy** after `splifft pull {model_id}`
 
-When you do `splifft pull {model_id}`, the configuration will be **copied from your site packages to a default cache directory**:
+`splifft run --model {model_id}` uses your cached copy:
 
 - Linux: `~/.cache/splifft/{model_id}/config.json`
-- MacOS: `~/Library/Caches/splifft/{model_id}/config.json`
+- macOS: `~/Library/Caches/splifft/{model_id}/config.json`
 - Windows: `%LOCALAPPDATA%\splifft\Cache\{model_id}\config.json`
 
-Modify these files to permanently change the configuration.
+> What is the difference between `--override-config` and editing `config.json`?
 
-To setup your IDE intellisense, you can find the JSON Schema under [`src/splifft/data/config.schema.json`](https://github.com/undef13/splifft/blob/main/src/splifft/data/config.schema.json).
+- `--override-config "inference.batch_size=2"` is **temporary** for that command only.
+- editing `config.json` is **persistent** for all future runs.
 
-> I get the error `OutOfMemoryError: CUDA out of memory. Tried to allocate...`
+Use overrides to experiment quickly, then copy stable values into your config.
 
-The default `inference.batch_size` values in the registry are tuned for running **one job at a time** on a ~12GB GPU.
+> I hit `CUDA out of memory`.
 
-If you hit CUDA out-of-memory, temporarily override the config:
+Reduce memory pressure first:
 
 ```sh
-# reduce memory pressure by lowering batch size
 splifft run --override-config "inference.batch_size=2"
+```
 
-# if still OOM, also enable mixed precision
+Then, if you have a GPU and want to use fp16 mixed precision:
+
+```sh
 splifft run \
     --override-config "inference.batch_size=2" \
     --override-config 'inference.use_autocast_dtype="float16"'
 ```
 
-Remember to commit your changes in your `config.json`.
+> I only want some outputs (for example one stem).
 
-> The model outputs multiple stems, how do I only output a particular subset of it?
+Modify `inference.requested_stems` in the `config.json` or:
 
 ```sh
 splifft run \
-    --model mdx23c-aufr33-drumsep_6stem \
-    --override-config 'inference.requested_stems=["kick", "snare"]' 
-splifft run \
     --model bs_roformer-fruit-sw \
-    --override-config 'inference.requested_stems=["piano"]' 
+    --override-config 'inference.requested_stems=["piano"]'
 ```
 
-Again, remember to commit your changes to your `config.json`.
+> My config suddenly fails validation after an upgrade.
+
+Your cached config may be from an older schema. If you want the latest preset config without redownloading checkpoint weights:
+
+```sh
+splifft pull --force-overwrite-config bs_roformer-fruit-sw
+```
+
+Note that this discards your previous changes!
+
+> Where do I find the config contract?
+
+- API docs: [`splifft.config.Config`](https://undef13.github.io/splifft/api/config/#splifft.config.Config)
+- JSON schema: [`src/splifft/data/config.schema.json`](https://github.com/undef13/splifft/blob/main/src/splifft/data/config.schema.json)
+
+For example, runtime batch size is `inference.batch_size`.
+
+> How do I derive custom outputs (e.g. drumless)?
+
+Use `derived_stems` in config (they will be executed in the order you define it), for example:
+
+```jsonc
+{
+    // ...
+    "derived_stems": {
+        "drumless": {
+            "operation": "subtract",
+            "stem_name": "vocals",
+            "by_stem_name": "mixture"
+        },
+        "drums_and_bass": {
+            "operation": "add",
+            "stem_names": ["drums", "bass"]
+        }
+    }
+}
+```
 
 ### Library
 
@@ -248,7 +250,7 @@ uv add splifft
 uv add git+https://github.com/undef13/splifft.git
 ```
 
-This will install the absolutely minimal core dependencies used under the `src/splifft/models` directory. Higher level components, e.g. inference, training or CLI components **must** be installed via optional depedencies, as specified in the [`project.optional-dependencies` section of `pyproject.toml`](https://github.com/undef13/splifft/blob/main/pyproject.toml), for example:
+This will install the absolutely minimal core dependencies used under the `src/splifft/models` directory. Higher level components, e.g. inference, training or CLI components **must** be installed via optional dependencies, as specified in the [`project.optional-dependencies` section of `pyproject.toml`](https://github.com/undef13/splifft/blob/main/pyproject.toml), for example:
 
 ```sh
 # enable the built-in configuration, inference and CLI
@@ -277,18 +279,53 @@ just fmt
 just docs
 ```
 
-Format your code:
+Code style:
 
-```sh
-just fmt
-```
+- Use stdlib dataclasses or pydantic BaseModels instead of untyped dictionaries or `ConfigDict`. This provides static type safety, runtime data validation, IDE autocompletion, and a single, clear source of truth for all parameters.
+- Avoid complex class hierarchies and inheritance. Use plain data structures and pure, stateless functions.
+- Leverage Python's type system and our built-in types (e.g. `splifft.types.ChunkSize`) to convey intent. It reduces the needs of verbose docstrings.
+- The core should remain agnostic and not contain any model-specific code other than high-level pre/postprocessing archetypes.
 
-This repo is no longer compatible with zfturbo's repo. The last version that does so is [`v0.0.1`](https://github.com/undef13/splifft/tree/v0.0.1). To pin a specific version in `uv`, change your `pyproject.toml`:
+PRs are very welcome!
 
-```toml
-[tool.uv.sources]
-splifft = { git = "https://github.com/undef13/splifft.git", rev = "287235e520f3bb927b58f9f53749fe3ccc248fac" }
-```
+#### Registry
+
+- Source of truth: `src/splifft/data/registry.json`
+- Per-model runtime config: `src/splifft/data/config/{config_id}.json`
+- JSON Schema are generated with `uv run scripts/gen_schema.py`.
+- Validation gate: pydantic (`Registry.from_file`, `Config.from_file`)
+
+If you would like to add a model to the `splifft` registry:
+
+- upload checkpoint (ideally to huggingface), with optional MSST config
+- add registry entry: `architecture`, `purpose`, `config_id`, `output`, `resources[]`
+- write your own config JSON under `data/config`, or auto-convert your MSST yaml with `uv run scripts/community.py fix-registry-with-msst`
+- optionally, run `uv run scripts/community.py fix-registry` to auto generate the `created_at` /`model_size`/`digest` fields using HF/GH metadata and sync outputs from configs.
+- format registry JSON: `pnpm run fmt:json src/splifft/data/registry.json`
+
+Right now, registry + configs are shipped in the package itself, with new model visibility inherently tied to package release/version bump. In the future, we may add a `splifft update` command.
+
+## Roadmap
+
+`splifft` is currently optimised for inferencing and does not yet support training.
+
+Near term:
+
+- `torch.jit.script`
+- ONNX export
+- `coremltools`
+- support streaming with ring buffer
+- simple web-based GUI with FastAPI and SolidJS.
+- Jupyter notebook
+
+Long term:
+
+- evals: SDR, bleedless, fullness, etc.
+- datasets: MUSDB18-HQ, moises
+- implement a complete, configurable training loop
+- data augmentation
+
+<!-- holding off for now until Mojo reaches 1.0
 
 ## Mojo
 
@@ -308,3 +345,4 @@ TODO:
 - [ ] transformer
 - [ ] `BandSplit` & `MaskEstimator`
 - [ ] full graph compilation
+-->

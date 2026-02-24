@@ -2836,7 +2836,7 @@ wheels = [
 
 [[package]]
 name = "splifft"
-version = "0.0.5"
+version = "0.0.6"
 source = { editable = "." }
 dependencies = [
     { name = "annotated-types" },
@@ -2871,15 +2871,6 @@ networking = [
     { name = "aiolimiter" },
     { name = "httpx", extra = ["http2", "socks", "zstd"] },
     { name = "orjson" },
-]
-recommended = [
-    { name = "httpx", extra = ["http2"] },
-    { name = "platformdirs" },
-    { name = "pydantic" },
-    { name = "rich" },
-    { name = "soundfile", marker = "sys_platform == 'Windows'" },
-    { name = "torchcodec" },
-    { name = "typer" },
 ]
 sageattention = [
     { name = "sageattention" },
@@ -2925,13 +2916,12 @@ requires-dist = [
     { name = "rich", marker = "extra == 'inference'", specifier = ">=14.1.0" },
     { name = "sageattention", marker = "extra == 'sageattention'", specifier = ">=1.0.6" },
     { name = "soundfile", marker = "sys_platform == 'Windows' and extra == 'inference'", specifier = ">=0.13.1" },
-    { name = "splifft", extras = ["config", "inference", "cli", "web"], marker = "extra == 'recommended'" },
     { name = "torch", specifier = ">=2.7.0" },
     { name = "torchaudio", specifier = ">=2.7.0" },
     { name = "torchcodec", marker = "extra == 'inference'", specifier = ">=0.5" },
     { name = "typer", marker = "extra == 'cli'", specifier = ">=0.16.0" },
 ]
-provides-extras = ["config", "inference", "cli", "web", "recommended", "sageattention", "networking", "analysis", "msst-compat"]
+provides-extras = ["config", "inference", "cli", "web", "sageattention", "networking", "analysis", "msst-compat"]
 
 [package.metadata.requires-dev]
 dev = [
