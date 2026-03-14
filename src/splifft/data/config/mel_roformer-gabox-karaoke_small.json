@@ -1,0 +1,25 @@
+{
+    "identifier": "mel_roformer-gabox-aufr33-karaoke_small",
+    "model_type": "bs_roformer",
+    "model": {
+        "chunk_size": 352800,
+        "output_stem_names": [
+            "vocals"
+        ],
+        "dim": 384,
+        "depth": 6,
+        "band_config": {
+            "kind": "mel"
+        },
+        "stft_hop_length": 441,
+        "norm_output": true,
+        "mask_estimator_depth": 3,
+        "mlp_expansion_factor": 1,
+        "use_torch_checkpoint": true
+    },
+    "transform": {
+        "kind": "stft",
+        "hop_length": 441
+    },
+    "waveform_chunking": {}
+}

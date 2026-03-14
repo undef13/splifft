@@ -1,4 +1,141 @@
 {
+    "mel_roformer-gilliaaan-monostereo_duality_beta": {
+        "authors": ["gilliaaan"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "config_id": "mel_roformer-gilliaaan-monostereo_duality_beta",
+        "created_at": "2026-03-13T05:43:01.000Z",
+        "output": ["mid", "side"],
+        "metrics": [
+            {
+                "source": "self-reported beta validation on custom synthetic dataset (1000+ songs, ~4 min each)"
+            },
+            {
+                "values": {
+                    "mid": {"sdr": 10.41, "aura_mrstft": 16.79, "bleedless": 35.29},
+                    "side": {"sdr": 10.39, "aura_mrstft": 13.68, "bleedless": 27.95}
+                }
+            }
+        ],
+        "description": [
+            {
+                "content": [
+                    "phantom center dual extractor trained on a custom synthetic dataset of 1000+ 4-minute songs.",
+                    "isolates only correlated center content so hard-panned signals remain in side output and do not leak into center.",
+                    "bleedless and fullness are reported to be on similar levels.",
+                    "reported higher sdr than currently available baselines on the author's validation set.",
+                    "still training; this release is a demo beta.",
+                    "recommended overlap is 8 or more for best quality.",
+                    "feedback is welcome."
+                ],
+                "author": "gilliaaan"
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/gilliaaan/Mel-Band-Roformer-MonoStereo-Duality/resolve/main/gilliaan_MonoStereo_Dual_Beta1.ckpt",
+                "digest": "sha256:62579f748925893d0b1408e5a3319b1bbd8451a8f62d948e8438c72471f4574f"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/gilliaaan/Mel-Band-Roformer-MonoStereo-Duality/resolve/main/config_mel_band_roformer_monostereo_dual.yaml"
+            }
+        ],
+        "model_size": 869726129
+    },
+    "bs_roformer-anvuew-voc_mag": {
+        "authors": ["anvuew"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "config_id": "bs_roformer-anvuew-voc_mag",
+        "created_at": "2026-03-12T06:51:33.000Z",
+        "output": ["vocals"],
+        "metrics": [
+            {
+                "values": { "vocals": {"bleedless": 32.17, "fullness": 22.15, "sdr": 11.09} }
+            },
+            {"source": "all bleedless/fullness/sdr metrics were reported better than revive3e"}
+        ],
+        "description": [
+            {
+                "content": ["vocal separation model specialized for magnitude spectrum accuracy."],
+                "author": "anvuew"
+            },
+            {
+                "content": [
+                    "managed to pull out harmonies that were missing in prior tests and avoided extracting some sampled vocal percussion."
+                ],
+                "author": "cristouk"
+            },
+            {
+                "content": [
+                    "pretty noisy compared to fv7beta2 on limited tests.",
+                    "keeps harmonies at more proper volume and less muddy balance.",
+                    "can produce noticeable noise during quieter or silent parts."
+                ],
+                "author": "rainboomdash"
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/anvuew/BS_RoFormer_mag/resolve/main/bs_roformer_mag_anvuew.ckpt",
+                "digest": "sha256:16792de7af1a5d5293debec24d4566b13b645e6707776234409cce7697ea933d"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/anvuew/BS_RoFormer_mag/raw/main/config.yaml"
+            }
+        ],
+        "model_size": 204502577
+    },
+    "mel_roformer-gabox-karaoke_small": {
+        "authors": ["gabox", "aufr33"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "config_id": "mel_roformer-gabox-karaoke_small",
+        "created_at": "2026-02-28T23:27:46.000Z",
+        "output": ["vocals"],
+        "description": [
+            {
+                "content": [
+                    "new mel-roformer karaoke model by gabox and aufr33.",
+                    "compatible with uvr, but not with the uvr rtx 5000 patch."
+                ]
+            },
+            {
+                "content": [
+                    "sounds fuller than other karaoke models and clears background vocals more accurately."
+                ],
+                "author": "baptizedinfear"
+            },
+            {
+                "content": ["great: could hear vocals that were not audible before."],
+                "author": "makesomenoiseyuh"
+            },
+            { "content": ["not great with duets."], "author": "gabox" },
+            {
+                "content": [
+                    "lowering chunk_size to 352800 makes it muddier but less noisy.",
+                    "an in-between chunk size may be preferable."
+                ],
+                "author": "rainboomdash"
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/resolve/main/melbandroformers/karaoke/small_karaoke_gaboxaufr.ckpt",
+                "digest": "sha256:6182fc508c0791d5a2ee4121b51f5ae9115a1bdbd209a8688b0620f4fd17fdca"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/GaboxR67/MelBandRoformers/raw/main/melbandroformers/karaoke/config_karaoke_small.yaml"
+            }
+        ],
+        "model_size": 202574227
+    },
     "mel_roformer-unwa-big_beta7": {
         "authors": ["unwa"],
         "purpose": "separation",

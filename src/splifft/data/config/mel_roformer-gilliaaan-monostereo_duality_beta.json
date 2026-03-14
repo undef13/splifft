@@ -1,0 +1,29 @@
+{
+    "identifier": "mel_roformer-gilliaaan-monostereo_duality",
+    "model_type": "bs_roformer",
+    "model": {
+        "chunk_size": 317520,
+        "output_stem_names": [
+            "mid",
+            "side"
+        ],
+        "dim": 256,
+        "depth": 12,
+        "band_config": {
+            "kind": "mel"
+        },
+        "stft_hop_length": 441,
+        "norm_output": true,
+        "mask_estimator_depth": 3
+    },
+    "transform": {
+        "kind": "stft",
+        "hop_length": 441
+    },
+    "inference": {
+        "batch_size": 2
+    },
+    "waveform_chunking": {
+        "overlap_ratio": 0.875
+    }
+}

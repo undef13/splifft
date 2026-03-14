@@ -978,7 +978,7 @@ def _build_config(
             "identifier": model_id,
             "model_type": model_type,
             "model": model_params_lazy,
-            "stft": stft_params,
+            "transform": {"kind": "stft", **stft_params},
             "audio_io": audio_io_params,
             "inference": inference_params,
             "waveform_chunking": chunking_params,

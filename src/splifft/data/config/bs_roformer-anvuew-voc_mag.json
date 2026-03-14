@@ -1,0 +1,23 @@
+{
+    "identifier": "bs_roformer-anvuew-voc_mag",
+    "model_type": "bs_roformer",
+    "model": {
+        "chunk_size": 640000,
+        "output_stem_names": [
+            "vocals"
+        ],
+        "dim": 256,
+        "depth": 12,
+        "band_config": {
+            "kind": "fixed"
+        },
+        "use_torch_checkpoint": true
+    },
+    "transform": {
+        "kind": "stft"
+    },
+    "inference": {
+        "batch_size": 2
+    },
+    "waveform_chunking": {}
+}
