@@ -9,7 +9,7 @@ fmt:
     pnpm run fmt:json src/splifft/data/registry.json
 
 docs:
-    uv run mkdocs serve
+    uv run zensical serve
 
 gen-schema:
     uv run scripts/gen_schema.py

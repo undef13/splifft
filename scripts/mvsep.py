@@ -262,7 +262,7 @@ def correlations(
             "ytick.color": "#d0d0d0",
             "text.color": "#d0d0d0",
             "grid.color": "#444444",
-            "svg.fonttype": "none",  # render as text, not paths
+            "svg.fonttype": "path",  # convert text to vector paths for font-independent SVG rendering
         }
     )
 

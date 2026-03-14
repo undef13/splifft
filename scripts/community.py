@@ -1,11 +1,9 @@
-"""Utilities to collate community-contributed models and resources (jarredou's
-colab notebook, deton25's guide, huggingface hub api: https://huggingface.co/.well-known/openapi.json)
-into our `registry.json`.
+"""Utilities to collate community-contributed model resources (jarredou's
+colab notebook and huggingface hub api metadata) into `registry.json`.
 """
 
 from __future__ import annotations
 
-import io
 import json
 import logging
 import re
@@ -15,18 +13,15 @@ from datetime import datetime, timezone
 from itertools import chain
 from pathlib import Path, PurePosixPath
 from typing import (
-    IO,
     TYPE_CHECKING,
     Annotated,
     Any,
     Generator,
     Iterable,
-    Iterator,
     Literal,
     NamedTuple,
     NotRequired,
     Self,
-    Sequence,
     TypeAlias,
     TypedDict,
     cast,
@@ -124,76 +119,6 @@ def _colab_blocks(path_ipynb: Path) -> Generator[str, None, None]:
 
 
 #
-# deton24's guide has hundreds of pages, we get rid of sections that are not model-related
-#
-
-PATH_GUIDE_DOCX = PATH_TMP / "guide.docx"
-PATH_GUIDE_MD = PATH_TMP / "guide.md"
-PATH_GUIDE_MODELS_MD = PATH_TMP / "guide_filtered.md"
-# fmt: off
-KEYWORDS_GUIDE_NON_MODELS = [
-    "*plugins*", "mdx settings", "uvr5 gui", "sources of flacs",
-    "arigato78", "karafan", "ensemble", "ripple", "training", "tips",
-    "troubleshooting", "stems/multitracks", "gpu acceleration",
-    "audioshake", "lalal", "gsep", "dango", "moises",
-    "dolby atmos ripping", "ai-killing"
-]
-# fmt: on
-
-
-@app.command()
-def parse_guide(
-    blacklist_keywords: list[str] = KEYWORDS_GUIDE_NON_MODELS,
-    output_path: OutputPath = PATH_GUIDE_MODELS_MD,
-) -> None:
-    """Output a pruned version of the guide in markdown."""
-    if not PATH_GUIDE_DOCX.exists():
-        logger.error(
-            f"{PATH_GUIDE_DOCX=} not found, "
-            "navigate to https://docs.google.com/document/d/17fjNvJzj8ZGSer7c7OFe_CNfUKbAxEh_OBv94ZdRG5c/edit, "
-            "then `File > Download > Microsoft Word (.docx)`"
-        )
-        return
-    subprocess.run(["pandoc", str(PATH_GUIDE_DOCX), "-o", str(PATH_GUIDE_MD)])
-
-    def write_pruned_guide(file_out: IO[str]) -> None:
-        with open(PATH_GUIDE_MD, "r", encoding="utf-8") as file_in:
-            for line in prune_sections(file_in, blacklist_keywords):
-                file_out.write(line)
-
-    if str(output_path) == "-":
-        buf = io.StringIO()
-        write_pruned_guide(buf)
-        print(buf.getvalue())
-        return
-    with open(output_path, "w", encoding="utf-8") as fout:
-        write_pruned_guide(fout)
-
-
-def prune_sections(
-    lines: Iterator[str], blacklist_keywords: Sequence[str]
-) -> Generator[str, None, None]:
-    exclude_level: int | None = None
-    used_keywords = []
-    for line in lines:
-        if (line_ls := line.lstrip().lower()).startswith("#"):
-            # print(line_ls)
-            curr_level = line_ls.split(" ")[0].count("#")
-            if exclude_level is not None and curr_level <= exclude_level:
-                exclude_level = None
-            for keyword in blacklist_keywords:
-                if keyword not in line_ls:
-                    continue
-                exclude_level = curr_level
-                used_keywords.append(keyword)
-                logger.info(f"excluding `{line_ls}`")
-        if exclude_level is None:
-            yield line
-    if unused := set(blacklist_keywords) - set(used_keywords):
-        logger.warning(f"unused keywords: {unused}")
-
-
-#
 # verification: ensure MSST yaml and ckpt urls are reachable
 # and add useful metadata such as commit hash, date and file size
 #
@@ -255,25 +180,6 @@ def _urls_from_registry(registry: Registry) -> Generator[ResourceUrl, None, None
     for model in registry.values():
         for resource in model.resources:
             yield ResourceUrl(resource.url)
-
-
-def _urls_from_guide(path: Path) -> Generator[ResourceUrl, None, None]:
-    text = path.read_text(encoding="utf-8")
-    matches = re.findall(
-        r"https?://(?:huggingface\.co|github\.com)/[^\s\)\]\}\"]+",
-        text,
-    )
-    for url in matches:
-        clean = url.rstrip(".,;:")
-        parsed = urlparse(clean)
-        if parsed.netloc == "huggingface.co" and parsed.path.lstrip("/").startswith("spaces/"):
-            continue
-        if (
-            _hf_node_and_file_from_url(clean) is None
-            and _gh_release_node_and_asset_from_url(clean) is None
-        ):
-            continue
-        yield ResourceUrl(clean)
 
 
 def _urls_from_jarredou(path: Path) -> Generator[ResourceUrl, None, None]:
@@ -573,18 +479,16 @@ def _write_registry_sorted(registry: Registry, registry_path: Path) -> None:
 @app.command()
 def fix_registry(
     registry_path: Path = PATH_REGISTRY_DEFAULT,
-    guide_path: Path = PATH_GUIDE_MODELS_MD,
     jarredou_path: Path = PATH_JARREDOU_MSST_JSON,
     output_path: Path = PATH_TMP / "cache",
-    warn_missing: bool = False,  # off by default since some are htdemucs / unsupported architecture
+    warn_missing: bool = False,
     skip_overwrite_created_at: list[str] = [
         "bs_roformer-fruit-sw",
         "basic_pitch-spotify-icassp2022",
         "pesto-sonycsl-mir1k_g7",
     ],
 ) -> None:
-    """Checks that URLs in the guide and jarredou's colab are present in the registry,
-    caches file metadata from Hugging Face and GitHub releases and ensures dates are correct."""
+    """Checks registry and jarredou colab URL consistency and refreshes metadata caches."""
     registry = Registry.from_file(registry_path)
     config_dir = DIR_DATA / "config"
     instrument_names = set(get_args(t.Instrument))
@@ -622,13 +526,16 @@ def fix_registry(
         return stems
 
     registry_urls = list(_urls_from_registry(registry))
-    guide_urls = list(_urls_from_guide(guide_path))
-    jarredou_urls = list(_urls_from_jarredou(jarredou_path))
+    jarredou_urls: list[ResourceUrl] = []
     if warn_missing:
-        _warn_missing_in_registry(guide_urls, registry_urls, source="guide")
+        if jarredou_path.exists():
+            jarredou_urls = list(_urls_from_jarredou(jarredou_path))
+        else:
+            logger.warning(f"jarredou path not found: {jarredou_path}")
+
         _warn_missing_in_registry(jarredou_urls, registry_urls, source="jarredou colab")
 
-    all_urls = list(chain(registry_urls, guide_urls, jarredou_urls))
+    all_urls = list(chain(registry_urls, jarredou_urls))
     hf_repos: set[HfResourceNode] = set()
     gh_releases: set[GitHubReleaseNode] = set()
     for u in all_urls:
@@ -641,7 +548,7 @@ def fix_registry(
 
     output_hf = output_path / "huggingface"
     output_gh = output_path / "github"
-    with httpx.Client(http2=True, headers={"User-Agent": "splifft-community/1.0"}) as client:
+    with httpx.Client(http2=True, follow_redirects=True) as client:
         for repo in sorted(hf_repos):
             _cache_hf_repo_tree(repo, output_hf, client=client)
         for release in sorted(gh_releases):

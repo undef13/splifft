@@ -38,15 +38,15 @@ dependencies = [
     "einops>=0.8.1",
     "numpy>=2",
     "torch>=2.7.0",
-    "torchaudio>=2.7.0",      # for melband roformers, we should probably put this as optional but eh...
+    "torchaudio>=2.7.0", # for melband roformers, we should probably put this as optional but eh...
 ]
 
 [project.optional-dependencies]
 config = ["pydantic>=2.11.5", "platformdirs>=4.3.6"]
 inference = [
-    "torchcodec>=0.5",                               # AudioEncoder is only available for >=0.5
+    "torchcodec>=0.5", # AudioEncoder is only available for >=0.5
     "soundfile>=0.13.1 ; sys_platform == 'Windows'",
-    "rich>=14.1.0",                                  # replacement for tqdm, though cli should already provide it
+    "rich>=14.1.0", # replacement for tqdm, though cli should already provide it
 ]
 cli = ["typer>=0.16.0"]
 web = ["httpx[http2]>=0.28.1"]
@@ -71,11 +71,7 @@ splifft = "splifft.__main__:app"
 
 [dependency-groups]
 dev = ["ipykernel>=6.29.5", "pandas>=2.3.0"]
-docs = [
-    "mkdocs-inline-select-svg-plugin>=0.1.0",
-    "mkdocs-material[imaging]>=9.6.14",
-    "mkdocstrings-python>=1.16.12",
-]
+docs = ["zensical>=0.0.27", "mkdocstrings-python>=2.0.3"]
 lint = ["ruff>=0.11.12"]
 test = ["pytest>=8.4.0"]
 typing = ["mypy>=1.16.0"]
