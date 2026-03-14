@@ -1,0 +1,1316 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Lightweight utilities for music source separation.">
+      
+      
+      
+        <link rel="canonical" href="https://undef13.github.io/splifft/">
+      
+      
+      
+        <link rel="next" href="models/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>splifft</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="assets/css/plots.css">
+    
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+    
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  
+<meta property="og:type" content="website" />
+<meta property="og:title" content="splifft" />
+<meta property="og:description" content="Lightweight utilities for music source separation." />
+<meta property="og:image" content="https://undef13.github.io/splifft/assets/images/social/index.png" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:url" content="https://undef13.github.io/splifft/" />
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:title" content="splifft" />
+<meta property="twitter:description" content="Lightweight utilities for music source separation." />
+<meta property="twitter:image" content="https://undef13.github.io/splifft/assets/images/social/index.png" />
+</head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#splifft" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="." title="splifft" class="md-header__button md-logo" aria-label="splifft" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            splifft
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Home
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/undef13/splifft" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    undef13/splifft
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="." title="splifft" class="md-nav__button md-logo" aria-label="splifft" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    splifft
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/undef13/splifft" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    undef13/splifft
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="." class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#supported-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Models
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation &amp; Usage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation &amp; Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CLI
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#faq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FAQ
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="FAQ">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#library" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Library
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Development
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Development">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Registry
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roadmap
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Library Tutorial
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts & Definitions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    All
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IO
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/inference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/training/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#supported-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Models
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation &amp; Usage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation &amp; Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CLI
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#faq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FAQ
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="FAQ">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#library" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Library
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Development
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Development">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Registry
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roadmap
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="splifft">SpliFFT</h1>
+<p><a href="https://pypi.python.org/pypi/splifft"><img alt="image" src="https://img.shields.io/pypi/v/splifft" /></a>
+<a href="https://pypi.python.org/pypi/splifft"><img alt="image" src="https://img.shields.io/pypi/l/splifft" /></a>
+<a href="https://pypi.python.org/pypi/splifft"><img alt="image" src="https://img.shields.io/pypi/pyversions/splifft" /></a>
+<a href="https://github.com/astral-sh/ruff"><img alt="Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" /></a>
+<a href="https://undef13.github.io/splifft/"><img alt="MkDocs" src="https://shields.io/badge/MkDocs-documentation-informational" /></a></p>
+<p>Lightweight utilities for music source separation and transcription.</p>
+<p>This library is a ground-up rewrite of the <a href="https://github.com/ZFTurbo/Music-Source-Separation-Training">zfturbo's MSST repo</a>, with a strong focus on robustness, simplicity and extensibility. We keep third-party dependencies to an absolute minimum to ease installation.</p>
+<p>⚠️ This is pre-alpha software, expect significant breaking changes before v0.1.</p>
+<h2 id="supported-models">Supported Models</h2>
+<ul>
+<li><a href="https://arxiv.org/abs/2309.02612">BS-Roformer</a> (including unwa's <a href="https://huggingface.co/pcunwa/BS-Roformer-HyperACE">HyperACE v1 and v2</a>, <a href="https://huggingface.co/pcunwa/BS-Roformer-Large-Inst">Large Inst</a> modifications)</li>
+<li><a href="https://arxiv.org/abs/2409.04702">Mel-Roformer</a></li>
+<li><a href="https://arxiv.org/pdf/2306.09382">MDX23C TFC-TDF v3</a></li>
+<li><a href="https://arxiv.org/abs/2407.21658">beat this!</a> for beat tracking without DBN postprocessing</li>
+<li><a href="https://arxiv.org/abs/2508.01488">PESTO</a> for monophonic pitch estimation</li>
+<li><a href="https://arxiv.org/abs/2203.09893">basic pitch</a> for polyphonic pitch estimation (only frame-level onset, multipitch and posteriorgrams, no MIDI postprocessing)</li>
+</ul>
+<p>Our default registry supports 110+ community-trained separation models.</p>
+<h2 id="installation-usage">Installation &amp; Usage</h2>
+<ul>
+<li><a href="#cli">I just want to run it »</a></li>
+<li><a href="#library">I want to add it as a library to my Python project »</a></li>
+<li><a href="#development">I want to contribute »</a></li>
+</ul>
+<p>More information about models and config can be found on the <a href="https://undef13.github.io/splifft/">documentation</a>.</p>
+<h3 id="cli">CLI</h3>
+<p>There are three steps. You do not need to have Python installed.</p>
+<ol>
+<li>
+<p>Install <a href="https://docs.astral.sh/uv/getting-started/installation/"><code>uv</code></a> if you haven't already. It is an awesome Python package and library manager with pip compatibility.</p>
+<div class="language-sh highlight"><pre><span></span><code><span class="c1"># Linux / MacOS</span>
+wget<span class="w"> </span>-qO-<span class="w"> </span>https://astral.sh/uv/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh
+<span class="c1"># Windows</span>
+powershell<span class="w"> </span>-ExecutionPolicy<span class="w"> </span>ByPass<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;irm https://astral.sh/uv/install.ps1 | iex&quot;</span>
+</code></pre></div>
+</li>
+<li>
+<p>Open a new terminal and install the latest stable PyPI release as a <a href="https://docs.astral.sh/uv/concepts/tools/">tool</a>. It will install the Python interpreter, all necessary packages and add the <code>splifft</code> executable to your <code>PATH</code>:</p>
+<div class="language-sh highlight"><pre><span></span><code>uv<span class="w"> </span>tool<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;splifft[config,inference,cli,web]&quot;</span>
+</code></pre></div>
+<p><details>
+  <summary>Explanation of feature flags</summary></p>
+<p>The core is kept as minimal as possible. Pick which ones you need:</p>
+<ul>
+<li>The <code>config</code> extra is used to parse the model configuration from JSON and discover the registry's default cache dir.</li>
+<li>The <code>inference</code> extra is used to decode audio formats.</li>
+<li>The <code>cli</code> extra provides you with the <code>splifft</code> command line tool</li>
+<li>The <code>web</code> extra is used to download models.
+</details></li>
+</ul>
+<p><details>
+  <summary>I want the latest bleeding-edge version</summary></p>
+<p>This directly pulls from the <code>main</code> branch, which may be unstable:</p>
+<div class="language-sh highlight"><pre><span></span><code>uv<span class="w"> </span>tool<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;git+https://github.com/undef13/splifft.git[config,inference,cli,web]&quot;</span>
+</code></pre></div>
+</details>
+</li>
+<li>
+<p>We recommend using our built-in registry to manage model config and weights:</p>
+<div class="language-sh highlight"><pre><span></span><code><span class="c1"># list all available models, including those not yet available locally</span>
+splifft<span class="w"> </span>ls<span class="w"> </span>-a
+
+<span class="c1"># download model files and config to your user cache directory</span>
+<span class="c1"># ~/.cache/splifft on linux</span>
+splifft<span class="w"> </span>pull<span class="w"> </span>bs_roformer-fruit-sw
+
+<span class="c1"># view information about the configuration</span>
+<span class="c1"># modify the configuration, such as batch size according to your hardware</span>
+splifft<span class="w"> </span>info<span class="w"> </span>bs_roformer-fruit-sw
+
+<span class="c1"># run inference</span>
+splifft<span class="w"> </span>run<span class="w"> </span>data/audio/input/3BFTio5296w.flac<span class="w"> </span>--model<span class="w"> </span>bs_roformer-fruit-sw
+</code></pre></div>
+<p>Alternatively, for custom models, you can manage files manually. Go into a new directory and place the <a href="https://github.com/undef13/splifft/releases/download/v0.0.1/roformer-fp16.pt">model checkpoint</a> and <a href="https://raw.githubusercontent.com/undef13/splifft/refs/heads/main/data/config/bs_roformer.json">configuration</a> inside it. Assuming your current directory has this structure (doesn't have to be exactly this):</p>
+<p><details>
+  <summary>Minimal reproduction: with example audio from YouTube</summary></p>
+<div class="language-sh highlight"><pre><span></span><code>uv<span class="w"> </span>tool<span class="w"> </span>install<span class="w"> </span>yt-dlp
+yt-dlp<span class="w"> </span>-f<span class="w"> </span>bestaudio<span class="w"> </span>-o<span class="w"> </span>data/audio/input/3BFTio5296w.flac<span class="w"> </span>3BFTio5296w
+wget<span class="w"> </span>-P<span class="w"> </span>data/models/<span class="w"> </span>https://huggingface.co/undef13/splifft/resolve/main/roformer-fp16.pt?download<span class="o">=</span><span class="nb">true</span>
+wget<span class="w"> </span>-P<span class="w"> </span>data/config/<span class="w"> </span>https://raw.githubusercontent.com/undef13/splifft/refs/heads/main/data/config/bs_roformer.json
+</code></pre></div>
+</details>
+<div class="language-text highlight"><pre><span></span><code>.
+└── data
+    ├── audio
+    │   ├── input
+    │   │   └── 3BFTio5296w.flac
+    │   └── output
+    ├── config
+    │   └── bs_roformer.json
+    └── models
+        └── roformer-fp16.pt
+</code></pre></div>
+<p>Run:</p>
+<div class="language-sh highlight"><pre><span></span><code>splifft<span class="w"> </span>run<span class="w"> </span>data/audio/input/3BFTio5296w.flac<span class="w"> </span>--config<span class="w"> </span>data/config/bs_roformer.json<span class="w"> </span>--checkpoint<span class="w"> </span>data/models/roformer-fp16.pt
+</code></pre></div>
+<p><details>
+  <summary>Console output</summary></p>
+<div class="language-php highlight"><pre><span></span><code><span class="x">[00:00:41] INFO     using device=device(type=&#39;cuda&#39;)                                                 __main__.py:111</span>
+<span class="x">           INFO     loading configuration from                                                       __main__.py:113</span>
+<span class="x">                    config_path=PosixPath(&#39;data/config/bs_roformer.json&#39;)                                           </span>
+<span class="x">           INFO     loading model metadata `BSRoformer` from module `splifft.models.bs_roformer`     __main__.py:126</span>
+<span class="x">[00:00:42] INFO     loading weights from checkpoint_path=PosixPath(&#39;data/models/roformer-fp16.pt&#39;)   __main__.py:127</span>
+<span class="x">           INFO     processing audio file:                                                           __main__.py:135</span>
+<span class="x">                    mixture_path=PosixPath(&#39;data/audio/input/3BFTio5296w.flac&#39;)                                     </span>
+<span class="x">⠙ processing chunks... ━━━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  25% 0:00:10 (bs=4 • cuda • float16)</span>
+<span class="x">[00:00:56] INFO     wrote stem `bass` to data/audio/output/3BFTio5296w/bass.flac                     __main__.py:158</span>
+<span class="x">           INFO     wrote stem `drums` to data/audio/output/3BFTio5296w/drums.flac                   __main__.py:158</span>
+<span class="x">           INFO     wrote stem `other` to data/audio/output/3BFTio5296w/other.flac                   __main__.py:158</span>
+<span class="x">[00:00:57] INFO     wrote stem `vocals` to data/audio/output/3BFTio5296w/vocals.flac                 __main__.py:158</span>
+<span class="x">           INFO     wrote stem `guitar` to data/audio/output/3BFTio5296w/guitar.flac                 __main__.py:158</span>
+<span class="x">           INFO     wrote stem `piano` to data/audio/output/3BFTio5296w/piano.flac                   __main__.py:158</span>
+<span class="x">[00:00:58] INFO     wrote stem `instrum` to data/audio/output/3BFTio5296w/instrum.flac               __main__.py:158</span>
+<span class="x">           INFO     wrote stem `drums_and_bass` to data/audio/output/3BFTio5296w/drums_and_bass.flac __main__.py:158</span>
+</code></pre></div>
+</details>
+<p>To update the tool:</p>
+<div class="language-sh highlight"><pre><span></span><code>uv<span class="w"> </span>tool<span class="w"> </span>upgrade<span class="w"> </span>splifft<span class="w"> </span>--force-reinstall
+</code></pre></div>
+</li>
+</ol>
+<h2 id="faq">FAQ</h2>
+<blockquote>
+<p>Where is my <code>config.json</code>, and which one is actually used?</p>
+</blockquote>
+<p>Think of two locations:</p>
+<ol>
+<li><strong>Built-in templates</strong> bundled in the installed package (<a href="https://github.com/undef13/splifft/tree/main/src/splifft/data/config"><code>src/splifft/data/config/*.json</code></a> in this repo)</li>
+<li><strong>Your editable copy</strong> after <code>splifft pull {model_id}</code></li>
+</ol>
+<p><code>splifft run --model {model_id}</code> uses your cached copy:</p>
+<ul>
+<li>Linux: <code>~/.cache/splifft/{model_id}/config.json</code></li>
+<li>macOS: <code>~/Library/Caches/splifft/{model_id}/config.json</code></li>
+<li>Windows: <code>%LOCALAPPDATA%\splifft\Cache\{model_id}\config.json</code></li>
+</ul>
+<blockquote>
+<p>What is the difference between <code>--override-config</code> and editing <code>config.json</code>?</p>
+</blockquote>
+<ul>
+<li><code>--override-config "inference.batch_size=2"</code> is <strong>temporary</strong> for that command only.</li>
+<li>editing <code>config.json</code> is <strong>persistent</strong> for all future runs.</li>
+</ul>
+<p>Use overrides to experiment quickly, then copy stable values into your config.</p>
+<blockquote>
+<p>I hit <code>CUDA out of memory</code>.</p>
+</blockquote>
+<p>Reduce memory pressure first:</p>
+<div class="language-sh highlight"><pre><span></span><code>splifft<span class="w"> </span>run<span class="w"> </span>--override-config<span class="w"> </span><span class="s2">&quot;inference.batch_size=2&quot;</span>
+</code></pre></div>
+<p>Then, if you have a GPU and want to use fp16 mixed precision:</p>
+<div class="language-sh highlight"><pre><span></span><code>splifft<span class="w"> </span>run<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--override-config<span class="w"> </span><span class="s2">&quot;inference.batch_size=2&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--override-config<span class="w"> </span><span class="s1">&#39;inference.use_autocast_dtype=&quot;float16&quot;&#39;</span>
+</code></pre></div>
+<blockquote>
+<p>I only want some outputs (for example one stem).</p>
+</blockquote>
+<p>Modify <code>inference.requested_stems</code> in the <code>config.json</code> or:</p>
+<div class="language-sh highlight"><pre><span></span><code>splifft<span class="w"> </span>run<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--model<span class="w"> </span>bs_roformer-fruit-sw<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--override-config<span class="w"> </span><span class="s1">&#39;inference.requested_stems=[&quot;piano&quot;]&#39;</span>
+</code></pre></div>
+<blockquote>
+<p>My config suddenly fails validation after an upgrade.</p>
+</blockquote>
+<p>Your cached config may be from an older schema. If you want the latest preset config without redownloading checkpoint weights:</p>
+<div class="language-sh highlight"><pre><span></span><code>splifft<span class="w"> </span>pull<span class="w"> </span>--force-overwrite-config<span class="w"> </span>bs_roformer-fruit-sw
+</code></pre></div>
+<p>Note that this discards your previous changes!</p>
+<blockquote>
+<p>Where do I find the config contract?</p>
+</blockquote>
+<ul>
+<li>API docs: <a href="https://undef13.github.io/splifft/api/config/#splifft.config.Config"><code>splifft.config.Config</code></a></li>
+<li>JSON schema: <a href="https://github.com/undef13/splifft/blob/main/src/splifft/data/config.schema.json"><code>src/splifft/data/config.schema.json</code></a></li>
+</ul>
+<p>For example, runtime batch size is <code>inference.batch_size</code>.</p>
+<blockquote>
+<p>How do I derive custom outputs (e.g. drumless)?</p>
+</blockquote>
+<p>Use <code>derived_stems</code> in config (they will be executed in the order you define it), for example:</p>
+<div class="language-text highlight"><pre><span></span><code>{
+    // ...
+    &quot;derived_stems&quot;: {
+        &quot;drumless&quot;: {
+            &quot;operation&quot;: &quot;subtract&quot;,
+            &quot;stem_name&quot;: &quot;vocals&quot;,
+            &quot;by_stem_name&quot;: &quot;mixture&quot;
+        },
+        &quot;drums_and_bass&quot;: {
+            &quot;operation&quot;: &quot;add&quot;,
+            &quot;stem_names&quot;: [&quot;drums&quot;, &quot;bass&quot;]
+        }
+    }
+}
+</code></pre></div>
+<h3 id="library">Library</h3>
+<p>Add <code>splifft</code> to your project:</p>
+<div class="language-sh highlight"><pre><span></span><code><span class="c1"># latest pypi version</span>
+uv<span class="w"> </span>add<span class="w"> </span>splifft
+<span class="c1"># latest bleeding edge</span>
+uv<span class="w"> </span>add<span class="w"> </span>git+https://github.com/undef13/splifft.git
+</code></pre></div>
+<p>This will install the absolutely minimal core dependencies used under the <code>src/splifft/models</code> directory. Higher level components, e.g. inference, training or CLI components <strong>must</strong> be installed via optional dependencies, as specified in the <a href="https://github.com/undef13/splifft/blob/main/pyproject.toml"><code>project.optional-dependencies</code> section of <code>pyproject.toml</code></a>, for example:</p>
+<div class="language-sh highlight"><pre><span></span><code><span class="c1"># enable the built-in configuration, inference and CLI</span>
+uv<span class="w"> </span>add<span class="w"> </span><span class="s2">&quot;splifft[config,inference,cli,web]&quot;</span>
+</code></pre></div>
+<p>This will install <code>splifft</code> in your venv.</p>
+<h3 id="development">Development</h3>
+<p>If you'd like to make local changes, it is recommended to enable all optional and developer group dependencies:</p>
+<div class="language-sh highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/undef13/splifft.git
+<span class="nb">cd</span><span class="w"> </span>splifft
+uv<span class="w"> </span>venv
+uv<span class="w"> </span>sync<span class="w"> </span>--all-extras<span class="w"> </span>--all-groups
+</code></pre></div>
+<p>You may also want to use <code>--editable</code> with <code>sync</code>. Check your code:</p>
+<div class="language-sh highlight"><pre><span></span><code><span class="c1"># lint &amp; format</span>
+just<span class="w"> </span>fmt
+<span class="c1"># build &amp; host documentation</span>
+just<span class="w"> </span>docs
+</code></pre></div>
+<p>Code style:</p>
+<ul>
+<li>Use stdlib dataclasses or pydantic BaseModels instead of untyped dictionaries or <code>ConfigDict</code>. This provides static type safety, runtime data validation, IDE autocompletion, and a single, clear source of truth for all parameters.</li>
+<li>Avoid complex class hierarchies and inheritance. Use plain data structures and pure, stateless functions.</li>
+<li>Leverage Python's type system and our built-in types (e.g. <code>splifft.types.ChunkSize</code>) to convey intent. It reduces the needs of verbose docstrings.</li>
+<li>The core should remain agnostic and not contain any model-specific code other than high-level pre/postprocessing archetypes.</li>
+</ul>
+<p>PRs are very welcome!</p>
+<h4 id="registry">Registry</h4>
+<ul>
+<li>Source of truth: <code>src/splifft/data/registry.json</code></li>
+<li>Per-model runtime config: <code>src/splifft/data/config/{config_id}.json</code></li>
+<li>JSON Schema are generated with <code>uv run scripts/gen_schema.py</code>.</li>
+<li>Validation gate: pydantic (<code>Registry.from_file</code>, <code>Config.from_file</code>)</li>
+</ul>
+<p>If you would like to add a model to the <code>splifft</code> registry:</p>
+<ul>
+<li>upload checkpoint (ideally to huggingface), with optional MSST config</li>
+<li>add registry entry: <code>architecture</code>, <code>purpose</code>, <code>config_id</code>, <code>output</code>, <code>resources[]</code></li>
+<li>write your own config JSON under <code>data/config</code>, or auto-convert your MSST yaml with <code>uv run scripts/community.py fix-registry-with-msst</code></li>
+<li>optionally, run <code>uv run scripts/community.py fix-registry</code> to auto generate the <code>created_at</code> /<code>model_size</code>/<code>digest</code> fields using HF/GH metadata and sync outputs from configs.</li>
+<li>format registry JSON: <code>pnpm run fmt:json src/splifft/data/registry.json</code></li>
+</ul>
+<p>Right now, registry + configs are shipped in the package itself, with new model visibility inherently tied to package release/version bump. In the future, we may add a <code>splifft update</code> command.</p>
+<h2 id="roadmap">Roadmap</h2>
+<p><code>splifft</code> is currently optimised for inferencing and does not yet support training.</p>
+<p>Near term:</p>
+<ul>
+<li><code>torch.jit.script</code></li>
+<li>ONNX export</li>
+<li><code>coremltools</code></li>
+<li>support streaming with ring buffer</li>
+<li>simple web-based GUI with FastAPI and SolidJS.</li>
+<li>Jupyter notebook</li>
+</ul>
+<p>Long term:</p>
+<ul>
+<li>evals: SDR, bleedless, fullness, etc.</li>
+<li>datasets: MUSDB18-HQ, moises</li>
+<li>implement a complete, configurable training loop</li>
+<li>data augmentation</li>
+</ul>
+<!-- holding off for now until Mojo reaches 1.0
+
+## Mojo
+
+While the primary goal is just to have minimalist PyTorch-based inference engine, I will be using this project as an opportunity to learn more about heterogenous computing, particularly with the [Mojo language](https://docs.modular.com/mojo/why-mojo/). The ultimate goal will be to understand to what extent can its compile-time metaprogramming and explicit memory layout control be used.
+
+My approach will be incremental and bottom-up: I'll develop, test and benchmark small components against their PyTorch counterparts. The PyTorch implementation will **always** remain the "source of truth", the fully functional baseline and never be removed.
+
+TODO:
+
+- [ ] evaluate `pixi` in `pyproject.toml`.
+- [ ] use `max.torch.CustomOpLibrary` to provide a callable from the pytorch side
+- [ ] use [`DeviceContext`](https://github.com/modular/modular/blob/main/mojo/stdlib/stdlib/gpu/host/device_context.mojo) to interact with the GPU
+- [ ] [attention](https://github.com/modular/modular/blob/main/examples/custom_ops/kernels/fused_attention.mojo)
+    - [ ] use [`LayoutTensor`](https://github.com/modular/modular/blob/main/max/kernels/src/layout/layout_tensor.mojo) for QKV
+- [ ] rotary embedding
+- [ ] feedforward
+- [ ] transformer
+- [ ] `BandSplit` & `MaskEstimator`
+- [ ] full graph compilation
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "navigation.expand"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="assets/js/katex.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js"></script>
+      
+    
+  </body>
+</html>
