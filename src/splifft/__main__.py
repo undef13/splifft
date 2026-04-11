@@ -204,7 +204,7 @@ def run(
 
     mixture_paths = mixture_path.glob("*") if mixture_path.is_dir() else [mixture_path]
     for mixture_path in mixture_paths:
-        logger.info(f"processing audio file: {mixture_path=}")
+        logger.info(f"processing mixture {mixture_path}")
         output_results = None
         sample_rate = None
         with Progress(

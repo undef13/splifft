@@ -1,20 +1,201 @@
 {
+    "mdx23c-gilliaaan-phantom_center_wide_v1": {
+        "authors": ["gilliaaan"],
+        "purpose": "separation",
+        "architecture": "mdx23c",
+        "config_id": "mdx23c-gilliaaan-phantom_center_wide_v1",
+        "created_at": "2026-04-08T09:10:52.000Z",
+        "output": ["side"],
+        "metrics": [
+            {"source": "https://mvsep.com/quality_checker/entry/9862"},
+            {
+                "values": { "center": {"sdr": 18.9307}, "side": {"sdr": 19.2271} }
+            }
+        ],
+        "description": [
+            { "content": ["it sounds extremely good"], "author": "gilliaaan" },
+            {
+                "content": [
+                    "You can run this with a 6GB [NVIDIA] VRAM card. I processed the 27 mins test set on a 6GB card using these parameters, only took me 10 mins"
+                ],
+                "author": "gilliaaan"
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/gilliaaan/MDX23C-Phantom-Center-Wide-Extractor/resolve/main/gilliaan_mdx23c_centerwide_v1.ckpt",
+                "digest": "sha256:8cc43e9ca384a3ab7b4ef5fb79efd2adf0aa1a7d1dcd836315396f6d9509d89e"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/gilliaaan/MDX23C-Phantom-Center-Wide-Extractor/resolve/main/config_centerwide_mdx23c_gilliaan_v1.yaml"
+            }
+        ],
+        "model_size": 437617081
+    },
+    "bs_roformer-gilliaaan-phantom_center_wide_v2": {
+        "authors": ["gilliaaan"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "config_id": "bs_roformer-gilliaaan-phantom_center_wide_v2",
+        "created_at": "2026-04-06T07:32:10.000Z",
+        "output": ["center"],
+        "metrics": [
+            {"source": "https://mvsep.com/quality_checker/entry/9851"},
+            {
+                "values": { "center": {"sdr": 16.9595}, "side": {"sdr": 17.2559} }
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/gilliaaan/BS-Roformer-Phantom-Center-Wide-Extractor/resolve/main/CenterExtractorSingleStem/gilliaan_CenterExtractor_Single_StemV2.ckpt",
+                "digest": "sha256:72cbc991fc8fe96a9f6c33d5683649c662343a9e906e6c73189ff0f692ef9fe4"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/gilliaaan/BS-Roformer-Phantom-Center-Wide-Extractor/resolve/main/CenterExtractorSingleStem/config_gilliaan_bs_roformer_centerwide_v2.yaml"
+            }
+        ],
+        "model_size": 204435682
+    },
+    "bs_roformer-gilliaaan-drumsother_duality_v1": {
+        "authors": ["gilliaaan"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "config_id": "bs_roformer-gilliaaan-drumsother_duality_v1",
+        "created_at": "2026-04-01T09:58:26.000Z",
+        "output": ["drums", "other"],
+        "metrics": [ {"source": "https://mvsep.com/quality_checker/entry/9829"} ],
+        "description": [
+            { "content": ["It is a fine tune of the SW."], "author": "gilliaaan" },
+            {
+                "content": [
+                    "The model is focused on fullness of both stems, not so much on accuracy (there are better models for it).",
+                    "It can also be used as a pre-processor for vocal separation.",
+                    "Or an ensemble for other drums models to enhance their fullness (e.g. SCNet or the SW)."
+                ],
+                "author": "gilliaaan"
+            },
+            { "content": ["it really does not enjoy the sample rate trick"], "author": "Pipedream" }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/gilliaaan/BS-Roformer-DrumsOther-Duality/resolve/main/gilliaan_drumsV1.ckpt",
+                "digest": "sha256:f60c4370257257301922dec9c6528cfab1b82b02d772ae0a0090cb566d4c4ca7"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/gilliaaan/BS-Roformer-DrumsOther-Duality/resolve/main/BS_Roformer_drums_gilliaan_config.yaml"
+            }
+        ],
+        "model_size": 303490678
+    },
+    "bs_roformer-gilliaaan-phantom_center_wide_v1": {
+        "authors": ["gilliaaan"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "config_id": "bs_roformer-gilliaaan-phantom_center_wide_v1",
+        "created_at": "2026-03-25T17:43:25.000Z",
+        "output": ["center"],
+        "metrics": [
+            {"source": "https://mvsep.com/quality_checker/entry/9776"},
+            {
+                "values": { "center": {"sdr": 16.4594}, "side": {"sdr": 16.7559} }
+            }
+        ],
+        "description": [
+            {
+                "content": [
+                    "This model was only trained on center.",
+                    "it's a lot better than the 2 previous Melband Roformers I've released.",
+                    "BS Roformer understood the task better.",
+                    "The residual stem (wide) sounds good as well, even though it's more on the bleedless side.",
+                    "For reference we went from 10.2 SDR up to 16.9 SDR. This is a big jump."
+                ],
+                "author": "gilliaaan"
+            },
+            {
+                "content": ["Ensemble Beta V2 + BSv1 (Average - Average (Avg)) sounds better"],
+                "author": "gilliaaan"
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/gilliaaan/BS-Roformer-Phantom-Center-Wide-Extractor/resolve/main/CenterExtractorSingleStem/gilliaan_CenterExtractor_Single_StemV1.ckpt",
+                "digest": "sha256:334bc80ca5830e87e464694ff197c60372a2758c427d63588dc0cc2c1b3c885e"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/gilliaaan/BS-Roformer-Phantom-Center-Wide-Extractor/resolve/main/CenterExtractorSingleStem/config_gilliaan_bs_roformer_centerwide_v1.yaml"
+            }
+        ],
+        "model_size": 204495806
+    },
+    "mel_roformer-gilliaaan-monostereo_duality_beta2": {
+        "authors": ["gilliaaan"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "config_id": "mel_roformer-gilliaaan-monostereo_duality_beta",
+        "created_at": "2026-03-15T03:58:41.000Z",
+        "output": ["center", "side"],
+        "metrics": [
+            {"source": "https://mvsep.com/quality_checker/entry/9847"},
+            {
+                "values": { "center": {"sdr": 10.1417}, "side": {"sdr": 10.2603} }
+            }
+        ],
+        "description": [
+            {
+                "content": [
+                    "gilliaaan dual phantom center mel-roformer beta2.",
+                    "The model is not good concerning the center stem"
+                ],
+                "author": "gilliaaan"
+            },
+            {
+                "content": [
+                    "Isolates the sides better than every other center extraction model I've tried"
+                ],
+                "author": "pezz23"
+            },
+            {
+                "content": [
+                    "while it may not have been the most aggressive at separating side channel audio from the center channel, it was really good at preserving the center channel without it bleeding into the side stem. despite the low metric's, that is what made it special for me, and why i still do at least 1 run on every new audio."
+                ],
+                "author": "vinctekan"
+            }
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/gilliaaan/Mel-Band-Roformer-MonoStereo-Duality/resolve/main/gilliaan_MonoStereo_Dual_Beta2.ckpt",
+                "digest": "sha256:a77908f6e91d091e549525a4ad0053ce49a06ba4901a56659a76f864bc095502"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/gilliaaan/Mel-Band-Roformer-MonoStereo-Duality/resolve/main/config_mel_band_roformer_monostereo_dual.yaml"
+            }
+        ],
+        "model_size": 869726129
+    },
     "mel_roformer-gilliaaan-monostereo_duality_beta": {
         "authors": ["gilliaaan"],
         "purpose": "separation",
         "architecture": "mel_roformer",
         "config_id": "mel_roformer-gilliaaan-monostereo_duality_beta",
         "created_at": "2026-03-13T05:43:01.000Z",
-        "output": ["mid", "side"],
+        "output": ["center", "side"],
         "metrics": [
             {
                 "source": "self-reported beta validation on custom synthetic dataset (1000+ songs, ~4 min each)"
             },
+            {"source": "https://mvsep.com/quality_checker/entry/9846"},
             {
-                "values": {
-                    "mid": {"sdr": 10.41, "aura_mrstft": 16.79, "bleedless": 35.29},
-                    "side": {"sdr": 10.39, "aura_mrstft": 13.68, "bleedless": 27.95}
-                }
+                "values": { "center": {"sdr": 9.857}, "side": {"sdr": 9.8766} }
             }
         ],
         "description": [

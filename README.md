@@ -4,7 +4,7 @@
 [![image](https://img.shields.io/pypi/l/splifft)](https://pypi.python.org/pypi/splifft)
 [![image](https://img.shields.io/pypi/pyversions/splifft)](https://pypi.python.org/pypi/splifft)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![MkDocs](https://img.shields.io/badge/docs-zensical-blue.svg)](https://undef13.github.io/splifft/)
+[![MkDocs](https://img.shields.io/badge/docs-zensical-blue.svg?style=inline)](https://undef13.github.io/splifft/)
 
 Lightweight utilities for music source separation and transcription.
 

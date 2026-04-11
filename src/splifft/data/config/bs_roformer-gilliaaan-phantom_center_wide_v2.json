@@ -1,0 +1,24 @@
+{
+    "identifier": "bs_roformer-gilliaaan-phantom_center_wide_v2",
+    "model_type": "bs_roformer",
+    "model": {
+        "chunk_size": 154350,
+        "output_stem_names": [
+            "center"
+        ],
+        "dim": 256,
+        "depth": 12,
+        "band_config": {
+            "kind": "fixed"
+        },
+        "stft_hop_length": 441
+    },
+    "transform": {
+        "kind": "stft",
+        "hop_length": 441
+    },
+    "inference": {
+        "batch_size": 2
+    },
+    "waveform_chunking": {}
+}
