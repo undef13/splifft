@@ -186,9 +186,13 @@ splifft run --override-config "inference.batch_size=2"
 Then, if you have a GPU and want to use fp16 mixed precision:
 
 ```sh
-splifft run \
-    --override-config "inference.batch_size=2" \
-    --override-config 'inference.use_autocast_dtype="float16"'
+splifft run --override-config 'inference.use_autocast_dtype="float16"'
+```
+
+Final stitching allocates memory on the GPU by default, so move the non-model work to CPU if needed:
+
+```sh
+splifft run --override-config 'inference.io_device="cpu"'
 ```
 
 > I only want some outputs (for example one stem).
