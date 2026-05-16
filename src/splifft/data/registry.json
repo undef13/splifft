@@ -1,4 +1,119 @@
 {
+    "mel_roformer-drypaintman-duet": {
+        "authors": ["drypaintman"],
+        "purpose": "separation",
+        "architecture": "mel_roformer",
+        "config_id": "mel_roformer-drypaintman-duet",
+        "created_at": "2026-05-12T19:03:20.000Z",
+        "output": ["vocals1", "vocals2"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/DryPaintMan/MelBandRoformer-Duet/resolve/main/model_mel_band_roformer_ep_0_sdr_7.9319_fixed.ckpt",
+                "digest": "sha256:9ae8ae1a7d2fab0a7c405fee27ac8332702a31d689de58c9fb6f63b30410832b"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/DryPaintMan/MelBandRoformer-Duet/resolve/main/config_mel_band_roformer_duet_dual-mlp2.yaml"
+            }
+        ],
+        "model_size": 630204333
+    },
+    "mdx23c-jazzpear-sfx": {
+        "authors": ["jazzpear"],
+        "purpose": "separation",
+        "architecture": "mdx23c",
+        "config_id": "mdx23c-jazzpear-sfx",
+        "created_at": "2026-05-02T01:47:47.000Z",
+        "output": ["foreground", "background"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/jazzpear/audio_separation_models_trained_by_jazzpear/resolve/main/sound_effects/mdx23c/model_sfxsplitter.ckpt",
+                "digest": "sha256:9e50238b25923b65e0fca590ddc7a5626ede4ae1df0b8392b5dccebee26288e5"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/jazzpear/audio_separation_models_trained_by_jazzpear/resolve/main/sound_effects/mdx23c/config_sfxsplitter.yaml"
+            }
+        ],
+        "model_size": 224090743
+    },
+    "bs_roformer-gilliaaan-bowed_strings_duality_v1": {
+        "authors": ["gilliaaan"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "config_id": "bs_roformer-gilliaaan-bowed_strings_duality_v1",
+        "created_at": "2026-04-21T06:09:47.000Z",
+        "output": ["strings", "other"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/gilliaaan/BS-Roformer-BowedStrings-Duality/resolve/main/gilliaan_bowedstrings_bs_v1.ckpt",
+                "digest": "sha256:282fabc28fb106edcc5e5e8383ea36559602fe53d0c406c736e08f58d66710fc"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/gilliaaan/BS-Roformer-BowedStrings-Duality/resolve/main/gilliaan_bsroformer_bowedstrings_v1.yaml"
+            }
+        ],
+        "model_size": 303490678
+    },
+    "bs_roformer-zfturbo-mvsep_mega_v1": {
+        "authors": ["zfturbo"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "config_id": "bs_roformer-zfturbo-mvsep_mega_v1",
+        "created_at": "2026-04-20T21:10:52Z",
+        "output": [
+            "accordion",       "acoustic_guitar", "back_vocals",     "banjo",
+            "bass",            "bassoon",         "bells",           "bowed_strings",
+            "brass",           "cello",           "clarinet",        "congas",
+            "digital_piano",   "dobro",           "double_bass",     "drums",
+            "electric_guitar", "flute",           "french_horn",     "glockenspiel",
+            "guitar",          "harmonica",       "harp",            "harpsichord",
+            "hh",              "keys",            "kick",            "lead_vocals",
+            "mandolin",        "marimba",         "oboe",            "organ",
+            "percussion",      "piano",           "saxophone",       "sitar",
+            "snare",           "strings",         "synth",           "tambourine",
+            "timpani",         "toms",            "triangle",        "trombone",
+            "trumpet",         "tuba",            "ukulele",         "viola",
+            "violin",          "vocals",          "wind",            "wind_chimes",
+            "woodwind"
+        ],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://github.com/ZFTurbo/Music-Source-Separation-Training/releases/download/v1.0.21/mvsep_mega_model_bs_roformer_53_stems_v1.ckpt",
+                "digest": "sha256:c62820893bbf86d4e734f966bd142d9157cfc8bb8e79e9d8f9ea553f3ff3519f"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://github.com/ZFTurbo/Music-Source-Separation-Training/releases/download/v1.0.21/mvsep_mega_model_bs_roformer_53_stems.yaml"
+            }
+        ],
+        "model_size": 1368919887
+    },
+    "bs_roformer-anvuew-vocals_ft1": {
+        "authors": ["anvuew"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "config_id": "bs_roformer-anvuew-vocals_ft1",
+        "created_at": "2026-04-17T16:01:25.000Z",
+        "output": ["vocals"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/anvuew/BS-RoFormer/resolve/main/bs_roformer_ft1_anvuew_sdr_12.55.ckpt",
+                "digest": "sha256:60347271e8493fdff28ef558c3b2297afb869a1f4462594ed548038264bec395"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/anvuew/BS-RoFormer/resolve/main/config.yaml"
+            }
+        ],
+        "model_size": 204493312
+    },
     "mdx23c-gilliaaan-phantom_center_wide_v1": {
         "authors": ["gilliaaan"],
         "purpose": "separation",
@@ -1114,7 +1229,7 @@
             {
                 "values": {
                     "lead": {"bleedless": 27.58, "fullness": 15.24},
-                    "back-instrum": {"bleedless": 50.67, "fullness": 32.46}
+                    "back_instrum": {"bleedless": 50.67, "fullness": 32.46}
                 }
             }
         ],
@@ -3599,7 +3714,7 @@
         "architecture": "bs_roformer",
         "config_id": "bs_roformer-viperx-1053",
         "created_at": "2024-03-29T10:38:08Z",
-        "output": ["no_drum-bass"],
+        "output": ["no_drum_bass"],
         "metrics": [
             {
                 "values": { "other": {"sdr": 10.5309} }

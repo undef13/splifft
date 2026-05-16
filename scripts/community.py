@@ -801,8 +801,22 @@ def fix_registry_with_msst(
     _write_registry_sorted(registry, registry_path)
 
 
+_STEM_ALIASES: dict[str, str] = {
+    "singer_1": "vocals1",
+    "singer_2": "vocals2",
+    "vocal": "vocals",
+    "lead_vocal": "lead_vocals",
+    "back_vocal": "back_vocals",
+}
+
+
 def snake_case(name: str) -> str:
-    return name.lower().replace(" ", "_")
+    return name.lower().replace(" ", "_").replace("-", "_")
+
+
+def normalize_stem_name(name: str) -> str:
+    normalized = snake_case(name)
+    return _STEM_ALIASES.get(normalized, normalized)
 
 
 def remove_missing(d: dict[str, Any]) -> dict[str, Any]:
@@ -813,9 +827,9 @@ def remove_missing(d: dict[str, Any]) -> dict[str, Any]:
 
 def _resolve_output_stems(training: dict[str, Any], *, missing: Any) -> Any:
     # see MSST utils/model_utils.py::prefer_target_instrument
-    stems = list(map(snake_case, training.get("instruments", [])))
+    stems = list(dict.fromkeys(normalize_stem_name(stem) for stem in training.get("instruments", [])))
     target = training.get("target_instrument")
-    return [snake_case(target)] if target else stems if stems else missing
+    return [normalize_stem_name(target)] if target else stems if stems else missing
 
 
 def _build_model_params_lazy(

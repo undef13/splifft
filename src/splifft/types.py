@@ -270,7 +270,7 @@ Instrument: TypeAlias = Literal[
     "foreground", "background",
     "restored",
     "back", "lead",
-    "back-instrum", "kick", "snare", "toms", "hh", "cymbals", "hh-cymbals",
+    "back_instrum", "kick", "snare", "toms", "hh", "cymbals", "hh_cymbals",
     "male", "female",
     # we follow mvsep's leaderboard naming conventions up til this point, the following are extra
     "violin",
@@ -280,8 +280,16 @@ Instrument: TypeAlias = Literal[
     "denoised", "noise",
     "similarity", "difference", "center", "side", # see: https://github.com/ZFTurbo/Music-Source-Separation-Training/issues/1#issuecomment-2417116936
     "keyboards", "synthesizer", "percussion", "orchestral",
+    # mvsep mega model
+    "accordion", "acoustic_guitar", "banjo", "bassoon", "bells", "bowed_strings",
+    "brass", "cello", "clarinet", "congas", "digital_piano", "dobro",
+    "double_bass", "electric_guitar", "flute", "french_horn", "glockenspiel",
+    "harmonica", "harp", "harpsichord", "keys", "mandolin", "marimba",
+    "oboe", "organ", "saxophone", "sitar", "synth", "tambourine",
+    "timpani", "triangle", "trombone", "trumpet", "tuba", "ukulele",
+    "viola", "wind_chimes", "woodwind",
     # weird
-    "no_drum-bass",  # viperx 1053
+    "no_drum_bass",  # viperx 1053
     "karaoke",
     # TODO: maybe we want to isolate non-separation stems to a new literal but eh
     # event detection

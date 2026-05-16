@@ -1,0 +1,27 @@
+{
+    "identifier": "bs_roformer-gilliaaan-bowed_strings_duality_v1",
+    "model_type": "bs_roformer",
+    "model": {
+        "chunk_size": 396900,
+        "output_stem_names": [
+            "strings",
+            "other"
+        ],
+        "dim": 256,
+        "depth": 12,
+        "band_config": {
+            "kind": "fixed"
+        },
+        "stft_hop_length": 441
+    },
+    "transform": {
+        "kind": "stft",
+        "hop_length": 441
+    },
+    "inference": {
+        "batch_size": 2
+    },
+    "waveform_chunking": {
+        "overlap_ratio": 0.8333333333333334
+    }
+}

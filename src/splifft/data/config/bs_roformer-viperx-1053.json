@@ -4,7 +4,7 @@
     "model": {
         "chunk_size": 131584,
         "output_stem_names": [
-            "no_drum-bass"
+            "no_drum_bass"
         ],
         "dim": 384,
         "depth": 12,

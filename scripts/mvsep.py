@@ -108,11 +108,6 @@ def fetch(
     logger.info(f"fetch complete. data saved in `{PATH_MVSEP_QUALITY}`")
 
 
-Sdr: TypeAlias = Annotated[
-    t.Sdr | None, BeforeValidator(lambda v: None if v == 0 or v == -1000 else v)
-]
-
-
 METRIC_REGEX = re.compile(r"Metric\s+(\S+)\s+for\s+(\S+):\s+([-\d.]+)")
 
 

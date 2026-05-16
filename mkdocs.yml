@@ -15,6 +15,7 @@ nav:
     - Core: "api/core.md"
     - IO: "api/io.md"
     - Inference: "api/inference.md"
+    - Metrics: "api/metrics.md"
     - Training: "api/training.md"
     - Types: "api/types.md"
 theme:
