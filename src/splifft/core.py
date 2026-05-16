@@ -155,40 +155,45 @@ def stitch_chunks(
     Reconstructs the full audio signal from a sequence of overlapping, processed chunks. Ensures
     that the sum of all overlapping windows is constant at every time step:
     $\sum_{m=-\infty}^{\infty} w[n - mH] = C$ where $H$ is the [hop size][splifft.types.HopSize].
+
+    Assumptions:
+
+    - `processed_chunks` is non-empty.
+    - Every batch has shape `(batch, num_stems, channels, chunk_size)`.
+    - Batches are already ordered in the same temporal order used during chunking.
+    - All batches share the same channel count and dtype.
+    - `window` has length `chunk_size` and matches the overlap-add window used during chunking.
     """
-    all_chunks = torch.cat(tuple(processed_chunks), dim=0)
-    total_chunks, _N, num_channels, _chunk_T = all_chunks.shape
-    windowed_chunks = all_chunks * window.view(1, 1, 1, -1)
+    first_batch = processed_chunks[0]
+    num_channels = first_batch.shape[2]
 
-    # folding: (B, N * C * chunk_T) -> (1, N * C * chunk_T, total_chunks)
-    reshaped_for_fold = windowed_chunks.permute(1, 2, 3, 0).reshape(
-        1, num_stems * num_channels * chunk_size, total_chunks
-    )
-
+    total_chunks = sum(batch.shape[0] for batch in processed_chunks)
     total_length = (total_chunks - 1) * hop_size + chunk_size
+    window_on_device = t.WindowTensor(window.to(device=first_batch.device, dtype=first_batch.dtype))
 
-    folded = F.fold(
-        reshaped_for_fold,
-        output_size=(1, total_length),
-        kernel_size=(1, chunk_size),
-        stride=(1, hop_size),
-    )  # (1, N * C, 1, total_length)
-    stitched = folded.view(num_stems, num_channels, total_length)
-
-    # normalization for overlap-add
-    windows_to_fold = window.expand(total_chunks, 1, chunk_size)
-    reshaped_windows_for_fold = windows_to_fold.permute(1, 2, 0).reshape(
-        1, chunk_size, total_chunks
+    stitched = torch.zeros(
+        (num_stems, num_channels, total_length),
+        device=first_batch.device,
+        dtype=first_batch.dtype,
     )
-    norm_window = F.fold(
-        reshaped_windows_for_fold,
-        output_size=(1, total_length),
-        kernel_size=(1, chunk_size),
-        stride=(1, hop_size),
-    ).squeeze(0)
+    norm_window = torch.zeros(total_length, device=first_batch.device, dtype=first_batch.dtype)
+    window_view = window_on_device.view(1, 1, -1)
+
+    chunk_index = 0
+    for chunk_batch in processed_chunks:
+        batch_size = chunk_batch.shape[0]
+
+        start = chunk_index * hop_size
+        for chunk in chunk_batch.unbind(0):
+            # NOTE: on CPU, dst.addcmul_(x, y) is not bit-identical to dst.add_(x * y) once
+            # dst already contains data. on CUDA, both ops are bit-identical.
+            stitched.narrow(-1, start, chunk_size).addcmul_(chunk, window_view)
+            norm_window.narrow(0, start, chunk_size).add_(window_on_device)
+            start += hop_size
+        chunk_index += batch_size
 
     norm_window.clamp_min_(1e-8)  # for edges where the window sum might be zero
-    stitched /= norm_window
+    stitched /= norm_window.view(1, 1, -1)
 
     padding = chunk_size - hop_size
     if padding > 0:
