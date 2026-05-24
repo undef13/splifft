@@ -6,7 +6,8 @@
         "output_stem_names": [
             "beat",
             "downbeat"
-        ]
+        ],
+        "sequence_window_frames": 1501
     },
     "audio_io": {
         "target_sample_rate": 22050,

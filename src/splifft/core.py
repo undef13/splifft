@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
@@ -11,6 +10,7 @@ from typing import (
     Callable,
     Generic,
     Iterator,
+    NamedTuple,
     Protocol,
     TypeVar,
     assert_never,
@@ -24,6 +24,7 @@ from einops import rearrange
 from torch import Tensor, nn
 
 from . import types as t
+from .models.utils.cqt import HarmonicRecursiveCQT, HarmonicRegularCQT
 from .models.utils.stft import IStft, Stft
 
 if TYPE_CHECKING:
@@ -349,13 +350,18 @@ def pad_dim(tensor: Tensor, *, dim: int, pad: tuple[int, int], value: float = 0.
     return torch.cat(pieces, dim=resolved_dim)
 
 
+class SequenceChunkSplit(NamedTuple):
+    chunks: list[Tensor]
+    starts: list[int]
+
+
 def split_sequence_tensor(
     sequence: Tensor,
     chunk_size: int,
     *,
     trim_margin: int = 0,
     avoid_short_end: bool = True,
-) -> tuple[list[Tensor], list[int]]:
+) -> SequenceChunkSplit:
     """Split a time-major sequence tensor into overlapping chunks.
 
     `sequence` must be shaped `(time, ...)`, where `...` can be any feature tail.
@@ -382,7 +388,7 @@ def split_sequence_tensor(
             chunk = pad_dim(chunk, dim=0, pad=(left, right), value=0.0)
         chunks.append(chunk)
 
-    return chunks, starts
+    return SequenceChunkSplit(chunks, starts)
 
 
 def apply_mask(
@@ -502,7 +508,12 @@ def create_w2w_model(
             "expected stft config for models that operate on spectrograms, but found `None`."
         )
 
-    preprocess: t.PreprocessFn = lambda chunk: (chunk,)  # noqa: E731
+    def _identity_preprocess(
+        chunk: t.RawAudioTensor | t.NormalizedAudioTensor,
+    ) -> t.WaveformModelInput:
+        return t.WaveformModelInput(chunk)
+
+    preprocess: t.PreprocessFn = _identity_preprocess
     postprocess: t.PostprocessFn = lambda model_output, *_: model_output  # noqa: E731
 
     if needs_stft:
@@ -561,14 +572,14 @@ def create_w2w_model(
 
 def _create_stft_preprocessor(
     stft_module: Stft,
-) -> Callable[[t.RawAudioTensor | t.NormalizedAudioTensor], tuple[t.ComplexSpectrogram]]:
+) -> Callable[[t.RawAudioTensor | t.NormalizedAudioTensor], t.SpectrogramModelInput]:
     def _preprocess(
         chunk_batch: t.RawAudioTensor | t.NormalizedAudioTensor,
-    ) -> tuple[t.ComplexSpectrogram]:
+    ) -> t.SpectrogramModelInput:
         spec_batch = stft_module(chunk_batch)
         b, s, f, t_frames, _ = spec_batch.shape
         model_input = spec_batch.permute(0, 2, 1, 3, 4).reshape(b, f * s, t_frames, 2)
-        return (model_input,)
+        return t.SpectrogramModelInput(t.ComplexSpectrogram(model_input))
 
     return _preprocess
 
@@ -579,7 +590,7 @@ def _create_hybrid_preprocessor(
     def _preprocess(chunk_batch: t.RawAudioTensor | t.NormalizedAudioTensor) -> t.HybridModelInput:
         spec_batch = stft_module(chunk_batch)
         spec_batch_rearranged = rearrange(spec_batch, "b s f t c -> b (f s) t c")
-        return (spec_batch_rearranged, chunk_batch)
+        return t.HybridModelInput(t.ComplexSpectrogram(spec_batch_rearranged), chunk_batch)
 
     return _preprocess
 
@@ -676,80 +687,13 @@ def to_log_magnitude(x: Tensor, *, epsilon: float = 1e-8) -> Tensor:
     return x.clamp_min(epsilon).log10().mul(20)
 
 
-def _cqt_window_values(
-    *,
-    window: str,
-    local_index: Tensor,
-    lengths: Tensor,
-    dtype: torch.dtype,
-) -> Tensor:
-    """Vectorized periodic windows matching SciPy `get_window(..., fftbins=True)` semantics."""
-    local = local_index.to(dtype=dtype)
-    denom = lengths.unsqueeze(1).to(dtype=dtype)
-    phase = 2 * torch.pi * local / denom
-    if window == "hann":
-        return 0.5 - 0.5 * torch.cos(phase)
-    if window == "hamming":
-        return 0.54 - 0.46 * torch.cos(phase)
-    raise ValueError(f"unsupported CQT window={window!r}")
-
-
-def create_cqt_kernels(
-    *,
-    Q: float,
-    fs: int,
-    fmin: float,
-    n_bins: int,
-    bins_per_octave: int,
-    norm: int = 1,
-    window: str = "hann",
-    fmax: float | None = None,
-    gamma: float = 0.0,
-    device: torch.device,
-    dtype: torch.dtype = torch.float32,
-) -> tuple[Tensor, int, Tensor, Tensor]:
-    """Create time-domain CQT kernels using only PyTorch ops.
-
-    This mirrors the nnAudio-style kernel generation used by PESTO but avoids
-    SciPy so `splifft` can keep a minimal dependency surface.
-    """
-    del fmax
-    freq_indices = torch.arange(n_bins, device=device, dtype=dtype)
-    freqs = fmin * (2.0 ** (freq_indices / float(bins_per_octave)))
-
-    alpha = 2.0 ** (1.0 / bins_per_octave) - 1.0
-    lengths = torch.ceil(Q * fs / (freqs + gamma / alpha))
-    max_len = int(lengths.max().item())
-    fft_len = 1 << int(math.ceil(math.log2(max_len)))
-
-    lengths_i = lengths.to(dtype=torch.int64)
-    half_center = torch.full((n_bins,), fft_len / 2.0, device=device, dtype=dtype)
-    starts = torch.ceil(half_center - lengths / 2.0).to(torch.int64) - (lengths_i % 2)
-
-    time_index = torch.arange(fft_len, device=device, dtype=torch.int64).unsqueeze(0)
-    local_index = time_index - starts.unsqueeze(1)
-    valid = (local_index >= 0) & (local_index < lengths_i.unsqueeze(1))
-
-    window_vals = _cqt_window_values(
-        window=window,
-        local_index=local_index,
-        lengths=lengths_i,
-        dtype=dtype,
-    )
-    window_vals = torch.where(valid, window_vals, torch.zeros_like(window_vals))
-
-    neg_half = torch.div(-lengths_i, 2, rounding_mode="floor").unsqueeze(1)
-    centered_n = (local_index + neg_half).to(dtype=dtype)
-    phase = (2 * torch.pi / float(fs)) * freqs.unsqueeze(1) * centered_n
-    signal = window_vals * torch.exp(1j * phase) / lengths.unsqueeze(1)
-    signal = torch.where(valid, signal, torch.zeros_like(signal))
-
-    if norm:
-        denom = torch.linalg.vector_norm(signal, ord=norm, dim=1, keepdim=True).clamp_min(1e-12)
-        signal = signal / denom
-
-    kernels = signal.to(dtype=torch.complex64)
-    return kernels, fft_len, lengths.sqrt().unsqueeze(-1), freqs
+def to_log_power(x: Tensor, *, epsilon: t.Gt0[float]) -> Tensor:
+    """Convert complex or real spectrogram-like tensors to dB log-power."""
+    if x.shape[-1] == 2:
+        x = x[..., 0] ** 2 + x[..., 1] ** 2
+    else:
+        x = x.abs() ** 2
+    return x.add(epsilon).log10().mul(10)
 
 
 class SequenceFeatureExtractor(Protocol):
@@ -770,6 +714,10 @@ def _ensure_btf(x: Tensor, *, source: str) -> Tensor:
     if x.ndim != 3:
         raise ValueError(f"{source} must output `(B,T,F)`, got shape={tuple(x.shape)}")
     return x
+
+
+def _hop_size_ms_to_samples(hop_size_ms: t.Gt0[float], sample_rate: t.SampleRate) -> t.HopSize:
+    return t.HopSize(int(round(hop_size_ms * sample_rate / 1000)))
 
 
 class IdentitySequenceFeatureExtractor(nn.Module, SequenceFeatureExtractor):
@@ -801,26 +749,27 @@ class LogMelSequenceFeatureExtractor(nn.Module, SequenceFeatureExtractor):
             raise ValueError(
                 f"mel extractor expects mono input with C=1, got shape={tuple(x.shape)}"
             )
-        # TODO dont do this
-        x_mono = x.mean(dim=1, keepdim=True)
+        x_mono = x[:, :1]
         mel = self.mel(x_mono).squeeze(1)
         return _ensure_btf(mel.transpose(1, 2), source="mel extractor")
 
 
-class CqtSequenceFeatureExtractor(nn.Module, SequenceFeatureExtractor):
-    stage_name = "cqt"
+class HcqtSequenceFeatureExtractor(nn.Module, SequenceFeatureExtractor):
+    stage_name = "hcqt"
 
     def __init__(
         self,
-        hcqt: HarmonicCQT,
+        hcqt: nn.Module,
         *,
-        hop_length_samples: int,
-        log_epsilon: float,
+        hop_length_samples: t.HopSize,
+        log_epsilon: t.Gt0[float],
+        power_epsilon: t.Ge0[float] | None,
     ):
         super().__init__()
         self.hcqt = hcqt
         self.hop_length_samples = hop_length_samples
         self.log_epsilon = log_epsilon
+        self.power_epsilon = power_epsilon
 
     def forward(self, x: Tensor) -> Tensor:
         if x.ndim != 3:
@@ -829,9 +778,13 @@ class CqtSequenceFeatureExtractor(nn.Module, SequenceFeatureExtractor):
             raise ValueError(
                 f"cqt extractor expects mono input with C=1, got shape={tuple(x.shape)}"
             )
-        x_mono = x.mean(dim=1)
+        x_mono = x[:, 0]
         hcqt_output = self.hcqt(x_mono)
-        cqt = to_log_magnitude(hcqt_output, epsilon=self.log_epsilon).permute(0, 3, 1, 2)
+        if self.power_epsilon is None:
+            cqt = to_log_magnitude(hcqt_output, epsilon=self.log_epsilon)
+        else:
+            cqt = to_log_power(hcqt_output, epsilon=self.power_epsilon)
+        cqt = cqt.permute(0, 3, 1, 2)
         b, t_len, harmonics, bins = cqt.shape
         return _ensure_btf(cqt.reshape(b, t_len, harmonics * bins), source="cqt extractor")
 
@@ -860,137 +813,50 @@ def create_sequence_feature_extractor(
         ).to(device)
         return LogMelSequenceFeatureExtractor(mel=mel, hop_length_samples=feature_cfg.hop_length)
 
-    if feature_cfg.kind == "cqt":
-        hop_length_samples = int(round(feature_cfg.hop_size_ms * sample_rate / 1000))
-        hcqt = HarmonicCQT(
+    if feature_cfg.kind == "hcqt_regular":
+        hop_length_samples = _hop_size_ms_to_samples(feature_cfg.hop_size_ms, sample_rate)
+        hcqt = HarmonicRegularCQT(
             sr=sample_rate,
             hop_length=hop_length_samples,
             harmonics=feature_cfg.harmonics,
             fmin=feature_cfg.fmin,
-            fmax=feature_cfg.fmax,
             bins_per_semitone=feature_cfg.bins_per_semitone,
             n_bins=feature_cfg.n_bins,
             center_bins=feature_cfg.center_bins,
             gamma=feature_cfg.gamma,
             center=feature_cfg.center,
+            filter_scale=feature_cfg.filter_scale,
+            window=feature_cfg.window,
         ).to(device)
-        return CqtSequenceFeatureExtractor(
+
+        return HcqtSequenceFeatureExtractor(
             hcqt=hcqt,
             hop_length_samples=hop_length_samples,
             log_epsilon=feature_cfg.log_epsilon,
+            power_epsilon=feature_cfg.power_epsilon,
+        )
+
+    if feature_cfg.kind == "hcqt_recursive":
+        hop_length_samples = _hop_size_ms_to_samples(feature_cfg.hop_size_ms, sample_rate)
+        hcqt = HarmonicRecursiveCQT(
+            sr=sample_rate,
+            hop_length=hop_length_samples,
+            harmonics=feature_cfg.harmonics,
+            fmin=feature_cfg.fmin,
+            bins_per_semitone=feature_cfg.bins_per_semitone,
+            n_bins=feature_cfg.n_bins,
+            center_bins=feature_cfg.center_bins,
+            center=feature_cfg.center,
+        ).to(device)
+
+        return HcqtSequenceFeatureExtractor(
+            hcqt=hcqt,
+            hop_length_samples=hop_length_samples,
+            log_epsilon=feature_cfg.log_epsilon,
+            power_epsilon=feature_cfg.power_epsilon,
         )
 
     raise ValueError(f"unsupported feature extractor kind: {feature_cfg.kind}")
-
-
-class CQT(nn.Module):
-    """Constant-Q transform layer (complex output) implemented via `Conv1d`."""
-
-    def __init__(
-        self,
-        *,
-        sr: t.SampleRate,
-        hop_length: int,
-        fmin: float,
-        fmax: float | None,
-        n_bins: int,
-        bins_per_octave: int,
-        gamma: float,
-        center: bool,
-        window: str = "hann",
-        norm: int = 1,
-    ):
-        super().__init__()
-        self.n_bins = n_bins
-
-        Q = 1.0 / (2 ** (1 / bins_per_octave) - 1)
-        kernels, kernel_width, sqrt_lengths, _freqs = create_cqt_kernels(
-            Q=Q,
-            fs=sr,
-            fmin=fmin,
-            n_bins=n_bins,
-            bins_per_octave=bins_per_octave,
-            norm=norm,
-            window=window,
-            fmax=fmax,
-            gamma=gamma,
-            device=torch.device("cpu"),
-        )
-
-        self.register_buffer("sqrt_lengths", sqrt_lengths, persistent=False)
-        self.register_buffer("kernel_real_imag", kernels, persistent=False)
-
-        padding = kernel_width // 2 if center else 0
-        self.conv = nn.Conv1d(
-            1,
-            2 * n_bins,
-            kernel_size=kernel_width,
-            stride=hop_length,
-            padding=padding,
-            padding_mode="reflect",
-            bias=False,
-        )
-        self._init_weights()
-
-    @torch.no_grad()
-    def _init_weights(self) -> None:
-        kernels = cast(Tensor, self.kernel_real_imag).to(self.conv.weight.device)
-        weights = torch.cat((kernels.real, -kernels.imag), dim=0).unsqueeze(1)
-        self.conv.weight.copy_(weights)
-        self.conv.weight.requires_grad = False
-
-    def forward(self, x: Tensor) -> Tensor:
-        if x.ndim == 1:
-            x = x.unsqueeze(0)
-        if x.ndim == 2:
-            x = x.unsqueeze(1)
-        if x.ndim != 3:
-            raise ValueError(f"expected shape (batch,time) or (batch,1,time), got {tuple(x.shape)}")
-
-        cqt = self.conv(x).view(x.size(0), 2, self.n_bins, -1)
-        cqt = cqt * self.sqrt_lengths.to(cqt.device)
-        return cast(Tensor, cqt.permute(0, 2, 3, 1))
-
-
-class HarmonicCQT(nn.Module):
-    """Harmonic CQT computed by stacking one CQT per harmonic multiplier."""
-
-    def __init__(
-        self,
-        *,
-        harmonics: Sequence[int],
-        sr: t.SampleRate,
-        hop_length: int,
-        fmin: float,
-        fmax: float | None,
-        bins_per_semitone: int,
-        n_bins: int,
-        center_bins: bool,
-        gamma: float,
-        center: bool,
-    ):
-        super().__init__()
-        if center_bins:
-            fmin = fmin / 2 ** ((bins_per_semitone - 1) / (12 * bins_per_semitone))
-
-        self.cqt_kernels = nn.ModuleList(
-            [
-                CQT(
-                    sr=sr,
-                    hop_length=hop_length,
-                    fmin=h * fmin,
-                    fmax=fmax,
-                    n_bins=n_bins,
-                    bins_per_octave=12 * bins_per_semitone,
-                    gamma=gamma,
-                    center=center,
-                )
-                for h in harmonics
-            ]
-        )
-
-    def forward(self, audio_waveforms: Tensor) -> Tensor:
-        return torch.stack([cqt(audio_waveforms) for cqt in self.cqt_kernels], dim=1)
 
 
 def _get_window_fn(name: str, win_length: int, device: torch.device) -> t.WindowTensor:

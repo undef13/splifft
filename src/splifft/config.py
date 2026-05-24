@@ -9,6 +9,7 @@ from typing import (
     Any,
     Hashable,
     Literal,
+    NamedTuple,
     Sequence,
     TypeAlias,
     TypeVar,
@@ -37,7 +38,7 @@ from typing_extensions import Self
 
 from . import types as t
 from .core import str_to_torch_dtype
-from .models import ModelParamsLike, ModelParamsLikeT
+from .models import HasSequenceWindowFrames, ModelParamsLike, ModelParamsLikeT
 
 
 def _get_torch_dtype_schema(_source_type: Any, _handler: GetCoreSchemaHandler) -> CoreSchema:
@@ -95,6 +96,11 @@ ModelOutputStemName: TypeAlias = Annotated[t.ModelOutputStemName, StringConstrai
 _INPUT_STEM_NAMES = get_args(ModelInputStemName)
 
 
+class ModelStemNames(NamedTuple):
+    input_stem_names: tuple[ModelInputStemName, ...]
+    output_stem_names: tuple[ModelOutputStemName, ...]
+
+
 # NOTE: the ideal case would be to use an ADT whose variants are known at "compile" time, e.g. in Rust:
 # enum ModelConfig {
 #     BsRoformer { param_x: ..., param_y: ... },
@@ -140,9 +146,9 @@ class LazyModelConfig(BaseModel):
         return model_params_concrete
 
     @property
-    def stem_names(self) -> tuple[ModelInputStemName | ModelOutputStemName, ...]:
-        """Returns the model's input and output stem names."""
-        return (*_INPUT_STEM_NAMES, *self.output_stem_names)
+    def stem_names(self) -> ModelStemNames:
+        """Returns the model's input and output stem names grouped by role."""
+        return ModelStemNames(_INPUT_STEM_NAMES, self.output_stem_names)
 
     model_config = ConfigDict(
         strict=True, extra="allow"
@@ -184,30 +190,47 @@ class LogMelConfig(BaseModel):
     model_config = _PYDANTIC_STRICT_CONFIG
 
 
-class CqtConfig(BaseModel):
-    """Configuration for harmonic CQT feature extraction.
+class HcqtRegularConfig(BaseModel):
+    """Configuration for regular harmonic CQT using one full-band kernel bank
+    per harmonic."""
 
-    This intentionally matches PESTO's HCQT preprocessor defaults so we can
-    share checkpoints without adding SciPy or nnAudio.
-    """
-
-    kind: Literal["cqt"]
-    hop_size_ms: float = 10.0
+    kind: Literal["hcqt_regular"]
+    hop_size_ms: t.Gt0[float] = 10.0
     harmonics: NonEmptyUnique[Tuple[t.Gt0[int]]] = (1,)
-    fmin: float = 27.5
-    fmax: float | None = None
+    fmin: t.Gt0[float] = 27.5
     bins_per_semitone: t.Gt0[int] = 3
     n_bins: t.Gt0[int] = 251
     center_bins: bool = True
-    gamma: float = 7.0
+    gamma: t.Ge0[float] = 7.0
     center: bool = True
-    log_epsilon: float = 1e-8
+    filter_scale: t.Gt0[float] = 1.0
+    window: Literal["hann", "hamming"] = "hann"
+    log_epsilon: t.Gt0[float] = 1e-8
+    power_epsilon: t.Ge0[float] | None = None
+
+    model_config = _PYDANTIC_STRICT_CONFIG
+
+
+class HcqtRecursiveConfig(BaseModel):
+    """Configuration for recursive harmonic CQT."""
+
+    kind: Literal["hcqt_recursive"]
+    hop_size_ms: t.Gt0[float] = 10.0
+    harmonics: NonEmptyUnique[Tuple[t.Gt0[int]]] = (1,)
+    fmin: t.Gt0[float] = 27.5
+    # TODO: support explicit `fmax`, `gamma`, and early-downsampling variants.
+    bins_per_semitone: t.Gt0[int] = 3
+    n_bins: t.Gt0[int] = 251
+    center_bins: bool = True
+    center: bool = True
+    log_epsilon: t.Gt0[float] = 1e-8
+    power_epsilon: t.Ge0[float] | None = None
 
     model_config = _PYDANTIC_STRICT_CONFIG
 
 
 FeatureExtractionConfig: TypeAlias = Annotated[
-    Union[StftConfig, LogMelConfig, CqtConfig],
+    Union[StftConfig, LogMelConfig, HcqtRegularConfig, HcqtRecursiveConfig],
     Discriminator("kind"),
 ]
 
@@ -345,7 +368,12 @@ def parse_override_value(value: str) -> Any:
         return value
 
 
-def parse_config_override(override: str) -> tuple[tuple[str, ...], Any]:
+class ParsedConfigOverride(NamedTuple):
+    path: tuple[str, ...]
+    value: Any
+
+
+def parse_config_override(override: str) -> ParsedConfigOverride:
     """Parse one override entry of the form `<dot.path>=<value>`. Empty value
     is interpreted as an empty string.
 
@@ -364,7 +392,7 @@ def parse_config_override(override: str) -> tuple[tuple[str, ...], Any]:
             f"invalid override path `{key}` in `{override}`: empty path segment is not allowed"
         )
 
-    return path, parse_override_value(raw_value)
+    return ParsedConfigOverride(path, parse_override_value(raw_value))
 
 
 def set_path_value(mut_config_dict: dict[str, Any], path: tuple[str, ...], value: Any) -> None:
@@ -394,8 +422,8 @@ def apply_config_overrides(
     mut_config_dict: dict[str, Any], overrides: ConfigOverrides
 ) -> dict[str, Any]:
     for override in overrides:
-        path, value = parse_config_override(override)
-        set_path_value(mut_config_dict, path, value)
+        parsed = parse_config_override(override)
+        set_path_value(mut_config_dict, parsed.path, parsed.value)
     return mut_config_dict
 
 
@@ -523,6 +551,12 @@ class Config(BaseModel):
             if output_type not in {"logits", "multi_stream"}:
                 raise ValueError(
                     f"sequence_labeling expects logits or multi_stream model output, got {output_type}"
+                )
+            if input_type == "spectrogram" and not isinstance(
+                model_params, HasSequenceWindowFrames
+            ):
+                raise ValueError(
+                    "spectrogram sequence models must declare `sequence_window_frames` explicitly"
                 )
         else:
             raise ValueError(f"unknown inference archetype: {archetype}")

@@ -13,16 +13,17 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from . import ModelParamsLike
+from . import ModelParamsLike, HasSequenceWindowFrames
 
 if TYPE_CHECKING:
     from .. import types as t
 
 
 @dataclass
-class PestoParams(ModelParamsLike):
+class PestoParams(ModelParamsLike, HasSequenceWindowFrames):
     chunk_size: t.ChunkSize
     output_stem_names: tuple[t.ModelOutputStemName, ...]
+    sequence_window_frames: t.Gt0[int]
 
     reduction: Literal["argmax", "mean", "alwa"] = "alwa"
     convert_to_freq: bool = True
@@ -76,8 +77,6 @@ class ToeplitzLinear(nn.Conv1d):
 
 
 class Resnet1d(nn.Module):
-    """Compact 1D CNN used by PESTO to decode HCQT frames into activations."""
-
     def __init__(
         self,
         *,
@@ -255,7 +254,7 @@ class Pesto(nn.Module):
         end = -self.cfg.crop_freq_bins_top if self.cfg.crop_freq_bins_top > 0 else None
         return x[..., start:end]
 
-    def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
+    def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, ...]:
         if x.ndim != 3:
             raise ValueError(
                 f"expected `(batch,time,feature_dim)` input, got shape={tuple(x.shape)}"
@@ -298,9 +297,4 @@ class Pesto(nn.Module):
         if self.cfg.convert_to_freq:
             pitch = 440 * 2 ** ((pitch - 69) / 12)
 
-        return {
-            "pitch": pitch,
-            "confidence": confidence,
-            "volume": volume,
-            "activations": activations,
-        }
+        return pitch, confidence, volume, activations

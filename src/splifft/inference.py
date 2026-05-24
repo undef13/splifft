@@ -6,13 +6,14 @@ from __future__ import annotations
 import contextlib
 import math
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Generator, Literal, TypeAlias, cast
+from typing import TYPE_CHECKING, Generator, Literal, NamedTuple, TypeAlias, cast
 
 import torch
 from torch import nn
 
 from . import PATH_REGISTRY_DEFAULT, core
 from . import types as t
+from .models import HasSequenceWindowFrames
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -21,13 +22,18 @@ if TYPE_CHECKING:
     from .models import ModelParamsLike
 
 
-SUPPORTED_MODELS: dict[str, tuple[str, str]] = {
-    "bs_roformer": ("splifft.models.bs_roformer", "BSRoformer"),
-    "mel_roformer": ("splifft.models.bs_roformer", "BSRoformer"),
-    "mdx23c": ("splifft.models.mdx23c", "MDX23C"),
-    "beat_this": ("splifft.models.beat_this", "BeatThis"),
-    "pesto": ("splifft.models.pesto", "Pesto"),
-    "basic_pitch": ("splifft.models.basic_pitch", "BasicPitch"),
+class ModelEntrypoint(NamedTuple):
+    module_name: str
+    class_name: str
+
+
+SUPPORTED_MODELS: dict[str, ModelEntrypoint] = {
+    "bs_roformer": ModelEntrypoint("splifft.models.bs_roformer", "BSRoformer"),
+    "mel_roformer": ModelEntrypoint("splifft.models.bs_roformer", "BSRoformer"),
+    "mdx23c": ModelEntrypoint("splifft.models.mdx23c", "MDX23C"),
+    "beat_this": ModelEntrypoint("splifft.models.beat_this", "BeatThis"),
+    "pesto": ModelEntrypoint("splifft.models.pesto", "Pesto"),
+    "basic_pitch": ModelEntrypoint("splifft.models.basic_pitch", "BasicPitch"),
 }
 
 
@@ -63,9 +69,9 @@ def resolve_model_entrypoint(
     model_type: t.ModelType,
     module_name: str | None,
     class_name: str | None,
-) -> tuple[str, str]:
+) -> ModelEntrypoint:
     if module_name is not None and class_name is not None:
-        return module_name, class_name
+        return ModelEntrypoint(module_name, class_name)
     try:
         return SUPPORTED_MODELS[model_type]
     except KeyError as e:
@@ -157,12 +163,10 @@ class InferenceEngine:
             io_device or config.inference.io_device,
             field_name="inference.io_device",
         )
-        resolved_module, resolved_class = resolve_model_entrypoint(
-            config.model_type, module_name, class_name
-        )
+        resolved_entrypoint = resolve_model_entrypoint(config.model_type, module_name, class_name)
         metadata = ModelMetadata.from_module(
-            module_name=resolved_module,
-            model_cls_name=resolved_class,
+            module_name=resolved_entrypoint.module_name,
+            model_cls_name=resolved_entrypoint.class_name,
             model_type=config.model_type,
             package=package_name,
         )
@@ -533,22 +537,21 @@ class InferenceEngine:
             ):
                 full_sequence = sequence_feature_extractor(sequence_input).squeeze(0)
             yield s.completed
-        hop_length_samples = sequence_feature_extractor.hop_length_samples
 
-        if (frame_chunk_size := self.config.model.chunk_size // hop_length_samples) <= 0:
-            raise ValueError(
-                "invalid frame chunk size computed from "
-                f"{self.config.model.chunk_size=} and {hop_length_samples=}"
+        if not isinstance(self.model_params_concrete, HasSequenceWindowFrames):
+            raise TypeError(
+                "spectrogram sequence-labeling models must implement HasSequenceWindowFrames"
             )
 
-        sequence_chunks, starts = core.split_sequence_tensor(
+        frame_chunk_size = int(self.model_params_concrete.sequence_window_frames)
+        split_sequence = core.split_sequence_tensor(
             full_sequence,
             chunk_size=frame_chunk_size,
             trim_margin=chunk_cfg.trim_margin,
             avoid_short_end=chunk_cfg.avoid_short_end,
         )
 
-        total_batches = math.ceil(len(sequence_chunks) / self.config.inference.batch_size)
+        total_batches = math.ceil(len(split_sequence.chunks) / self.config.inference.batch_size)
         stream_chunks: dict[str, list[torch.Tensor]] = {}
         selection_index_tensor: torch.Tensor | None = None
         with (
@@ -556,8 +559,8 @@ class InferenceEngine:
             self._autocast_context(self.model_device),
         ):
             batch_idx = 0
-            for i in range(0, len(sequence_chunks), self.config.inference.batch_size):
-                batch_chunks = sequence_chunks[i : i + self.config.inference.batch_size]
+            for i in range(0, len(split_sequence.chunks), self.config.inference.batch_size):
+                batch_chunks = split_sequence.chunks[i : i + self.config.inference.batch_size]
                 batch_tensors = [torch.as_tensor(chunk) for chunk in batch_chunks]
                 sequence_batch = torch.stack(batch_tensors, dim=0)
                 model_input = self._prepare_sequence_model_input(sequence_batch)
@@ -568,12 +571,14 @@ class InferenceEngine:
                 )
                 model_output = self.model(model_input)
 
-                if isinstance(model_output, dict):
-                    for stream_name, stream_batch in model_output.items():
-                        stream_batch = stream_batch.to(io_device)
+                if isinstance(model_output, tuple):
+                    for stem_name, output_index in zip(
+                        requested_stems, output_indices, strict=True
+                    ):
+                        stream_batch = model_output[output_index].to(io_device)
                         for stream_chunk in stream_batch.unbind(dim=0):
-                            stream_chunks.setdefault(stream_name, []).append(stream_chunk)
-                else:
+                            stream_chunks.setdefault(stem_name, []).append(stream_chunk)
+                elif isinstance(model_output, torch.Tensor):
                     logits = model_output.to(io_device).permute(1, 0, 2)
                     if selection_index_tensor is None and len(output_indices) != logits.shape[1]:
                         selection_index_tensor = torch.tensor(output_indices, device=logits.device)
@@ -583,6 +588,11 @@ class InferenceEngine:
                         stream_batch = logits[:, stream_idx, :]
                         for stream_chunk in stream_batch.unbind(dim=0):
                             stream_chunks.setdefault(stem_name, []).append(stream_chunk)
+                else:
+                    raise TypeError(
+                        "sequence-labeling models must return either Tensor logits or "
+                        "an tuple of stream tensors ordered according to output stem names"
+                    )
 
                 batch_idx += 1
                 yield ChunkProcessed(batch_index=batch_idx, total_batches=total_batches)
@@ -597,7 +607,7 @@ class InferenceEngine:
                     )
                 aggregated[stream_name] = core.aggregate_sequence_chunks(
                     processed_chunks=stream_chunks[stream_name],
-                    starts=starts,
+                    starts=split_sequence.starts,
                     full_size=full_sequence.shape[0],
                     chunk_size=frame_chunk_size,
                     trim_margin=chunk_cfg.trim_margin,

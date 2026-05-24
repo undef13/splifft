@@ -13,22 +13,22 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from . import ModelParamsLike
+from . import ModelParamsLike, HasSequenceWindowFrames
 
 if TYPE_CHECKING:
     from .. import types as t
 
 
 @dataclass
-class BasicPitchParams(ModelParamsLike):
+class BasicPitchParams(ModelParamsLike, HasSequenceWindowFrames):
     chunk_size: t.ChunkSize
     output_stem_names: tuple[t.ModelOutputStemName, ...]
+    sequence_window_frames: t.Gt0[int]
 
     n_semitones: t.Gt0[int] = 88
+    n_harmonics: t.Gt0[int] = 8
     contour_bins_per_semitone: t.Gt0[int] = 3
     cqt_bins_per_semitone: t.Gt0[int] = 3
-    cqt_n_bins: t.Gt0[int] = 372
-    stack_harmonics: tuple[t.Gt0[float], ...] = (0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0)
 
     @property
     def input_channels(self) -> t.ModelInputChannels:
@@ -80,15 +80,27 @@ class BasicPitch(nn.Module):
     def __init__(self, cfg: BasicPitchParams):
         super().__init__()
         self.cfg = cfg
+        if cfg.n_harmonics == 1:
+            stack_harmonics = (1.0,)
+            harmonic_context_semitones = 0
+        else:
+            stack_harmonics = (0.5, *(float(harmonic) for harmonic in range(1, cfg.n_harmonics)))
+            harmonic_context_semitones = math.ceil(12.0 * math.log2(cfg.n_harmonics))
         self.n_contour_bins = cfg.n_semitones * cfg.contour_bins_per_semitone
-
+        self.cqt_n_bins = (cfg.n_semitones + harmonic_context_semitones) * cfg.cqt_bins_per_semitone
+        self.stack_harmonics = stack_harmonics
         self.hs = HarmonicStacking(
             bins_per_semitone=cfg.cqt_bins_per_semitone,
-            harmonics=cfg.stack_harmonics,
+            harmonics=self.stack_harmonics,
             n_output_freqs=self.n_contour_bins,
         )
+        self.bn_layer = nn.BatchNorm2d(1, eps=0.001)
 
-        num_in_channels = len(cfg.stack_harmonics)
+        num_in_channels = len(self.stack_harmonics)
+        # NOTE: the first contour Conv-BN-ReLU block was accidentally skipped in the released
+        # Basic Pitch checkpoints. we keep the reduced contour stack here to stay weight-compatible
+        # with those shipped assets.
+        # See: https://github.com/spotify/basic-pitch/issues/21, https://github.com/spotify/basic-pitch/pull/180
         self.conv_contour = nn.Sequential(
             nn.Conv2d(num_in_channels, 8, kernel_size=(3, 39), padding="same"),
             nn.BatchNorm2d(8, eps=0.001),
@@ -112,11 +124,23 @@ class BasicPitch(nn.Module):
             nn.Sigmoid(),
         )
 
-    def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
+    @staticmethod
+    def _normalize_log_features(x: torch.Tensor) -> torch.Tensor:
+        """Match TensorFlow `NormalizedLog` after the extractor has produced log features."""
+        x_min = x.amin(dim=(1, 2), keepdim=True)
+        x = x - x_min
+        x_max = x.amax(dim=(1, 2), keepdim=True)
+        x = x / x_max.clamp_min(1e-8)
+        return torch.nan_to_num(x, nan=0.0, posinf=0.0, neginf=0.0)
+
+    def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, ...]:
         if x.ndim != 3:
             raise ValueError(f"expected `(B,T,F)` input, got {tuple(x.shape)}")
-        if x.shape[-1] != self.cfg.cqt_n_bins:
-            raise ValueError(f"expected feature dim {self.cfg.cqt_n_bins}, got {x.shape[-1]}")
+        if x.shape[-1] != self.cqt_n_bins:
+            raise ValueError(f"expected feature dim {self.cqt_n_bins}, got {x.shape[-1]}")
+
+        x = self._normalize_log_features(x)
+        x = self.bn_layer(x.unsqueeze(1)).squeeze(1)
 
         cqt = self.hs(x)
 
@@ -134,8 +158,4 @@ class BasicPitch(nn.Module):
         note_out = note.squeeze(1)
         onset_out = onset.squeeze(1)
 
-        return {
-            "onset": onset_out,
-            "note": note_out,
-            "contour": contour_out,
-        }
+        return onset_out, note_out, contour_out

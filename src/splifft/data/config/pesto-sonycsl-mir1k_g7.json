@@ -8,20 +8,20 @@
             "confidence",
             "volume",
             "activations"
-        ]
+        ],
+        "sequence_window_frames": 1001
     },
     "audio_io": {
         "target_sample_rate": 44100,
         "force_channels": 1
     },
     "transform": {
-        "kind": "cqt",
+        "kind": "hcqt_regular",
         "hop_size_ms": 10.0,
         "harmonics": [
             1
         ],
         "fmin": 27.5,
-        "fmax": null,
         "bins_per_semitone": 3,
         "n_bins": 251,
         "center_bins": true,

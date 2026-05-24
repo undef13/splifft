@@ -1,5 +1,5 @@
 {
-    "identifier": "basic_pitch-gudgud96-icassp_2022",
+    "identifier": "basic_pitch-spotify-icassp_2022",
     "model_type": "basic_pitch",
     "model": {
         "chunk_size": 43844,
@@ -7,25 +7,25 @@
             "onset",
             "note",
             "contour"
-        ]
+        ],
+        "sequence_window_frames": 172
     },
     "audio_io": {
         "target_sample_rate": 22050
     },
     "transform": {
-        "kind": "cqt",
+        "kind": "hcqt_recursive",
         "hop_size_ms": 11.609977324263039,
         "harmonics": [
             1
         ],
         "fmin": 27.5,
-        "fmax": null,
         "bins_per_semitone": 3,
-        "n_bins": 372,
+        "n_bins": 309,
         "center_bins": false,
-        "gamma": 0.0,
         "center": true,
-        "log_epsilon": 1e-8
+        "log_epsilon": 1e-8,
+        "power_epsilon": 1e-10
     },
     "inference": {
         "batch_size": 8
@@ -34,7 +34,7 @@
         "enabled": false
     },
     "sequence_chunking": {
-        "trim_margin": 0,
+        "trim_margin": 15,
         "overlap_mode": "keep_last",
         "avoid_short_end": false
     },

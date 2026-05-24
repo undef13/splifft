@@ -31,6 +31,15 @@ class ModelParamsLike(Protocol):
     def inference_archetype(self) -> t.InferenceArchetype: ...
 
 
+@runtime_checkable
+class HasSequenceWindowFrames(Protocol):
+    """A trait for spectrogram sequence-labeling model parameters that declare
+    the exact number of sequence frames produced by one inference waveform
+    window."""
+
+    sequence_window_frames: t.Gt0[int]
+
+
 ModelT = TypeVar("ModelT", bound=nn.Module)
 ModelParamsLikeT = TypeVar("ModelParamsLikeT", bound=ModelParamsLike)
 

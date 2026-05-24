@@ -26,17 +26,18 @@
       "title": "AudioIOConfig",
       "type": "object"
     },
-    "CqtConfig": {
+    "HcqtRecursiveConfig": {
       "additionalProperties": false,
-      "description": "Configuration for harmonic CQT feature extraction.\n\nThis intentionally matches PESTO's HCQT preprocessor defaults so we can\nshare checkpoints without adding SciPy or nnAudio.",
+      "description": "Configuration for recursive harmonic CQT.",
       "properties": {
         "kind": {
-          "const": "cqt",
+          "const": "hcqt_recursive",
           "title": "Kind",
           "type": "string"
         },
         "hop_size_ms": {
           "default": 10.0,
+          "exclusiveMinimum": 0,
           "title": "Hop Size Ms",
           "type": "number"
         },
@@ -55,12 +56,42 @@
         },
         "fmin": {
           "default": 27.5,
+          "exclusiveMinimum": 0,
           "title": "Fmin",
           "type": "number"
         },
-        "fmax": {
+        "bins_per_semitone": {
+          "default": 3,
+          "exclusiveMinimum": 0,
+          "title": "Bins Per Semitone",
+          "type": "integer"
+        },
+        "n_bins": {
+          "default": 251,
+          "exclusiveMinimum": 0,
+          "title": "N Bins",
+          "type": "integer"
+        },
+        "center_bins": {
+          "default": true,
+          "title": "Center Bins",
+          "type": "boolean"
+        },
+        "center": {
+          "default": true,
+          "title": "Center",
+          "type": "boolean"
+        },
+        "log_epsilon": {
+          "default": 1e-08,
+          "exclusiveMinimum": 0,
+          "title": "Log Epsilon",
+          "type": "number"
+        },
+        "power_epsilon": {
           "anyOf": [
             {
+              "minimum": 0,
               "type": "number"
             },
             {
@@ -68,7 +99,48 @@
             }
           ],
           "default": null,
-          "title": "Fmax"
+          "title": "Power Epsilon"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "HcqtRecursiveConfig",
+      "type": "object"
+    },
+    "HcqtRegularConfig": {
+      "additionalProperties": false,
+      "description": "Configuration for regular harmonic CQT using one full-band kernel bank\nper harmonic.",
+      "properties": {
+        "kind": {
+          "const": "hcqt_regular",
+          "title": "Kind",
+          "type": "string"
+        },
+        "hop_size_ms": {
+          "default": 10.0,
+          "exclusiveMinimum": 0,
+          "title": "Hop Size Ms",
+          "type": "number"
+        },
+        "harmonics": {
+          "default": [
+            1
+          ],
+          "items": {
+            "exclusiveMinimum": 0,
+            "type": "integer"
+          },
+          "minLength": 1,
+          "title": "Harmonics",
+          "type": "array",
+          "unique_items": true
+        },
+        "fmin": {
+          "default": 27.5,
+          "exclusiveMinimum": 0,
+          "title": "Fmin",
+          "type": "number"
         },
         "bins_per_semitone": {
           "default": 3,
@@ -89,6 +161,7 @@
         },
         "gamma": {
           "default": 7.0,
+          "minimum": 0,
           "title": "Gamma",
           "type": "number"
         },
@@ -97,16 +170,45 @@
           "title": "Center",
           "type": "boolean"
         },
+        "filter_scale": {
+          "default": 1.0,
+          "exclusiveMinimum": 0,
+          "title": "Filter Scale",
+          "type": "number"
+        },
+        "window": {
+          "default": "hann",
+          "enum": [
+            "hann",
+            "hamming"
+          ],
+          "title": "Window",
+          "type": "string"
+        },
         "log_epsilon": {
           "default": 1e-08,
+          "exclusiveMinimum": 0,
           "title": "Log Epsilon",
           "type": "number"
+        },
+        "power_epsilon": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Power Epsilon"
         }
       },
       "required": [
         "kind"
       ],
-      "title": "CqtConfig",
+      "title": "HcqtRegularConfig",
       "type": "object"
     },
     "InferenceConfig": {
@@ -641,7 +743,8 @@
         {
           "discriminator": {
             "mapping": {
-              "cqt": "#/$defs/CqtConfig",
+              "hcqt_recursive": "#/$defs/HcqtRecursiveConfig",
+              "hcqt_regular": "#/$defs/HcqtRegularConfig",
               "mel": "#/$defs/LogMelConfig",
               "stft": "#/$defs/StftConfig"
             },
@@ -655,7 +758,10 @@
               "$ref": "#/$defs/LogMelConfig"
             },
             {
-              "$ref": "#/$defs/CqtConfig"
+              "$ref": "#/$defs/HcqtRegularConfig"
+            },
+            {
+              "$ref": "#/$defs/HcqtRecursiveConfig"
             }
           ]
         },

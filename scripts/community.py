@@ -212,6 +212,7 @@ class lastCommitInfo(TypedDict):
     date: str  # ISO 8601 Date format
 
 
+
 class LfsInfo(TypedDict):
     oid: str  # sha256
     size: int
@@ -312,7 +313,12 @@ def _build_entry_lookup(
     return lookup
 
 
-def _hf_node_and_file_from_url(url: str) -> tuple[HfResourceNode, str | None] | None:
+class HfResourceMatch(NamedTuple):
+    repo: HfResourceNode
+    file_path: str | None
+
+
+def _hf_node_and_file_from_url(url: str) -> HfResourceMatch | None:
     """Parse a Hugging Face resource URL.
 
     Supported URL forms:
@@ -362,12 +368,17 @@ def _hf_node_and_file_from_url(url: str) -> tuple[HfResourceNode, str | None] | 
         rev=resolved_rev,
         base_path=base_path,
     )
-    return node, file_path
+    return HfResourceMatch(node, file_path)
+
+
+class GitHubReleaseMatch(NamedTuple):
+    release: GitHubReleaseNode
+    asset_name: str | None
 
 
 def _gh_release_node_and_asset_from_url(
     url: str,
-) -> tuple[GitHubReleaseNode, str | None] | None:
+) -> GitHubReleaseMatch | None:
     """Parse a GitHub release URL.
 
     Supported URL forms:
@@ -396,7 +407,10 @@ def _gh_release_node_and_asset_from_url(
     else:
         return None
     asset_name = PurePosixPath(asset).name if asset else None
-    return GitHubReleaseNode(owner=owner, repo_name=repo, tag=tag), asset_name
+    return GitHubReleaseMatch(
+        GitHubReleaseNode(owner=owner, repo_name=repo, tag=tag),
+        asset_name,
+    )
 
 
 def _cache_github_release_assets(
@@ -540,11 +554,9 @@ def fix_registry(
     gh_releases: set[GitHubReleaseNode] = set()
     for u in all_urls:
         if (hf_parsed := _hf_node_and_file_from_url(u.url)) is not None:
-            hf_node, _ = hf_parsed
-            hf_repos.add(hf_node)
+            hf_repos.add(hf_parsed.repo)
         if (gh_parsed := _gh_release_node_and_asset_from_url(u.url)) is not None:
-            gh_node, _ = gh_parsed
-            gh_releases.add(gh_node)
+            gh_releases.add(gh_parsed.release)
 
     output_hf = output_path / "huggingface"
     output_gh = output_path / "github"
@@ -576,7 +588,8 @@ def fix_registry(
         for resource in model.resources:
             url = resource.url
             if (hf_parsed := _hf_node_and_file_from_url(url)) is not None:
-                repo, file_path = hf_parsed
+                repo = hf_parsed.repo
+                file_path = hf_parsed.file_path
                 if not file_path:
                     continue
                 rel_path = (
@@ -600,11 +613,10 @@ def fix_registry(
                 continue
 
             if (gh_parsed := _gh_release_node_and_asset_from_url(url)) is not None:
-                release, asset_name = gh_parsed
-                lookup = gh_release_assets.get(release, {})
+                lookup = gh_release_assets.get(gh_parsed.release, {})
                 asset = None
-                if asset_name:
-                    asset = lookup.get(asset_name)
+                if gh_parsed.asset_name:
+                    asset = lookup.get(gh_parsed.asset_name)
                 if asset is None:
                     asset = lookup.get(url)
                 if asset is None:
@@ -849,13 +861,19 @@ def _build_model_params_lazy(
     )
 
 
+class CommonRuntimeParams(NamedTuple):
+    audio_io_params: dict[str, Any]
+    inference_params: dict[str, Any]
+    chunking_params: dict[str, Any]
+    normalization_params: dict[str, Any]
+
 def _build_common_runtime_params(
     *,
     audio: dict[str, Any],
     training: dict[str, Any],
     inference: dict[str, Any],
     missing: Any,
-) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
+) -> CommonRuntimeParams:
     audio_io_params = remove_missing(
         {
             "target_sample_rate": audio.get("sample_rate", missing),
@@ -878,7 +896,12 @@ def _build_common_runtime_params(
     if normalize_enabled is not missing:
         normalization_params["enabled"] = normalize_enabled
 
-    return audio_io_params, inference_params, chunking_params, normalization_params
+    return CommonRuntimeParams(
+        audio_io_params,
+        inference_params,
+        chunking_params,
+        normalization_params,
+    )
 
 
 def _build_config(
@@ -1053,13 +1076,11 @@ def convert_msst_config_bs_roformer(
         }
     )
 
-    audio_io_params, inference_params, chunking_params, normalization_params = (
-        _build_common_runtime_params(
-            audio=audio,
-            training=training,
-            inference=inference,
-            missing=MISSING,
-        )
+    runtime_params = _build_common_runtime_params(
+        audio=audio,
+        training=training,
+        inference=inference,
+        missing=MISSING,
     )
 
     return _build_config(
@@ -1067,10 +1088,10 @@ def convert_msst_config_bs_roformer(
         model_type="bs_roformer",
         model_params_lazy=model_params_lazy,
         stft_params=stft_params,
-        audio_io_params=audio_io_params,
-        inference_params=inference_params,
-        chunking_params=chunking_params,
-        normalization_params=normalization_params,
+        audio_io_params=runtime_params.audio_io_params,
+        inference_params=runtime_params.inference_params,
+        chunking_params=runtime_params.chunking_params,
+        normalization_params=runtime_params.normalization_params,
     )
 
 
@@ -1106,13 +1127,11 @@ def convert_msst_config_mdx23c(
         }
     )
 
-    audio_io_params, inference_params, chunking_params, normalization_params = (
-        _build_common_runtime_params(
-            audio=audio,
-            training=training,
-            inference=inference,
-            missing=MISSING,
-        )
+    runtime_params = _build_common_runtime_params(
+        audio=audio,
+        training=training,
+        inference=inference,
+        missing=MISSING,
     )
 
     return _build_config(
@@ -1120,10 +1139,10 @@ def convert_msst_config_mdx23c(
         model_type="mdx23c",
         model_params_lazy=model_params_lazy,
         stft_params=stft_params,
-        audio_io_params=audio_io_params,
-        inference_params=inference_params,
-        chunking_params=chunking_params,
-        normalization_params=normalization_params,
+        audio_io_params=runtime_params.audio_io_params,
+        inference_params=runtime_params.inference_params,
+        chunking_params=runtime_params.chunking_params,
+        normalization_params=runtime_params.normalization_params,
     )
 
 

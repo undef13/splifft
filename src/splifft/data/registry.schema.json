@@ -41,7 +41,6 @@
                 "si_sdr",
                 "l1_freq",
                 "log_wmse",
-                "l1_snr",
                 "aura_stft",
                 "aura_mrstft",
                 "bleedless",

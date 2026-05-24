@@ -7,7 +7,7 @@ Note that **no code implementations shall be placed here**.
 """
 
 from os import PathLike
-from typing import Annotated, Callable, Literal, NewType, TypeAlias, TypeVar
+from typing import Annotated, Callable, Literal, NamedTuple, NewType, TypeAlias, TypeVar
 
 import annotated_types as at
 from torch import Tensor
@@ -118,8 +118,18 @@ LogMelSpectrogram = NewType("LogMelSpectrogram", Tensor)
 """A real-valued log-mel spectrogram.
 Shape (1, [mels], [time])"""
 
-HybridModelInput: TypeAlias = tuple[ComplexSpectrogram, RawAudioTensor | NormalizedAudioTensor]
-"""Input for hybrid models that require both spectrogram and waveform."""
+
+class SpectrogramModelInput(NamedTuple):
+    spectrogram: ComplexSpectrogram
+
+
+class HybridModelInput(NamedTuple):
+    spectrogram: ComplexSpectrogram
+    waveform: RawAudioTensor | NormalizedAudioTensor
+
+
+class WaveformModelInput(NamedTuple):
+    waveform: RawAudioTensor | NormalizedAudioTensor
 
 
 # NOTE: sharing both for stft and overlap-add stitching for now
@@ -250,7 +260,9 @@ Shape ([number of stems][splifft.types.NumModelStems], [time]) or batched"""
 # wave-to-wave wrapper
 #
 
-PreprocessFn: TypeAlias = Callable[[RawAudioTensor | NormalizedAudioTensor], tuple[Tensor, ...]]
+ModelPreprocessInput: TypeAlias = WaveformModelInput | SpectrogramModelInput | HybridModelInput
+
+PreprocessFn: TypeAlias = Callable[[RawAudioTensor | NormalizedAudioTensor], ModelPreprocessInput]
 PostprocessFn: TypeAlias = Callable[..., SeparatedChunkedTensor | LogitsTensor]
 
 #

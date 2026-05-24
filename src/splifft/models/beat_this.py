@@ -18,7 +18,7 @@ from einops import rearrange
 from einops.layers.torch import Rearrange
 from torch import Tensor, nn
 
-from . import ModelParamsLike
+from . import ModelParamsLike, HasSequenceWindowFrames
 from .bs_roformer import (
     Attention,
     FeedForward,
@@ -32,9 +32,10 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class BeatThisParams(ModelParamsLike):
+class BeatThisParams(ModelParamsLike, HasSequenceWindowFrames):
     chunk_size: t.ChunkSize
     output_stem_names: tuple[t.ModelOutputStemName, ...]
+    sequence_window_frames: t.Gt0[int]
     spect_dim: t.Gt0[int] = 128
     transformer_dim: t.Gt0[int] = 512
     ff_mult: t.Gt0[int] = 4
@@ -73,9 +74,6 @@ class BeatThisParams(ModelParamsLike):
 
 
 class PartialFTTransformer(nn.Module):
-    """Takes a (batch, channels, freqs, time) input, applies self-attention and
-    a feed-forward block once across frequencies and once across time."""
-
     def __init__(
         self,
         dim: int,
