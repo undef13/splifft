@@ -40,6 +40,8 @@ from torch.nn import Module, ModuleList
 from torch.utils.checkpoint import checkpoint
 
 from . import ModelParamsLike, StemSelectionPlan, SupportsStemSelection
+from .utils.rotary import RotaryEmbedding
+from .utils.attend import Attend, AttentionBackend
 
 if TYPE_CHECKING:
     from .. import types as t
@@ -127,7 +129,7 @@ class BSRoformerParams(ModelParamsLike):
     attn_dropout: t.Dropout = 0.0
     ff_dropout: t.Dropout = 0.0
     ff_mult: t.Gt0[int] = 4
-    flash_attn: bool = True
+    attention_backend: AttentionBackend = "sdpa"
     norm_output: bool = False
     """Note that in `lucidrains`' implementation, this is set to
     False for `bs_roformer` but True for `mel_roformer`!!"""
@@ -147,7 +149,6 @@ depth by 1.
     mlp_expansion_factor: t.Gt0[int] = 4
     mask_estimator: MaskEstimatorConfig = field(default_factory=BaselineMaskEstimatorConfig)
     use_torch_checkpoint: bool = False
-    sage_attention: bool = False
     use_shared_bias: bool = False  # COMPAT: weights are all zeros anyways, disabling by default
     skip_connection: bool = False  # NOTE: not yet implemented
     rms_norm_eps: t.Ge0[float] | None = None
@@ -210,57 +211,6 @@ def rms_norm(dim: int, eps: float | None) -> RMSNorm | RMSNormWithEps:
 # attention
 
 
-class RotaryEmbedding(nn.Module):
-    """A performance-oriented version of RoPE.
-
-    Unlike `lucidrains`' implementation which compute embeddings JIT during the
-    forward pass and caches calls with the same or shorter sequence length,
-    we simply compute them AOT as persistent buffers. To keep the computational
-    graph clean, we do not support dynamic sequence lengths, learned frequencies
-    or length extrapolation.
-    """
-
-    def __init__(
-        self, seq_len: int, dim_head: int, *, dtype: torch.dtype | None, theta: int = 10000
-    ):
-        super().__init__()
-        # COMPAT: the original implementation does not generate the embeddings
-        # on the fly, but serialises them in fp16. there are some tiny
-        # differences:
-        # |                     |   from weights  |   generated    |
-        # | ------------------- | --------------- | -------------- |
-        # | cos_emb_time:971,22 | -0.99462890625  | -0.994140625   |
-        # | cos_emb_time:971,23 | -0.99462890625  | -0.994140625   |
-        # | sin_emb_time:727,12 | -0.457763671875 | -0.4580078125  |
-        # | sin_emb_time:727,13 | -0.457763671875 | -0.4580078125  |
-        # | sin_emb_time:825,4  | -0.8544921875   | -0.85400390625 |
-        # | sin_emb_time:825,5  | -0.8544921875   | -0.85400390625 |
-        freqs = 1.0 / (theta ** (torch.arange(0, dim_head, 2).float() / dim_head))
-        t = torch.arange(seq_len)
-        freqs = torch.einsum("i,j->ij", t, freqs)  # (seq_len, dim / 2)
-        freqs = repeat(freqs, "... d -> ... (d r)", r=2)  # (seq_len, dim)
-        self.cos_emb = freqs.cos().to(dtype)
-        self.sin_emb = freqs.sin().to(dtype)
-
-    def rotate_half(self, x: Tensor) -> Tensor:
-        x = rearrange(x, "... (d r) -> ... d r", r=2)
-        x1, x2 = x.unbind(dim=-1)
-        x = torch.stack((-x2, x1), dim=-1)
-        return rearrange(x, "... d r -> ... (d r)")
-
-    def forward(self, x: Tensor) -> Tensor:
-        # x is (batch_eff, heads, seq_len_for_rotation, dim_head)
-        cos_b = self.cos_emb.unsqueeze(0).unsqueeze(0).to(x.device, x.dtype)
-        sin_b = self.sin_emb.unsqueeze(0).unsqueeze(0).to(x.device, x.dtype)
-
-        term1 = x * cos_b
-        term2 = self.rotate_half(x) * sin_b
-
-        # NOTE: original impl performed addition between two f32s but it comes with 30% slowdown
-        # we eliminate it so the addition is performed between two f16s (according to __init__).
-        return term1 + term2
-
-
 class FeedForward(Module):
     def __init__(
         self, dim: int, mult: int = 4, dropout: float = 0.0, rms_norm_eps: float | None = None
@@ -291,8 +241,7 @@ class Attention(Module):
         shared_qkv_bias: nn.Parameter | None = None,
         shared_out_bias: nn.Parameter | None = None,
         rotary_embed: RotaryEmbedding | None = None,
-        flash: bool = True,
-        sage_attention: bool = False,
+        attention_backend: AttentionBackend = "sdpa",
         rms_norm_eps: float | None = None,
     ):
         super().__init__()
@@ -302,14 +251,7 @@ class Attention(Module):
 
         self.rotary_embed = rotary_embed
 
-        if sage_attention:
-            from .utils.attend_sage import AttendSage
-
-            self.attend = AttendSage(flash=flash, dropout=dropout)
-        else:
-            from .utils.attend import Attend
-
-            self.attend = Attend(flash=flash, dropout=dropout)  # type: ignore
+        self.attend = Attend(backend=attention_backend, dropout=dropout)
 
         self.norm = rms_norm(dim, eps=rms_norm_eps)
         self.to_qkv = nn.Linear(dim, dim_inner * 3, bias=(shared_qkv_bias is not None))
@@ -359,9 +301,8 @@ class LinearAttention(Module):
         dim_head: int = 32,
         heads: int = 8,
         scale: int = 8,
-        flash: bool = False,
         dropout: float = 0.0,
-        sage_attention: bool = False,
+        attention_backend: AttentionBackend = "sdpa",
         rms_norm_eps: float | None = None,
     ):
         super().__init__()
@@ -375,14 +316,7 @@ class LinearAttention(Module):
 
         self.temperature = nn.Parameter(torch.ones(heads, 1, 1))
 
-        if sage_attention:
-            from .utils.attend_sage import AttendSage
-
-            self.attend = AttendSage(scale=scale, dropout=dropout, flash=flash)
-        else:
-            from .utils.attend import Attend
-
-            self.attend = Attend(scale=scale, dropout=dropout, flash=flash)  # type: ignore
+        self.attend = Attend(scale=scale, dropout=dropout, backend=attention_backend)
 
         self.to_out = nn.Sequential(
             Rearrange("b h d n -> b n (h d)"), nn.Linear(dim_inner, dim, bias=False)
@@ -414,9 +348,8 @@ class Transformer(Module):
         ff_mult: int = 4,
         norm_output: bool = True,
         rotary_embed: RotaryEmbedding | None = None,
-        flash_attn: bool = True,
+        attention_backend: AttentionBackend = "sdpa",
         linear_attn: bool = False,
-        sage_attention: bool = False,
         shared_qkv_bias: nn.Parameter | None = None,
         shared_out_bias: nn.Parameter | None = None,
         rms_norm_eps: float | None = None,
@@ -433,8 +366,7 @@ class Transformer(Module):
                     dim_head=dim_head,
                     heads=heads,
                     dropout=attn_dropout,
-                    flash=flash_attn,
-                    sage_attention=sage_attention,
+                    attention_backend=attention_backend,
                     rms_norm_eps=rms_norm_eps,
                 )
             else:
@@ -446,8 +378,7 @@ class Transformer(Module):
                     shared_qkv_bias=shared_qkv_bias,
                     shared_out_bias=shared_out_bias,
                     rotary_embed=rotary_embed,
-                    flash=flash_attn,
-                    sage_attention=sage_attention,
+                    attention_backend=attention_backend,
                     rms_norm_eps=rms_norm_eps,
                 )
 
@@ -627,10 +558,9 @@ class AxialRefinerLargeV2MaskEstimator(Module):
                             dim_head=dim_head,
                             attn_dropout=0.0,
                             ff_dropout=0.0,
-                            flash_attn=True,
+                            attention_backend="sdpa",
                             norm_output=False,
                             rotary_embed=time_rotary_embed,
-                            sage_attention=False,
                         ),
                         Transformer(
                             dim=dim,
@@ -639,10 +569,9 @@ class AxialRefinerLargeV2MaskEstimator(Module):
                             dim_head=dim_head,
                             attn_dropout=0.0,
                             ff_dropout=0.0,
-                            flash_attn=True,
+                            attention_backend="sdpa",
                             norm_output=False,
                             rotary_embed=freq_rotary_embed,
-                            sage_attention=False,
                         ),
                     ]
                 )
@@ -741,9 +670,8 @@ class BSRoformer(Module, SupportsStemSelection[BSRoformerParams]):
             attn_dropout=cfg.attn_dropout,
             ff_dropout=cfg.ff_dropout,
             ff_mult=cfg.ff_mult,
-            flash_attn=cfg.flash_attn,
+            attention_backend=cfg.attention_backend,
             norm_output=cfg.norm_output,
-            sage_attention=cfg.sage_attention,
             shared_qkv_bias=self.shared_qkv_bias,
             shared_out_bias=self.shared_out_bias,
             rms_norm_eps=cfg.rms_norm_eps,

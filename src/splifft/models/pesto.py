@@ -12,11 +12,15 @@ from typing import TYPE_CHECKING, Callable, Literal, cast
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from typing_extensions import assert_never
 
 from . import ModelParamsLike, HasSequenceWindowFrames
 
 if TYPE_CHECKING:
     from .. import types as t
+
+
+PestoReduction = Literal["argmax", "mean", "alwa"]
 
 
 @dataclass
@@ -25,7 +29,7 @@ class PestoParams(ModelParamsLike, HasSequenceWindowFrames):
     output_stem_names: tuple[t.ModelOutputStemName, ...]
     sequence_window_frames: t.Gt0[int]
 
-    reduction: Literal["argmax", "mean", "alwa"] = "alwa"
+    reduction: PestoReduction = "alwa"
     convert_to_freq: bool = True
 
     crop_freq_bins_bottom: t.Ge0[int] = 16
@@ -101,7 +105,7 @@ class Resnet1d(nn.Module):
         elif activation_fn == "leaky":
             activation_layer = partial(nn.LeakyReLU, negative_slope=a_lrelu)
         else:
-            raise ValueError(f"unsupported activation_fn={activation_fn!r}")
+            assert_never(activation_fn)
 
         n_ch = list(n_chan_layers)
         if len(n_ch) < 5:
@@ -195,7 +199,10 @@ class ConfidenceClassifier(nn.Module):
         return torch.sigmoid(self.linear(torch.cat((x, flatness), dim=-1))).squeeze(-1)
 
 
-def reduce_activations(activations: torch.Tensor, reduction: str = "alwa") -> torch.Tensor:
+def reduce_activations(
+    activations: torch.Tensor,
+    reduction: PestoReduction = "alwa",
+) -> torch.Tensor:
     """Reduce per-bin probabilities to scalar pitch per frame."""
     device = activations.device
     num_bins = int(activations.size(-1))
@@ -220,7 +227,7 @@ def reduce_activations(activations: torch.Tensor, reduction: str = "alwa") -> to
         cropped_pitches = all_pitches.unsqueeze(0).expand_as(activations).gather(-1, indices)
         return (cropped_activations * cropped_pitches).sum(dim=-1) / cropped_activations.sum(dim=-1)
 
-    raise ValueError(f"unknown reduction={reduction!r}")
+    assert_never(reduction)
 
 
 class Pesto(nn.Module):

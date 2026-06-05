@@ -13,6 +13,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from torch import Tensor, nn
+from typing_extensions import assert_never
 
 if TYPE_CHECKING:
     from ... import types as t
@@ -20,7 +21,7 @@ if TYPE_CHECKING:
 
 def _cqt_window_values(
     *,
-    window: str,
+    window: t.WindowShape,
     local_index: Tensor,
     lengths: Tensor,
     dtype: torch.dtype,
@@ -30,9 +31,9 @@ def _cqt_window_values(
     phase = 2 * torch.pi * local / denom
     if window == "hann":
         return 0.5 - 0.5 * torch.cos(phase)
-    if window == "hamming":
+    elif window == "hamming":
         return 0.54 - 0.46 * torch.cos(phase)
-    raise ValueError(f"unsupported CQT window={window!r}")
+    assert_never(window)
 
 
 class RegularCqtKernels(NamedTuple):
@@ -50,7 +51,7 @@ def _create_regular_cqt_kernels(
     n_bins: t.Gt0[int],
     bins_per_octave: t.Gt0[int],
     norm: int = 1,
-    window: str = "hann",
+    window: t.WindowShape = "hann",
     gamma: t.Ge0[float] = 0.0,
     dtype: torch.dtype = torch.float32,
 ) -> RegularCqtKernels:
@@ -114,7 +115,7 @@ class RegularCQT(nn.Module):
         gamma: t.Ge0[float],
         center: bool,
         filter_scale: t.Gt0[float] = 1.0,
-        window: str = "hann",
+        window: t.WindowShape = "hann",
         norm: int = 1,
     ):
         super().__init__()
@@ -182,7 +183,7 @@ class HarmonicRegularCQT(nn.Module):
         gamma: t.Ge0[float],
         center: bool,
         filter_scale: t.Gt0[float] = 1.0,
-        window: str = "hann",
+        window: t.WindowShape = "hann",
     ):
         super().__init__()
         fmin = _resolve_centered_fmin(

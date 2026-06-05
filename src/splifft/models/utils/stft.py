@@ -50,6 +50,8 @@ class Stft(nn.Module):
         padding = self.n_fft // 2
         x = F.pad(x, (padding, padding), "reflect")
 
+        # NOTE: keeping the real / imag passes separate.
+        # a single concatenated conv is exact in f16 on CUDA but diverges in f32
         real_part = F.conv1d(x, self.real_conv_weight, stride=self.hop_length)  # type: ignore
         imag_part = F.conv1d(x, self.imag_conv_weight, stride=self.hop_length)  # type: ignore
         spec = torch.stack((real_part, imag_part), dim=-1)  # (b*s, f, t_frames, c=2)

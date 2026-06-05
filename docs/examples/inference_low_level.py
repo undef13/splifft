@@ -40,6 +40,7 @@ engine = InferenceEngine(
     model_params_concrete=model_params,
     model_device=next(model.parameters()).device,
     io_device=torch.device("cpu"),
+    model_input_dtype=next(model.parameters()).dtype,
 )
 result = engine.run(mixture)
 

@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Generator, Literal, NamedTuple, TypeAlias, cas
 
 import torch
 from torch import nn
+from typing_extensions import assert_never
 
 from . import PATH_REGISTRY_DEFAULT, core
 from . import types as t
@@ -307,7 +308,7 @@ class InferenceEngine:
                 )
             return mixture_data
 
-        raise ValueError(f"unsupported model input channel contract: {required!r}")
+        assert_never(required)
 
     def to_audio_tensor(
         self,

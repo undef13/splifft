@@ -34,7 +34,7 @@ from pydantic import (
     model_validator,
 )
 from pydantic_core import CoreSchema, PydanticCustomError, core_schema
-from typing_extensions import Self
+from typing_extensions import Self, assert_never
 
 from . import types as t
 from .core import str_to_torch_dtype
@@ -559,7 +559,7 @@ class Config(BaseModel):
                     "spectrogram sequence models must declare `sequence_window_frames` explicitly"
                 )
         else:
-            raise ValueError(f"unknown inference archetype: {archetype}")
+            assert_never(archetype)
 
         if output_type in {"logits", "multi_stream"} and self.output.file_format != "npy":
             raise ValueError(

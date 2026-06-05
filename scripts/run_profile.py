@@ -4,7 +4,7 @@ import json
 import pickle
 import time
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import timezone, datetime
 from logging import basicConfig, getLogger
 from pathlib import Path
 from typing import Any, TypeAlias
@@ -140,7 +140,7 @@ def run(
     override_config: list[str] = [],
 ) -> None:
     """Run the default profile suite and emit machine-readable artifacts."""
-    run_dir = out_root / datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    run_dir = out_root / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     run_dir.mkdir(parents=True, exist_ok=True)
     for case in [
         ProfileCase(

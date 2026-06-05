@@ -22,9 +22,9 @@ from . import ModelParamsLike, HasSequenceWindowFrames
 from .bs_roformer import (
     Attention,
     FeedForward,
-    RotaryEmbedding,
     Transformer,
 )
+from .utils.rotary import RotaryEmbedding
 
 if TYPE_CHECKING:
     from .. import types as t

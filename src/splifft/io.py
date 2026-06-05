@@ -16,11 +16,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable, NoReturn
 
 import torch
-from torchcodec.decoders import AudioDecoder
 
-from . import DIR_CONFIG_DEFAULT  # TODO don't hardcode
 from . import types as t
 from .core import Audio
+from . import DIR_CONFIG_DEFAULT  # TODO don't hardcode
+
 
 if TYPE_CHECKING:
     from .config import Registry
@@ -43,6 +43,11 @@ def read_audio(
     device: torch.device | None = None,
 ) -> Audio[t.RawAudioTensor]:
     """Loads, resamples and converts channels."""
+    try:
+        from torchcodec.decoders import AudioDecoder
+    except ImportError:
+        _raise_missing_feature(extra="inference", feature="reading audio")
+
     decoder = AudioDecoder(source=file, sample_rate=target_sr, num_channels=target_channels)
     samples = decoder.get_all_samples()
     waveform = samples.data.to(device)

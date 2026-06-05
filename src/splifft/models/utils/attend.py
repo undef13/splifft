@@ -2,35 +2,56 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import torch
 import torch.nn.functional as F
-from torch import Tensor, einsum, nn
+from torch import Tensor, nn
 from torch.nn.attention import SDPBackend, sdpa_kernel
 
 from . import log_once, parse_version
 
 if TYPE_CHECKING:
     from torch._C import _SDPBackend
+
 logger = logging.getLogger(__name__)
+
+try:
+    from sageattention import sageattn  # type: ignore
+
+    _has_sage_attention = True
+except ImportError:
+    _has_sage_attention = False
+
+
+AttentionBackend = Literal["math", "sdpa", "sage"]
 
 
 class Attend(nn.Module):
     def __init__(
-        self, dropout: float = 0.0, flash: bool = False, scale: float | None = None
+        self,
+        dropout: float = 0.0,
+        backend: AttentionBackend = "math",
+        scale: float | None = None,
     ) -> None:
         super().__init__()
         self.scale = scale
         self.dropout = dropout
         self.attn_dropout = nn.Dropout(dropout)
 
-        self.flash = flash
-        assert not (flash and parse_version(torch.__version__) < (2, 0, 0)), (
-            "expected pytorch >= 2.0.0 to use flash attention"
-        )
+        self.backend = backend
 
-        # determine efficient attention configs for cuda and cpu
+        if self.backend == "sage" and not _has_sage_attention:
+            log_once(logger, "sageattention requested but not found. falling back to sdpa.")
+            self.backend = "sdpa"
+
+        if self.backend == "sdpa" and parse_version(torch.__version__) < (2, 0, 0):
+            log_once(logger, "sdpa requested but pytorch < 2.0.0. falling back to math.")
+            self.backend = "math"
+
+        self.use_sage = self.backend == "sage"
+        self.use_sdpa = self.backend == "sdpa"
+
         self.cpu_backends = [
             SDPBackend.FLASH_ATTENTION,
             SDPBackend.EFFICIENT_ATTENTION,
@@ -38,7 +59,7 @@ class Attend(nn.Module):
         ]
         self.cuda_backends: list[_SDPBackend] | None = None
 
-        if not torch.cuda.is_available() or not flash:
+        if not torch.cuda.is_available() or not self.use_sdpa:
             return
 
         device_properties = torch.cuda.get_device_properties(torch.device("cuda"))
@@ -57,51 +78,52 @@ class Attend(nn.Module):
 
         self.cuda_backends = cuda_backends
 
-    def flash_attn(self, q: Tensor, k: Tensor, v: Tensor) -> Tensor:
-        _, _heads, _q_len, _, _k_len, is_cuda, _device = (
-            *q.shape,
-            k.shape[-2],
-            q.is_cuda,
-            q.device,
-        )  # type: ignore
-
-        if self.scale is not None:
-            default_scale = q.shape[-1] ** -0.5
-            q = q * (self.scale / default_scale)
-
-        backends = self.cuda_backends if is_cuda else self.cpu_backends
-        # pytorch 2.0 flash attn: q, k, v, mask, dropout, softmax_scale
-        with sdpa_kernel(backends=backends):  # type: ignore
-            out = F.scaled_dot_product_attention(
-                q, k, v, dropout_p=self.dropout if self.training else 0.0
-            )
-
-        return out
-
-    def forward(self, q: Tensor, k: Tensor, v: Tensor) -> Tensor:
+    def forward(self, q: Tensor, k: Tensor, v: Tensor, *, is_causal: bool = False) -> Tensor:
         """
         einstein notation
 
         - b: batch
         - h: heads
-        - n, i, j: sequence length (base sequence length, source, target)
+        - i, j: sequence length (source, target)
         - d: feature dimension
         """
-        _q_len, _k_len, _device = q.shape[-2], k.shape[-2], q.device
+        if self.use_sage:
+            # NOTE: sage requires (is_causal and q.shape[-2] != k.shape[-2]) and q.shape[-1] in (64, 96, 128)
+            # and q.dtype in (torch.float16, torch.bfloat16) but we just fail through for now.
+            return sageattn(  # type: ignore
+                q, k, v, tensor_layout="HND", is_causal=is_causal, sm_scale=self.scale
+            )
+
+        if self.use_sdpa:
+            is_cuda = q.is_cuda
+            backends = self.cuda_backends if is_cuda else self.cpu_backends
+            with sdpa_kernel(backends=backends):  # type: ignore
+                return F.scaled_dot_product_attention(
+                    q,
+                    k,
+                    v,
+                    dropout_p=self.dropout if self.training else 0.0,
+                    is_causal=is_causal,
+                    scale=self.scale,
+                )
 
         scale = self.scale or q.shape[-1] ** -0.5
 
-        if self.flash:
-            return self.flash_attn(q, k, v)
-
         # similarity
-        sim = einsum("b h i d, b h j d -> b h i j", q, k) * scale
+        sim = torch.einsum("b h i d, b h j d -> b h i j", q, k) * scale
+
+        if is_causal:
+            i, j = q.shape[-2], k.shape[-2]
+            causal_mask = torch.ones((i, j), device=q.device, dtype=torch.bool).triu_(
+                diagonal=j - i + 1
+            )
+            sim.masked_fill_(causal_mask, torch.finfo(sim.dtype).min)
 
         # attention
         attn = sim.softmax(dim=-1)
         attn = self.attn_dropout(attn)
 
         # aggregate values
-        out = einsum("b h i j, b h j d -> b h i d", attn, v)
+        out = torch.einsum("b h i j, b h j d -> b h i d", attn, v)
 
         return out

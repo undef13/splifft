@@ -20,13 +20,12 @@ from typing import (
     Iterable,
     Literal,
     NamedTuple,
-    NotRequired,
-    Self,
     TypeAlias,
     TypedDict,
     cast,
     get_args,
 )
+from typing_extensions import NotRequired, Self
 from urllib.parse import quote, unquote, urlparse
 
 import httpx
@@ -965,6 +964,9 @@ def _build_bs_roformer_model_params_lazy(
     msst_depth = model.get("mask_estimator_depth", 2)
     splifft_mask_depth = msst_depth + 1 if is_mel else msst_depth
 
+    flash_attn = model.get("flash_attn", missing)
+    attention_backend = missing if flash_attn is missing else ("sdpa" if flash_attn else "math")
+
     model_params = remove_missing(
         {
             "chunk_size": audio.get("chunk_size", missing),
@@ -991,7 +993,7 @@ def _build_bs_roformer_model_params_lazy(
             # but they do use mlp_expansion factor for mask estimator mlp.
             # confusingly ff_mult IS used in some experimental/conformer models
             "ff_mult": model.get("ff_mult", missing),
-            "flash_attn": model.get("flash_attn", missing),
+            "attention_backend": attention_backend,
             "norm_output": is_mel,  # NOTE: msst inherits the bug introduced from lucidrain's impl
             "mask_estimator_depth": splifft_mask_depth,
             "mlp_expansion_factor": model.get("mlp_expansion_factor", missing),

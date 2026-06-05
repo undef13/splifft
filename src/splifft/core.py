@@ -10,11 +10,13 @@ from typing import (
     Callable,
     Generic,
     Iterator,
+    Mapping,
     NamedTuple,
     Protocol,
+    Sequence,
     TypeVar,
-    assert_never,
     cast,
+    Literal,
 )
 
 import torch
@@ -22,14 +24,13 @@ import torch.nn.functional as F
 from annotated_types import Gt
 from einops import rearrange
 from torch import Tensor, nn
+from typing_extensions import assert_never
 
 from . import types as t
 from .models.utils.cqt import HarmonicRecursiveCQT, HarmonicRegularCQT
 from .models.utils.stft import IStft, Stft
 
 if TYPE_CHECKING:
-    from typing import Mapping, Sequence
-
     from .config import (
         DerivedStemsConfig,
         FeatureExtractionConfig,
@@ -559,7 +560,7 @@ def create_w2w_model(
             chunk_size,
             add_sub_dtype,
             out_dtype,
-            model_output_type,
+            model_output_type,  # type: ignore
         )
     return ModelWaveformToWaveform(
         model,
@@ -601,7 +602,7 @@ def _create_spec_postprocessor(
     chunk_size: t.ChunkSize,
     mask_add_sub_dtype: torch.dtype | None,
     mask_out_dtype: torch.dtype | None,
-    model_output_type: t.ModelOutputType,
+    model_output_type: Literal["spectrogram_mask", "spectrogram"],
 ) -> Callable[[t.ComplexSpectrogram, t.ComplexSpectrogram], t.SeparatedChunkedTensor]:
     def _postprocess(
         model_output: t.ComplexSpectrogram, spec_chunk: t.ComplexSpectrogram
@@ -618,7 +619,7 @@ def _create_spec_postprocessor(
         elif model_output_type == "spectrogram":
             separated_spec = t.SeparatedSpectrogramTensor(model_output)
         else:
-            raise ValueError(f"Unsupported model output type: {model_output_type}")
+            assert_never(model_output_type)
 
         separated_spec = rearrange(separated_spec, "b n (f s) t c -> (b n s) f t c", s=num_channels)
         # COMPAT: note that istft is NOT part of the graph. 14454 implies fp16 but because
@@ -646,7 +647,7 @@ class LogMelSpect(nn.Module):
         n_mels: int,
         f_min: float = 0.0,
         f_max: float | None = None,
-        mel_scale: str = "slaney",
+        mel_scale: Literal["htk", "slaney"] = "slaney",
         normalized: bool | str = "frame_length",
         power: float = 1.0,
         log_multiplier: float = 1000.0,
@@ -662,7 +663,7 @@ class LogMelSpect(nn.Module):
             f_max=f_max,
             n_mels=n_mels,
             mel_scale=mel_scale,
-            normalized=normalized,
+            normalized=cast(Any, normalized),
             power=power,
         )
         self.log_multiplier = log_multiplier
@@ -856,10 +857,15 @@ def create_sequence_feature_extractor(
             power_epsilon=feature_cfg.power_epsilon,
         )
 
-    raise ValueError(f"unsupported feature extractor kind: {feature_cfg.kind}")
+    if feature_cfg.kind == "stft":
+        raise NotImplementedError(
+            "sequence feature extraction does not support `stft`; use a mel or CQT transform"
+        )
+
+    assert_never(feature_cfg.kind)
 
 
-def _get_window_fn(name: str, win_length: int, device: torch.device) -> t.WindowTensor:
+def _get_window_fn(name: t.WindowShape, win_length: int, device: torch.device) -> t.WindowTensor:
     # intentionally keeping it sealed and simple, not using getattr().
     fn: Callable[[int], Tensor]
     if name == "hann":
@@ -867,7 +873,7 @@ def _get_window_fn(name: str, win_length: int, device: torch.device) -> t.Window
     elif name == "hamming":
         fn = torch.hamming_window
     else:
-        raise ValueError(f"unknown window function: {name}")
+        assert_never(name)
 
     return t.WindowTensor(fn(win_length, device=device))
 
@@ -900,6 +906,8 @@ def derive_stems(
         elif rule.operation == "sum":
             to_sum = tuple(stems[s] for s in rule.stem_names)
             stems[derived_name] = t.RawAudioTensor(torch.stack(to_sum).sum(dim=0))
+        else:
+            assert_never(rule)
 
     stems.pop("mixture", None)
     return stems

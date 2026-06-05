@@ -79,7 +79,6 @@ Channels: TypeAlias = Gt0[int]
 - 2: Stereo (left and right). Models are usually trained on stereo audio.
 """
 
-
 FileFormat: TypeAlias = Literal["flac", "wav", "ogg", "npy"]
 BitRate: TypeAlias = Literal[8, 16, 24, 32, 64]
 """Number of bits of information in each sample.
@@ -133,7 +132,7 @@ class WaveformModelInput(NamedTuple):
 
 
 # NOTE: sharing both for stft and overlap-add stitching for now
-WindowShape: TypeAlias = Literal["hann", "hamming", "linear_fade"]
+WindowShape: TypeAlias = Literal["hann", "hamming"]
 """The shape of the window function applied to each chunk before computing the STFT."""
 
 
