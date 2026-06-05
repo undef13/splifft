@@ -465,7 +465,12 @@ class InferenceEngine:
         )
 
         separated_chunks: list[t.SeparatedChunkedTensor] = []
-        selection_index_tensor: torch.Tensor | None = None
+        selection_index_tensor = (
+            torch.tensor(output_indices, device=self.io_device)
+            if output_indices != tuple(range(len(self.model_params_concrete.output_stem_names)))
+            else None
+        )
+
         with (
             torch.inference_mode(),
             self._autocast_context(self.model_device),
@@ -473,13 +478,6 @@ class InferenceEngine:
             batch_idx = 0
             for chunk_batch in chunk_generator:
                 separated_batch: torch.Tensor = model_w2w(chunk_batch)
-                if (
-                    selection_index_tensor is None
-                    and output_indices != tuple(range(separated_batch.shape[1]))
-                ):
-                    selection_index_tensor = torch.tensor(
-                        output_indices, device=separated_batch.device
-                    )
                 if selection_index_tensor is not None:
                     separated_batch = separated_batch.index_select(
                         dim=1,
@@ -553,7 +551,12 @@ class InferenceEngine:
 
         total_batches = math.ceil(len(split_sequence.chunks) / self.config.inference.batch_size)
         stream_chunks: dict[str, list[torch.Tensor]] = {}
-        selection_index_tensor: torch.Tensor | None = None
+        selection_index_tensor = (
+            torch.tensor(output_indices, device=io_device)
+            if output_indices != tuple(range(len(self.model_params_concrete.output_stem_names)))
+            else None
+        )
+
         with (
             torch.inference_mode(),
             self._autocast_context(self.model_device),
@@ -580,10 +583,6 @@ class InferenceEngine:
                             stream_chunks.setdefault(stem_name, []).append(stream_chunk)
                 elif isinstance(model_output, torch.Tensor):
                     logits = model_output.to(io_device).permute(1, 0, 2)
-                    if selection_index_tensor is None and output_indices != tuple(
-                        range(logits.shape[1])
-                    ):
-                        selection_index_tensor = torch.tensor(output_indices, device=logits.device)
                     if selection_index_tensor is not None:
                         logits = logits.index_select(dim=1, index=selection_index_tensor)
                     for stream_idx, stem_name in enumerate(requested_stems):
