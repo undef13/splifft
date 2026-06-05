@@ -475,7 +475,7 @@ class InferenceEngine:
                 separated_batch: torch.Tensor = model_w2w(chunk_batch)
                 if (
                     selection_index_tensor is None
-                    and len(output_indices) != separated_batch.shape[1]
+                    and output_indices != tuple(range(separated_batch.shape[1]))
                 ):
                     selection_index_tensor = torch.tensor(
                         output_indices, device=separated_batch.device
@@ -580,7 +580,9 @@ class InferenceEngine:
                             stream_chunks.setdefault(stem_name, []).append(stream_chunk)
                 elif isinstance(model_output, torch.Tensor):
                     logits = model_output.to(io_device).permute(1, 0, 2)
-                    if selection_index_tensor is None and len(output_indices) != logits.shape[1]:
+                    if selection_index_tensor is None and output_indices != tuple(
+                        range(logits.shape[1])
+                    ):
                         selection_index_tensor = torch.tensor(output_indices, device=logits.device)
                     if selection_index_tensor is not None:
                         logits = logits.index_select(dim=1, index=selection_index_tensor)
