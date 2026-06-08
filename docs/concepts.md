@@ -55,6 +55,6 @@ Since a full audio track is too large for GPU memory, we process it in overlappi
 
 ### Stitching and Post-processing
 
-After the model processes each chunk, we must reconstruct the full-length audio. The [`stitch_chunks`][splifft.core.stitch_chunks] function implements the overlap-add method, which applies a [`WindowTensor`][splifft.types.WindowTensor] to each chunk to ensure an artifact-free reconstruction. The final result is a [`RawSeparatedTensor`][splifft.types.RawSeparatedTensor] for each separated stem.
+After the model processes each chunk, we must reconstruct the full-length audio. The reconstruction utilizes [`StreamingStitcher`][splifft.core.StreamingStitcher] to perform the overlap-add method incrementally as chunks are generated. It retains a boundary tail equivalent to `ChunkSize - HopSize` samples, continuously writing finished segments into a pre-allocated tensor. The windowing function [`WindowTensor`][splifft.types.WindowTensor] ensures an artifact-free reconstruction. The final result is a [`RawSeparatedTensor`][splifft.types.RawSeparatedTensor] for each separated stem.
 
 With the separated audio back in the time domain, the final steps are to reverse the normalization using the original [`NormalizationStats`][splifft.core.NormalizationStats] and, optionally, to create new stems (e.g., an "instrumental" track) using rules defined in [`DerivedStemsConfig`][splifft.config.DerivedStemsConfig].

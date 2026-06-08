@@ -121,6 +121,9 @@ def generate_chunks(
 ) -> Iterator[t.PaddedChunkedAudioTensor]:
     """Generates batches of overlapping chunks from an audio tensor.
 
+    Note that reflect padding requires pad size to be strictly less than the audio dimension size.
+    Use `constant` padding mode otherwise.
+
     :return: An iterator that yields batches of chunks of shape (B, C, chunk_T).
     """
     padding = chunk_size - hop_size
@@ -153,6 +156,13 @@ def stitch_chunks(
     window: t.WindowTensor,
 ) -> t.RawSeparatedTensor:
     r"""Stitches processed audio chunks back together using the [overlap-add method](https://en.wikipedia.org/wiki/Overlap%E2%80%93add_method).
+
+    !!! warning
+
+        This function materializes all chunks in memory simultaneously before overlap-add,
+        which scales poorly with track length and stem count, often leading to OOM.
+        Prefer using [`StreamingStitcher`][splifft.core.StreamingStitcher] instead,
+        which performs overlap-add incrementally.
 
     Reconstructs the full audio signal from a sequence of overlapping, processed chunks. Ensures
     that the sum of all overlapping windows is constant at every time step:
@@ -202,6 +212,111 @@ def stitch_chunks(
         stitched = stitched[..., padding:-padding]
 
     return t.RawSeparatedTensor(stitched[..., :target_num_samples])
+
+
+class StreamingStitcher:
+    """Incremental overlap-add for chunked model outputs."""
+
+    @dataclass(slots=True)
+    class Buffers:
+        buffer: Tensor
+        norm_buffer: Tensor
+        shift_buffer: Tensor
+        shift_norm_buffer: Tensor
+
+    def __init__(
+        self,
+        chunk_size: t.ChunkSize,
+        hop_size: t.HopSize,
+        target_num_samples: t.Samples,
+        window: t.WindowTensor,
+    ) -> None:
+        self.chunk_size = chunk_size
+        self.hop_size = hop_size
+        self.target_num_samples = target_num_samples
+        self.window = window
+        self.tail_size = chunk_size - hop_size
+
+        self.samples_to_skip = self.tail_size
+        self.samples_to_keep = target_num_samples
+        self.buffers: StreamingStitcher.Buffers | None = None
+
+    def step(self, chunk: Tensor) -> Tensor | None:
+        """Accumulate one `(stems, channels, chunk_size)` chunk."""
+        # NOTE: the caller still uses a single output tensor at the end (because streaming
+        # serialisation is a can of worms) but we still keep the overlap add state bounded.
+        if chunk.ndim != 3:
+            raise ValueError(f"expected chunk rank 3, got shape {tuple(chunk.shape)}")
+        if chunk.shape[-1] != self.chunk_size:
+            raise ValueError(f"expected chunk length {self.chunk_size}, got {chunk.shape[-1]}")
+        if self.buffers is None:
+            chunk_shape = (*chunk.shape[:-1], self.chunk_size)
+            self.buffers = StreamingStitcher.Buffers(
+                # alloc from declared chunk size. does upstream hand us a edge chunk?
+                buffer=torch.zeros(chunk_shape, device=chunk.device, dtype=chunk.dtype),
+                norm_buffer=torch.zeros(self.chunk_size, device=chunk.device, dtype=chunk.dtype),
+                shift_buffer=torch.zeros(
+                    (*chunk.shape[:-1], self.tail_size),
+                    device=chunk.device,
+                    dtype=chunk.dtype,
+                ),
+                shift_norm_buffer=torch.zeros(
+                    self.tail_size,
+                    device=chunk.device,
+                    dtype=chunk.dtype,
+                ),
+            )
+
+        buffer = self.buffers.buffer
+        norm_buffer = self.buffers.norm_buffer
+        shift_buffer = self.buffers.shift_buffer
+        shift_norm_buffer = self.buffers.shift_norm_buffer
+
+        buffer.addcmul_(chunk, self.window.view(1, 1, -1))
+        norm_buffer.add_(self.window)
+
+        finalized = buffer[..., : self.hop_size] / norm_buffer[: self.hop_size].clamp_min(1e-8)
+
+        if self.tail_size > 0:
+            # NOTE: while a ring buffer gives slighly lower RSS, it significantly increased wall
+            # clock. we just use explicit shift for now
+            shift_buffer.copy_(buffer[..., self.hop_size :])
+            buffer[..., : self.tail_size].copy_(shift_buffer)
+            buffer[..., self.tail_size :].zero_()
+
+            shift_norm_buffer.copy_(norm_buffer[self.hop_size :])
+            norm_buffer[: self.tail_size].copy_(shift_norm_buffer)
+            norm_buffer[self.tail_size :].zero_()
+        else:
+            buffer.zero_()
+            norm_buffer.zero_()
+
+        return self._extract_valid(finalized)
+
+    def flush(self) -> Tensor | None:
+        """Emit the trailing valid tail after the final chunk."""
+        if self.buffers is None or self.samples_to_keep <= 0 or self.tail_size == 0:
+            return None
+        finalized = self.buffers.buffer[..., : self.tail_size] / self.buffers.norm_buffer[
+            : self.tail_size
+        ].clamp_min(1e-8)
+        return self._extract_valid(finalized)
+
+    def _extract_valid(self, block: Tensor) -> Tensor | None:
+        # chunking pads both sides so we discard prefix samples and stop until the target length
+        # maybe revisit once we have a true streaming serialisation
+        if self.samples_to_skip >= block.shape[-1]:
+            self.samples_to_skip -= block.shape[-1]
+            return None
+
+        start = self.samples_to_skip
+        self.samples_to_skip = 0
+        take = min(block.shape[-1] - start, self.samples_to_keep)
+        if take <= 0:
+            return None
+
+        self.samples_to_keep -= take
+        return block[..., start : start + take]
 
 
 def aggregate_logits(

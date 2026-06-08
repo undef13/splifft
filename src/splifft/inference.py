@@ -380,7 +380,6 @@ class InferenceEngine:
             mixture_data,
             archetype,
             output_indices=requested_stem_indices,
-            num_stems=len(requested_stems),
         )
 
         denormalized_stems: dict[t.ModelOutputStemName, t.RawAudioTensor] = {}
@@ -415,7 +414,6 @@ class InferenceEngine:
         archetype: Literal["standard_end_to_end", "frequency_masking"],
         *,
         output_indices: tuple[int, ...],
-        num_stems: int,
     ) -> Generator[InferenceEvent, None, t.RawSeparatedTensor]:
         if (chunk_cfg := self.config.waveform_chunking) is None:
             raise ValueError("missing `waveform_chunking`")
@@ -465,12 +463,42 @@ class InferenceEngine:
             model_device=self.model_device,
         )
 
-        separated_chunks: list[t.SeparatedChunkedTensor] = []
         selection_index_tensor = (
             torch.tensor(output_indices, device=self.io_device)
             if output_indices != tuple(range(len(self.model_params_concrete.output_stem_names)))
             else None
         )
+        stitcher = core.StreamingStitcher(
+            chunk_size=t.ChunkSize(chunk_size),
+            hop_size=t.HopSize(hop_size),
+            target_num_samples=t.Samples(original_num_samples),
+            window=t.WindowTensor(window),
+        )
+
+        # NOTE: this single destination tensor requires contiguous allocation (e.g. ~4.4GB for a
+        # 4 min track with 53 stems in fp32). in the future, we should stream and flush these blocks
+        # directly to disk, but implementing streamed encoders and decoders will come with extreme
+        # complexity. `torchcodec` streamed encoding is only available in v0.13 (2026-05-21),
+        # requiring torch>=2.11 so we defer it now until we understand more about ffmpeg.
+        stitched: t.RawSeparatedTensor | None = None
+        stitched_offset = 0
+
+        def _write_stitched_block(block: torch.Tensor) -> None:
+            nonlocal stitched, stitched_offset
+
+            if stitched is None:
+                stitched_shape = (block.shape[0], block.shape[1], original_num_samples)
+                stitched = t.RawSeparatedTensor(
+                    torch.empty(
+                        stitched_shape,
+                        device=self.io_device,
+                        dtype=block.dtype,
+                    )
+                )
+            block_length = int(block.shape[-1])
+            end = stitched_offset + block_length
+            stitched[..., stitched_offset:end].copy_(block)
+            stitched_offset = end
 
         with (
             torch.inference_mode(),
@@ -484,21 +512,17 @@ class InferenceEngine:
                         dim=1,
                         index=selection_index_tensor,
                     )
-                separated_chunks.append(cast(t.SeparatedChunkedTensor, separated_batch))
+                for chunk in separated_batch.unbind(0):
+                    if (block := stitcher.step(chunk)) is not None:
+                        _write_stitched_block(block)
                 batch_idx += 1
                 yield ChunkProcessed(batch_index=batch_idx, total_batches=total_batches)
 
-        with Stage("stitch") as s:
-            yield s.started
-            stitched = core.stitch_chunks(
-                processed_chunks=separated_chunks,
-                num_stems=num_stems,
-                chunk_size=chunk_size,
-                hop_size=hop_size,
-                target_num_samples=original_num_samples,
-                window=t.WindowTensor(window),
-            )
-            yield s.completed
+        if (tail := stitcher.flush()) is not None:
+            _write_stitched_block(tail)
+        if stitched is None:
+            raise RuntimeError("waveform inference produced no stitched output")
+        assert stitched_offset == original_num_samples
         return stitched
 
     def _prepare_sequence_model_input(
