@@ -90,7 +90,7 @@ This outputs [`splifft.inference.InferenceOutput`][], containing:
 
 `splifft` is designed to be easily extended without modifying its core.
 
-Make sure you have [added `splifft` as a dependency](./index.md#library). Assuming your library has [this structure](https://github.com/undef13/splifft/tree/main/docs/examples/ext_project):
+Make sure you have added `splifft` as a dependency. Assuming your library has [this structure](https://github.com/undef13/splifft/tree/main/docs/examples/ext_project):
 
 ``` title="tree /path/to/ext_project"
 ├── pyproject.toml

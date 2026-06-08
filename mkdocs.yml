@@ -15,7 +15,6 @@ nav:
     - Core: "api/core.md"
     - IO: "api/io.md"
     - Inference: "api/inference.md"
-    - Metrics: "api/metrics.md"
     - Training: "api/training.md"
     - Types: "api/types.md"
 theme:
@@ -98,3 +97,6 @@ extra_javascript:
 extra_css:
   - assets/css/plots.css
   - https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css
+# see: https://github.com/zensical/zensical/releases/tag/v0.0.38
+validation:
+  unresolved_references: false
