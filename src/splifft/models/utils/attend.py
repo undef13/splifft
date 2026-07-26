@@ -57,11 +57,11 @@ class Attend(nn.Module):
             SDPBackend.EFFICIENT_ATTENTION,
             SDPBackend.MATH,
         ]
+        # Selected lazily: modules built on CPU (e.g. under a Modal memory
+        # snapshot, where no GPU is attached) may later be moved to CUDA.
         self.cuda_backends: list[_SDPBackend] | None = None
 
-        if not torch.cuda.is_available() or not self.use_sdpa:
-            return
-
+    def _select_cuda_backends(self) -> list[_SDPBackend]:
         device_properties = torch.cuda.get_device_properties(torch.device("cuda"))
         device_version = parse_version(f"{device_properties.major}.{device_properties.minor}")
 
@@ -76,7 +76,7 @@ class Attend(nn.Module):
             cuda_backends = [SDPBackend.EFFICIENT_ATTENTION, SDPBackend.MATH]
             log_once(logger, f"gpu compute capability < 8.0, using {cuda_backends=}")
 
-        self.cuda_backends = cuda_backends
+        return cuda_backends
 
     def forward(self, q: Tensor, k: Tensor, v: Tensor, *, is_causal: bool = False) -> Tensor:
         """
@@ -96,6 +96,8 @@ class Attend(nn.Module):
 
         if self.use_sdpa:
             is_cuda = q.is_cuda
+            if is_cuda and self.cuda_backends is None:
+                self.cuda_backends = self._select_cuda_backends()
             backends = self.cuda_backends if is_cuda else self.cpu_backends
             with sdpa_kernel(backends=backends):  # type: ignore
                 return F.scaled_dot_product_attention(
