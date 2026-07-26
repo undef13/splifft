@@ -1,4 +1,22 @@
 {
+    "bs_roformer-unwa-leap_xe_voc": {
+        "authors": ["unwa"],
+        "purpose": "separation",
+        "architecture": "bs_roformer",
+        "config_id": "bs_roformer-unwa-leap_xe_voc",
+        "output": ["vocals"],
+        "resources": [
+            {
+                "kind": "model_ckpt",
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-Leap/resolve/main/Xe/bs_leap_xe_voc.ckpt"
+            },
+            {
+                "kind": "config_msst",
+                "url": "https://huggingface.co/pcunwa/BS-Roformer-Leap/resolve/main/Xe/leap_xe_config_voc.yaml"
+            }
+        ],
+        "model_size": 281000000
+    },
     "mel_roformer-drypaintman-duet": {
         "authors": ["drypaintman"],
         "purpose": "separation",
