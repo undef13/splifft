@@ -1,0 +1,37 @@
+{
+    "identifier": "bs_roformer-unwa-leap_xe_voc",
+    "model_type": "bs_roformer",
+    "model": {
+        "chunk_size": 960000,
+        "output_stem_names": [
+            "vocals"
+        ],
+        "dim": 256,
+        "depth": 16,
+        "band_config": {
+            "kind": "fixed",
+            "freqs_per_bands": [
+                2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+                4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+                12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
+                24, 24, 24, 24, 24, 24, 24, 24,
+                48, 48, 48, 48,
+                128, 129
+            ]
+        },
+        "stft_hop_length": 512,
+        "mask_estimator_depth": 2
+    },
+    "transform": {
+        "kind": "stft",
+        "hop_length": 512
+    },
+    "inference": {
+        "batch_size": 1,
+        "use_autocast_dtype": "float16"
+    },
+    "waveform_chunking": {
+        "overlap_ratio": 0.5
+    }
+}

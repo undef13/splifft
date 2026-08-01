@@ -29,6 +29,10 @@ class BasicPitchParams(ModelParamsLike, HasSequenceWindowFrames):
     n_harmonics: t.Gt0[int] = 8
     contour_bins_per_semitone: t.Gt0[int] = 3
     cqt_bins_per_semitone: t.Gt0[int] = 3
+    # the released checkpoints run at 22050 Hz where the CQT cannot extend past nyquist:
+    # floor(12 * log2(0.5 * 22050 / 27.5)) = 103 semitones, mirroring the reference
+    # implementation's MAX_N_SEMITONES cap.
+    cqt_max_semitones: t.Gt0[int] | None = 103
 
     @property
     def input_channels(self) -> t.ModelInputChannels:
@@ -87,7 +91,10 @@ class BasicPitch(nn.Module):
             stack_harmonics = (0.5, *(float(harmonic) for harmonic in range(1, cfg.n_harmonics)))
             harmonic_context_semitones = math.ceil(12.0 * math.log2(cfg.n_harmonics))
         self.n_contour_bins = cfg.n_semitones * cfg.contour_bins_per_semitone
-        self.cqt_n_bins = (cfg.n_semitones + harmonic_context_semitones) * cfg.cqt_bins_per_semitone
+        cqt_semitones = cfg.n_semitones + harmonic_context_semitones
+        if cfg.cqt_max_semitones is not None:
+            cqt_semitones = min(cqt_semitones, cfg.cqt_max_semitones)
+        self.cqt_n_bins = cqt_semitones * cfg.cqt_bins_per_semitone
         self.stack_harmonics = stack_harmonics
         self.hs = HarmonicStacking(
             bins_per_semitone=cfg.cqt_bins_per_semitone,

@@ -23,6 +23,48 @@ if TYPE_CHECKING:
     from .models import ModelParamsLike
 
 
+@contextlib.contextmanager
+def _skip_default_init() -> Generator[None, None, None]:
+    """Skips nn.Module's default random weight init (reset_parameters) while constructing a model.
+
+    from_pretrained() immediately overwrites every parameter from a checkpoint, so the default
+    kaiming/xavier init that nn.Module runs on construction is pure wasted CPU-RNG work over
+    potentially hundreds of millions of parameters.
+    """
+    classes = (
+        nn.Linear,
+        nn.Bilinear,
+        nn.Conv1d,
+        nn.Conv2d,
+        nn.Conv3d,
+        nn.ConvTranspose1d,
+        nn.ConvTranspose2d,
+        nn.ConvTranspose3d,
+        nn.BatchNorm1d,
+        nn.BatchNorm2d,
+        nn.BatchNorm3d,
+        nn.InstanceNorm1d,
+        nn.InstanceNorm2d,
+        nn.InstanceNorm3d,
+        nn.LayerNorm,
+        nn.GroupNorm,
+        nn.Embedding,
+        nn.EmbeddingBag,
+        nn.RNN,
+        nn.GRU,
+        nn.LSTM,
+        nn.MultiheadAttention,
+    )
+    saved = {cls: cls.reset_parameters for cls in classes if hasattr(cls, "reset_parameters")}
+    try:
+        for cls in saved:
+            cls.reset_parameters = lambda self: None  # type: ignore[method-assign]
+        yield
+    finally:
+        for cls, reset_parameters in saved.items():
+            cls.reset_parameters = reset_parameters  # type: ignore[method-assign]
+
+
 class ModelEntrypoint(NamedTuple):
     module_name: str
     class_name: str
@@ -89,6 +131,17 @@ class ChunkProcessed:
 
 
 @dataclass(frozen=True)
+class SeparatedBlock:
+    """A finalized, denormalized span of separated audio, emitted in temporal order.
+
+    Shaped `(num_requested_stems, channels, samples)` on the io device. Consecutive
+    blocks concatenate to the full separated track.
+    """
+
+    data: torch.Tensor
+
+
+@dataclass(frozen=True)
 class Stage:
     stage: str
     total_batches: int | None = field(kw_only=True, default=None)
@@ -125,7 +178,16 @@ class InferenceOutput:
     sample_rate: t.SampleRate
 
 
-InferenceEvent: TypeAlias = Stage.Started | ChunkProcessed | Stage.Completed | InferenceOutput
+InferenceEvent: TypeAlias = (
+    Stage.Started | ChunkProcessed | SeparatedBlock | Stage.Completed | InferenceOutput
+)
+
+
+class _PreparedMixture(NamedTuple):
+    audio: core.Audio[t.RawAudioTensor]
+    raw_data: t.RawAudioTensor
+    model_input: t.RawAudioTensor | t.NormalizedAudioTensor
+    stats: core.NormalizationStats | None
 
 
 @dataclass(frozen=True)
@@ -189,7 +251,8 @@ class InferenceEngine:
                 model_params = plan.model_params
                 state_dict_transform = plan.state_dict_transform
 
-        model = metadata.model(model_params)
+        with _skip_default_init():
+            model = metadata.model(model_params)
         if (forced_dtype := config.inference.force_weights_dtype) is not None:
             model = model.to(_resolve_runtime_dtype(forced_dtype, device=model_device_resolved))
         model = load_weights(
@@ -340,12 +403,10 @@ class InferenceEngine:
                 return event
         raise RuntimeError("inference stream finished without outputs")
 
-    def stream(
+    def _prepare_mixture(
         self,
         mixture: t.StrPath | t.BytesPath | t.RawAudioTensor | core.Audio[t.RawAudioTensor],
-    ) -> Generator[InferenceEvent, None, None]:
-        archetype = self.config.validate_inference_contract(self.model_params_concrete)
-
+    ) -> Generator[InferenceEvent, None, _PreparedMixture]:
         audio_tensor = self.to_audio_tensor(mixture)
         raw_mixture_data = t.RawAudioTensor(audio_tensor.data.to(self.io_device))
         mixture_data: t.RawAudioTensor | t.NormalizedAudioTensor = raw_mixture_data
@@ -362,59 +423,105 @@ class InferenceEngine:
                 yield s.completed
 
         mixture_data = yield from self._adapt_input_channels(mixture_data)
+        return _PreparedMixture(audio_tensor, raw_mixture_data, mixture_data, mixture_stats)
+
+    def stream_blocks(
+        self,
+        mixture: t.StrPath | t.BytesPath | t.RawAudioTensor | core.Audio[t.RawAudioTensor],
+    ) -> Generator[InferenceEvent, None, None]:
+        """Stream finalized [`SeparatedBlock`][splifft.inference.SeparatedBlock]s in
+        temporal order without materializing the full separated tensor.
+
+        Intended for streaming encoders; waveform pipelines only.
+        """
+        archetype = self.config.validate_inference_contract(self.model_params_concrete)
+        if archetype == "sequence_labeling":
+            raise ValueError("block streaming requires a waveform pipeline")
+        if self.config.derived_stems:
+            raise ValueError("block streaming does not support derived stems")
+
+        prepared = yield from self._prepare_mixture(mixture)
+        yield from self._stream_separated_blocks(
+            prepared.model_input,
+            archetype,
+            output_indices=self._requested_output_stem_indices(),
+            stats=prepared.stats,
+        )
+
+    def stream(
+        self,
+        mixture: t.StrPath | t.BytesPath | t.RawAudioTensor | core.Audio[t.RawAudioTensor],
+    ) -> Generator[InferenceEvent, None, None]:
+        archetype = self.config.validate_inference_contract(self.model_params_concrete)
+        prepared = yield from self._prepare_mixture(mixture)
 
         if archetype == "sequence_labeling":
             requested_stems = self._requested_output_stem_names()
-            requested_stem_indices = self._requested_output_stem_indices()
             sequence_outputs = yield from self._stream_sequence_labeling(
-                mixture_data,
+                prepared.model_input,
                 requested_stems=requested_stems,
-                output_indices=requested_stem_indices,
+                output_indices=self._requested_output_stem_indices(),
             )
-            yield InferenceOutput(outputs=sequence_outputs, sample_rate=audio_tensor.sample_rate)
+            yield InferenceOutput(outputs=sequence_outputs, sample_rate=prepared.audio.sample_rate)
             return
 
+        # NOTE: this single destination tensor requires contiguous allocation (e.g. ~4.4GB for a
+        # 4 min track with 53 stems in fp32). in the future, we should stream and flush these blocks
+        # directly to disk, but implementing streamed encoders and decoders will come with extreme
+        # complexity. `torchcodec` streamed encoding is only available in v0.13 (2026-05-21),
+        # requiring torch>=2.11 so we defer it now until we understand more about ffmpeg.
         requested_stems = self._requested_output_stem_names()
-        requested_stem_indices = self._requested_output_stem_indices()
-        separated_data = yield from self._stream_waveform_pipeline(
-            mixture_data,
+        original_num_samples = prepared.raw_data.shape[-1]
+        stitched: torch.Tensor | None = None
+        stitched_offset = 0
+        for event in self._stream_separated_blocks(
+            prepared.model_input,
             archetype,
-            output_indices=requested_stem_indices,
-        )
+            output_indices=self._requested_output_stem_indices(),
+            stats=prepared.stats,
+        ):
+            if not isinstance(event, SeparatedBlock):
+                yield event
+                continue
+            block = event.data
+            if stitched is None:
+                stitched = torch.empty(
+                    (block.shape[0], block.shape[1], original_num_samples),
+                    device=self.io_device,
+                    dtype=block.dtype,
+                )
+            end = stitched_offset + int(block.shape[-1])
+            stitched[..., stitched_offset:end].copy_(block)
+            stitched_offset = end
 
-        denormalized_stems: dict[t.ModelOutputStemName, t.RawAudioTensor] = {}
-        with Stage("collect_outputs") as s:
-            yield s.started
-            for i, stem_name in enumerate(requested_stems):
-                stem_data = separated_data[i, ...]
-                if mixture_stats is not None:
-                    stem_data = core.denormalize_audio(
-                        audio_data=t.NormalizedAudioTensor(stem_data),
-                        stats=mixture_stats,
-                    )
-                denormalized_stems[stem_name] = t.RawAudioTensor(stem_data)
-            yield s.completed
+        if stitched is None:
+            raise RuntimeError("waveform inference produced no stitched output")
+        assert stitched_offset == original_num_samples
 
-        output_stems: dict[StemName, t.RawAudioTensor] = denormalized_stems
+        output_stems: dict[StemName, t.RawAudioTensor] = {
+            stem_name: t.RawAudioTensor(stitched[i, ...])
+            for i, stem_name in enumerate(requested_stems)
+        }
         if derived_stems_cfg := self.config.derived_stems:
             with Stage("derive_stems") as s:
                 yield s.started
                 output_stems = core.derive_stems(
-                    denormalized_stems,
-                    raw_mixture_data,
+                    output_stems,
+                    prepared.raw_data,
                     derived_stems_cfg,
                 )
                 yield s.completed
 
-        yield InferenceOutput(outputs=output_stems, sample_rate=audio_tensor.sample_rate)
+        yield InferenceOutput(outputs=output_stems, sample_rate=prepared.audio.sample_rate)
 
-    def _stream_waveform_pipeline(
+    def _stream_separated_blocks(
         self,
         mixture_data: t.RawAudioTensor | t.NormalizedAudioTensor,
         archetype: Literal["standard_end_to_end", "frequency_masking"],
         *,
         output_indices: tuple[int, ...],
-    ) -> Generator[InferenceEvent, None, t.RawSeparatedTensor]:
+        stats: core.NormalizationStats | None,
+    ) -> Generator[InferenceEvent, None, None]:
         if (chunk_cfg := self.config.waveform_chunking) is None:
             raise ValueError("missing `waveform_chunking`")
 
@@ -475,30 +582,10 @@ class InferenceEngine:
             window=t.WindowTensor(window),
         )
 
-        # NOTE: this single destination tensor requires contiguous allocation (e.g. ~4.4GB for a
-        # 4 min track with 53 stems in fp32). in the future, we should stream and flush these blocks
-        # directly to disk, but implementing streamed encoders and decoders will come with extreme
-        # complexity. `torchcodec` streamed encoding is only available in v0.13 (2026-05-21),
-        # requiring torch>=2.11 so we defer it now until we understand more about ffmpeg.
-        stitched: t.RawSeparatedTensor | None = None
-        stitched_offset = 0
-
-        def _write_stitched_block(block: torch.Tensor) -> None:
-            nonlocal stitched, stitched_offset
-
-            if stitched is None:
-                stitched_shape = (block.shape[0], block.shape[1], original_num_samples)
-                stitched = t.RawSeparatedTensor(
-                    torch.empty(
-                        stitched_shape,
-                        device=self.io_device,
-                        dtype=block.dtype,
-                    )
-                )
-            block_length = int(block.shape[-1])
-            end = stitched_offset + block_length
-            stitched[..., stitched_offset:end].copy_(block)
-            stitched_offset = end
+        def _finalize(block: torch.Tensor) -> SeparatedBlock:
+            if stats is not None:
+                block = core.denormalize_audio(t.NormalizedAudioTensor(block), stats)
+            return SeparatedBlock(data=block)
 
         with (
             torch.inference_mode(),
@@ -514,16 +601,12 @@ class InferenceEngine:
                     )
                 for chunk in separated_batch.unbind(0):
                     if (block := stitcher.step(chunk)) is not None:
-                        _write_stitched_block(block)
+                        yield _finalize(block)
                 batch_idx += 1
                 yield ChunkProcessed(batch_index=batch_idx, total_batches=total_batches)
 
         if (tail := stitcher.flush()) is not None:
-            _write_stitched_block(tail)
-        if stitched is None:
-            raise RuntimeError("waveform inference produced no stitched output")
-        assert stitched_offset == original_num_samples
-        return stitched
+            yield _finalize(tail)
 
     def _prepare_sequence_model_input(
         self,
