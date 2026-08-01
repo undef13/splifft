@@ -23,6 +23,48 @@ if TYPE_CHECKING:
     from .models import ModelParamsLike
 
 
+@contextlib.contextmanager
+def _skip_default_init() -> Generator[None, None, None]:
+    """Skips nn.Module's default random weight init (reset_parameters) while constructing a model.
+
+    from_pretrained() immediately overwrites every parameter from a checkpoint, so the default
+    kaiming/xavier init that nn.Module runs on construction is pure wasted CPU-RNG work over
+    potentially hundreds of millions of parameters.
+    """
+    classes = (
+        nn.Linear,
+        nn.Bilinear,
+        nn.Conv1d,
+        nn.Conv2d,
+        nn.Conv3d,
+        nn.ConvTranspose1d,
+        nn.ConvTranspose2d,
+        nn.ConvTranspose3d,
+        nn.BatchNorm1d,
+        nn.BatchNorm2d,
+        nn.BatchNorm3d,
+        nn.InstanceNorm1d,
+        nn.InstanceNorm2d,
+        nn.InstanceNorm3d,
+        nn.LayerNorm,
+        nn.GroupNorm,
+        nn.Embedding,
+        nn.EmbeddingBag,
+        nn.RNN,
+        nn.GRU,
+        nn.LSTM,
+        nn.MultiheadAttention,
+    )
+    saved = {cls: cls.reset_parameters for cls in classes if hasattr(cls, "reset_parameters")}
+    try:
+        for cls in saved:
+            cls.reset_parameters = lambda self: None  # type: ignore[method-assign]
+        yield
+    finally:
+        for cls, reset_parameters in saved.items():
+            cls.reset_parameters = reset_parameters  # type: ignore[method-assign]
+
+
 class ModelEntrypoint(NamedTuple):
     module_name: str
     class_name: str
@@ -209,7 +251,8 @@ class InferenceEngine:
                 model_params = plan.model_params
                 state_dict_transform = plan.state_dict_transform
 
-        model = metadata.model(model_params)
+        with _skip_default_init():
+            model = metadata.model(model_params)
         if (forced_dtype := config.inference.force_weights_dtype) is not None:
             model = model.to(_resolve_runtime_dtype(forced_dtype, device=model_device_resolved))
         model = load_weights(

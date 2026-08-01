@@ -100,8 +100,16 @@ def load_weights(
     if state_dict_transform is not None:
         state_dict = state_dict_transform(state_dict)
 
+    pre_load_param = next(model.parameters(), None)
+    pre_load_dtype = pre_load_param.dtype if pre_load_param is not None else None
+
     # TODO: DataParallel and `module.` prefix
-    model.load_state_dict(state_dict, strict=strict)
+    # assign=True swaps the checkpoint tensors in directly instead of copy_-ing into the
+    # model's preallocated parameters - skips a full-model copy. It can silently change a
+    # parameter's dtype if the checkpoint doesn't match the model's dtype, so restore it below.
+    model.load_state_dict(state_dict, strict=strict, assign=True)
+    if pre_load_dtype is not None:
+        model = model.to(pre_load_dtype)
     # NOTE: do not torch.compile here!
 
     return model.to(device)
